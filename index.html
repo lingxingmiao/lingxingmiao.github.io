@@ -113,25 +113,92 @@
         .card-item ul {
             padding-left: 20px;
         }
+        .download-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 5px;
+            background-color: #54edf5;
+            color: #000;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #3ad4dc;
+        }
+        .license-info {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .license-info ul {
+            padding-left: 20px;
+        }
+        .download-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="nav-bar">
         <div class="nav-links">
             <a href="https://lingxingmiao.github.io" target="_self">MinecraftShader</a>
+            <input type="text" id="searchInput" placeholder="搜索..." class="search-box">
             <a href="https://lingxingmiao.github.io/Tools/" class="tools-link">工具</a>
         </div>
     </div>
     <div class="cards-container">
-        <div class="card-item" onclick="openModal()">
-            <h3>SEUS PTGI HRR Test 2.1 GFME 1.18</h3>
+        <div class="card-item" onclick="openModal('SEUS_GFME')" data-tags="seus ptgi hrr gfme 光线追踪 RTX RT">
+            <h3>SEUS PTGI HRR Test 2.1 GFME</h3>
             <ul>
                 <li>1.8.9支持</li>
-                <li>光线追踪：是</li>
+                <li>光线追踪支持</li>
+                <li>彩色光照支持</li>
                 <li>性能影响：★★★★☆</li>
             </ul>
         </div>
-        <!-- 预留8个空卡片位置 -->
+        <div class="card-item" onclick="openModal('SEUS_E12')" data-tags="seus ptgi 光线追踪 RTX RT">
+            <h3>SEUS PTGI E12</h3>
+            <ul>
+                <li>1.8.9支持</li>
+                <li>光线追踪支持</li>
+                <li>性能影响：★★★★☆</li>
+            </ul>
+        </div>
+        <div class="card-item" onclick="openModal('SEUS_2.1')" data-tags="seus ptgi hrr 光线追踪 RTX RT">
+            <h3>SEUS PTGI HRR Test 2.1</h3>
+            <ul>
+                <li>1.8.9支持</li>
+                <li>光线追踪支持</li>
+                <li>性能影响：★★★★☆</li>
+            </ul>
+        </div>
+        <div class="card-item" onclick="openModal('SEUS_R')" data-tags="seus">
+            <h3>SEUS Renewed v1.0.1</h3>
+            <ul>
+                <li>1.8.9支持</li>
+                <li>性能影响：★★☆☆☆</li>
+            </ul>
+        </div>
+        <div class="card-item" onclick="openModal('SEUS_11')" data-tags="seus">
+            <h3>SEUS v11.0</h3>
+            <ul>
+                <li>1.8.9支持</li>
+                <li>性能影响：★★☆☆☆</li>
+            </ul>
+        </div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
         <div class="card-item"></div>
         <div class="card-item"></div>
         <div class="card-item"></div>
@@ -143,68 +210,396 @@
         <div class="card-item"></div>
     </div>
 
-    <!-- 模态窗口 -->
-    <div id="shaderModal" class="modal">
+
+    <div id="SEUS_GFME" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="tab-buttons">
-                    <button class="tab-btn active" onclick="openTab('intro')">介绍</button>
-                    <button class="tab-btn" onclick="openTab('links')">链接</button>
-                    <button class="tab-btn" onclick="openTab('files')">文件</button>
+                    <button class="tab-btn active" onclick="openTab('intro', event)">介绍</button>
+                    <button class="tab-btn" onclick="openTab('links', event)">链接</button>
+                    <button class="tab-btn" onclick="openTab('files', event)">文件</button>
+                    <button class="tab-btn" onclick="openTab('license', event)">许可证</button>
                 </div>
                 <span class="close-btn" onclick="closeModal()">&times;</span>
             </div>
-            <div id="intro" class="tab-content" style="display:block;">
-                <p>SEUS PTGI HRR Test 2.1 GFME</p>
+            <div id="intro" class="tab-content" style="display:block; min-height: 300px; overflow: auto;">
+                <h3>介绍</h3>
+                <p>作者：GeForceLegend</p>
+                <p>SEUS PTGI HRR Test 2.1 GFME 基于 SEUS PTGI 的大型魔改光影</p>
                 <hr class="divider">
-                <p>基于 SEUS PTGI 的大型魔改光影，添加了相当的额外效果并且修复了相当的bug。</p>
+                <h3>使用方式：</h3>
+                <p>1.需要拥有一个原版（未经任何修改）的 SEUS PTGI HRR Test 2.1.zip 文件。文件名必须完全匹配，若下载时空格被其他符号替换，请手动重命名文件。</p>
+                <p>2.将 SEUS PTGI HRR Test 2.1.zip 和本 jar 置于同一目录。双击运行 jar 后，若一切正常，应该会在同目录生成本光影的文件。后续安装与使用与一般光影无异。</p>
+                <p>3.若不能正常输出光影文件，请使用命令行程序手动执行 java -jar "jar路径"。jar 程序会输出碰到的异常。</p>
                 <hr class="divider">
-                <p>参数：</p>
+                <h3>参数：</h3>
                 <ul>
                     <li>阴影精度：4k-32k</li>
                     <li>阴影范围：80-640</li>
                     <li>光追范围：60-320</li>
                     <li>光追采样：1-5</li>
-                    <li>最小显存：3G</li>
                 </ul>
+                <hr class="divider">
+                <h3>性能要求：</h3>
+                <p>最低显存要求：3GB</p>
+                <p>最低性能参考：<a href="https://www.techpowerup.com/gpu-specs/radeon-rx-5700.c3437" target="_blank">TechPowerUp</a></p>
 
             </div>
-            <div id="links" class="tab-content" style="display:none;">
+            <div id="links" class="tab-content" style="display:none; min-height: 300px; overflow: auto;">
                 <a href="https://github.com/GeForceLegend/SEUS_PTGI_GFME/" target="_blank">GitHub</a>
+                <br>
+                <a href="https://minegraph.cn/shaderpacks/18" target="_blank">MGC中文图形站</a>
             </div>
-            <div id="files" class="tab-content" style="display:none;">
-                <a href="https://raw.githubusercontent.com/lingxingmiao/lingxingmiao.github.io/refs/heads/main/ShaderFiles/SEUS%20PTGI%20HRR%20Test%202.1%20GFME%201.18.zip" target="_blank">SEUS PTGI HRR Test 2.1 GFME 1.18.zip</a>
+            <div id="files" class="tab-content" style="display:none; min-height: 300px; overflow: auto;">
+                <a href="https://github.com/GeForceLegend/SEUS_PTGI_GFME/releases/download/HRR2.1-v1.18/SEUS_PTGI_HRR_Test_2.1_GFME_v1.18.jar" target="_blank">SEUS PTGI HRR Test 2.1 GFME 1.18.jar</a>
+                <br>
+                <a href="https://www.patreon.com/posts/45141775" target="_blank">原SEUS PTGI HRR Test 2.1.zip下载链接</a>
+            </div>
+            <div id="license" class="tab-content" style="display:none; min-height: 300px; overflow: auto;">
+                <h2>SEUS PTGI GFME 许可协议</h2>
+                <p>通过以任何目的使用SEUS PTGI GFME补丁或着色器，即表示您同意所有条款和条件。</p>
+                <p>“此补丁”指的是用于提取SEUS PTGI GFME着色器的jar补丁。“此着色器”指的是SEUS PTGI GFME着色器。</p>
+                <h2>您可以：</h2>
+                <ul>
+                <li>使用此补丁来提取SEUS PTGI GFME着色器。</li>
+                <li>将此着色器用于游戏玩法、内容创作和直播。</li>
+                <li>为了个人使用编辑补丁和着色器。</li>
+                <li>在明确标注原作者GeForceLegend的情况下，重新分发未编辑版本的补丁。</li>
+                <li>编辑并重新分发着色器，但需使用不违反SEUS许可的个人补丁。</li>
+                <li>编辑并直接重新分发光block.properties和语言文件。</li>
+                </ul>
+                <h2>您不能：</h1>
+                <ul>
+                <li>直接重新分发着色器而不包括补丁，无论是否经过编辑。</li>
+                <li>重新分发经过编辑的补丁版本。</li>
+                <li>声称此补丁或着色器是您的原创作品。</li>
+                <li>执行任何违背SEUS许可的行为。</li>
+                <li>其他未明确规定的目的应遵循SEUS的许可协议。如果某用途既没有在此声明中也没有在SEUS许可中提及，则默认为保留所有权利（All Rights Reserved）。</p>
+
+                <h1>SEUS 许可协议</h1>
+                <p>Sonic Ether 的令人难以置信的光影包（以下简称“SEUS”）是 Cody Darr（以下简称“Sonic Ether”）的知识产权，其版权归他所有。</p>
+                <p>本文件发布的是 SEUS 的源代码。您被授予权利使用和修改 SEUS 及其源代码，仅供您个人使用。</p>
+                <p>但是，未经 Sonic Ether 明确书面许可，禁止以任何形式（包括全部或部分、原始版本或修改版本）重新分发或传播 SEUS。因此，您不得创建镜像站点，在您自己的作品中使用 SEUS 的任何部分（包括其源代码片段）、声称自己是 SEUS 的作者，或以您自己的或 Sonic Ether 的名义发布衍生的光影包。</p>
+                <p>只要不违反适用法律，您可以自由发布安装了 SEUS 的 Minecraft 游戏视频。如果您将 SEUS 作为主要内容展示，则必须在描述中引用 Minecraft 官方论坛上关于 SEUS 的官方介绍链接。</p>
+                <p>如果您选择发布一系列后续视频，而这些视频并不以 SEUS 为主角（例如“实况游玩”类视频），则只需在首次展示 SEUS 的那一集中提供一次该引用即可。</p>
+                <p>本软件按“原样”提供，不附带任何形式的担保，包括但不限于对其功能、用途或广告宣传效果的隐含担保。在任何情况下，Sonic Ether 均不对因使用或无法使用 SEUS 所导致的任何损害承担责任，包括但不限于硬件故障、收入损失以及对您的 Minecraft 游戏体验造成的负面影响。与 SEUS 相关的所有风险均由您自行承担。</p>
+                <p>本协议通常被称为“SEUS 许可协议”。Sonic Ether 有权在任何时候更改此协议，恕不另行通知。最新的版本请访问 <a href="https://www.sonicether.com">https://www.sonicether.com</a> 查阅。</p>
+                <p>因 SEUS 或其使用所引起或与其相关的任何争议，均应在美国亚利桑那州进行法律管辖。本协议的每一条款均受适用法律约束，并仅在适用法律允许的范围内生效。</p>
+                <p>如果本协议中的任何条款因任何原因被视为无效、非法或不可执行，Sonic Ether 将努力用一个最接近原意且合法有效的条款替代该条款。本协议其余条款的有效性不受影响。</p>
+                <p>通过安装、下载、保存副本或使用 SEUS，即表示您已同意接受本协议所有条款和条件的约束。如有必要，Sonic Ether 有权依法对违反协议的行为进行追责。</p>
+                <p>如有关于 SEUS、其使用或本许可协议的进一步问题，请通过 Twitter 联系 Sonic Ether。</p>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="SEUS_E12" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="openTab('intro', event)">介绍</button>
+                    <button class="tab-btn" onclick="openTab('links', event)">链接</button>
+                    <button class="tab-btn" onclick="openTab('files', event)">文件</button>
+                    <button class="tab-btn" onclick="openTab('license', event)">许可证</button>
+                </div>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="intro" class="tab-content" style="display:block; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <h3>介绍</h3>
+                <p>作者：Sonic Ether</p>
+                <p>SEUS PTGI E12</p>
+                <hr class="divider">
+                <h3>参数：</h3>
+                <ul>
+                    <li>光追范围：60-150</li>
+                </ul>
+                <hr class="divider">
+                <h3>性能要求：</h3>
+                <p>最低显存要求：2GB</p>
+                <p>最低性能参考：<a href="https://www.techpowerup.com/gpu-specs/radeon-rx-5700.c3437" target="_blank">TechPowerUp</a></p>
+
+            </div>
+            <div id="links" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <a href="https://www.patreon.com/posts/32990443" target="_blank">Patreon</a>
+            </div>
+            <div id="files" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <a href="https://www.patreon.com/posts/32990443" target="_blank">SEUS PTGI E12</a>
+            </div>
+            <div id="license" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <h1>SEUS 许可协议</h1>
+                <p>Sonic Ether 的令人难以置信的光影包（以下简称“SEUS”）是 Cody Darr（以下简称“Sonic Ether”）的知识产权，其版权归他所有。</p>
+                <p>本文件发布的是 SEUS 的源代码。您被授予权利使用和修改 SEUS 及其源代码，仅供您个人使用。</p>
+                <p>但是，未经 Sonic Ether 明确书面许可，禁止以任何形式（包括全部或部分、原始版本或修改版本）重新分发或传播 SEUS。因此，您不得创建镜像站点，在您自己的作品中使用 SEUS 的任何部分（包括其源代码片段）、声称自己是 SEUS 的作者，或以您自己的或 Sonic Ether 的名义发布衍生的光影包。</p>
+                <p>只要不违反适用法律，您可以自由发布安装了 SEUS 的 Minecraft 游戏视频。如果您将 SEUS 作为主要内容展示，则必须在描述中引用 Minecraft 官方论坛上关于 SEUS 的官方介绍链接。</p>
+                <p>如果您选择发布一系列后续视频，而这些视频并不以 SEUS 为主角（例如“实况游玩”类视频），则只需在首次展示 SEUS 的那一集中提供一次该引用即可。</p>
+                <p>本软件按“原样”提供，不附带任何形式的担保，包括但不限于对其功能、用途或广告宣传效果的隐含担保。在任何情况下，Sonic Ether 均不对因使用或无法使用 SEUS 所导致的任何损害承担责任，包括但不限于硬件故障、收入损失以及对您的 Minecraft 游戏体验造成的负面影响。与 SEUS 相关的所有风险均由您自行承担。</p>
+                <p>本协议通常被称为“SEUS 许可协议”。Sonic Ether 有权在任何时候更改此协议，恕不另行通知。最新的版本请访问 <a href="https://www.sonicether.com">https://www.sonicether.com</a> 查阅。</p>
+                <p>因 SEUS 或其使用所引起或与其相关的任何争议，均应在美国亚利桑那州进行法律管辖。本协议的每一条款均受适用法律约束，并仅在适用法律允许的范围内生效。</p>
+                <p>如果本协议中的任何条款因任何原因被视为无效、非法或不可执行，Sonic Ether 将努力用一个最接近原意且合法有效的条款替代该条款。本协议其余条款的有效性不受影响。</p>
+                <p>通过安装、下载、保存副本或使用 SEUS，即表示您已同意接受本协议所有条款和条件的约束。如有必要，Sonic Ether 有权依法对违反协议的行为进行追责。</p>
+                <p>如有关于 SEUS、其使用或本许可协议的进一步问题，请通过 Twitter 联系 Sonic Ether。</p>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="SEUS_2.1" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="openTab('intro', event)">介绍</button>
+                    <button class="tab-btn" onclick="openTab('links', event)">链接</button>
+                    <button class="tab-btn" onclick="openTab('files', event)">文件</button>
+                    <button class="tab-btn" onclick="openTab('license', event)">许可证</button>
+                </div>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="intro" class="tab-content" style="display:block; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <h3>介绍</h3>
+                <p>作者：Sonic Ether</p>
+                <p>SEUS PTGI HRR Test 2.1</p>
+                <hr class="divider">
+                <h3>参数：</h3>
+                <ul>
+                    <li>光追范围：60-150</li>
+                </ul>
+                <hr class="divider">
+                <h3>性能要求：</h3>
+                <p>最低显存要求：2GB</p>
+                <p>最低性能参考：<a href="https://www.techpowerup.com/gpu-specs/radeon-rx-5700.c3437" target="_blank">TechPowerUp</a></p>
+
+            </div>
+            <div id="links" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <a href="https://www.patreon.com/posts/45141775" target="_blank">Patreon</a>
+            </div>
+            <div id="files" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <a href="https://www.patreon.com/posts/45141775" target="_blank">SEUS PTGI HRR Test 2.1</a>
+            </div>
+            <div id="license" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <h1>SEUS 许可协议</h1>
+                <p>Sonic Ether 的令人难以置信的光影包（以下简称“SEUS”）是 Cody Darr（以下简称“Sonic Ether”）的知识产权，其版权归他所有。</p>
+                <p>本文件发布的是 SEUS 的源代码。您被授予权利使用和修改 SEUS 及其源代码，仅供您个人使用。</p>
+                <p>但是，未经 Sonic Ether 明确书面许可，禁止以任何形式（包括全部或部分、原始版本或修改版本）重新分发或传播 SEUS。因此，您不得创建镜像站点，在您自己的作品中使用 SEUS 的任何部分（包括其源代码片段）、声称自己是 SEUS 的作者，或以您自己的或 Sonic Ether 的名义发布衍生的光影包。</p>
+                <p>只要不违反适用法律，您可以自由发布安装了 SEUS 的 Minecraft 游戏视频。如果您将 SEUS 作为主要内容展示，则必须在描述中引用 Minecraft 官方论坛上关于 SEUS 的官方介绍链接。</p>
+                <p>如果您选择发布一系列后续视频，而这些视频并不以 SEUS 为主角（例如“实况游玩”类视频），则只需在首次展示 SEUS 的那一集中提供一次该引用即可。</p>
+                <p>本软件按“原样”提供，不附带任何形式的担保，包括但不限于对其功能、用途或广告宣传效果的隐含担保。在任何情况下，Sonic Ether 均不对因使用或无法使用 SEUS 所导致的任何损害承担责任，包括但不限于硬件故障、收入损失以及对您的 Minecraft 游戏体验造成的负面影响。与 SEUS 相关的所有风险均由您自行承担。</p>
+                <p>本协议通常被称为“SEUS 许可协议”。Sonic Ether 有权在任何时候更改此协议，恕不另行通知。最新的版本请访问 <a href="https://www.sonicether.com">https://www.sonicether.com</a> 查阅。</p>
+                <p>因 SEUS 或其使用所引起或与其相关的任何争议，均应在美国亚利桑那州进行法律管辖。本协议的每一条款均受适用法律约束，并仅在适用法律允许的范围内生效。</p>
+                <p>如果本协议中的任何条款因任何原因被视为无效、非法或不可执行，Sonic Ether 将努力用一个最接近原意且合法有效的条款替代该条款。本协议其余条款的有效性不受影响。</p>
+                <p>通过安装、下载、保存副本或使用 SEUS，即表示您已同意接受本协议所有条款和条件的约束。如有必要，Sonic Ether 有权依法对违反协议的行为进行追责。</p>
+                <p>如有关于 SEUS、其使用或本许可协议的进一步问题，请通过 Twitter 联系 Sonic Ether。</p>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="SEUS_R" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="openTab('intro', event)">介绍</button>
+                    <button class="tab-btn" onclick="openTab('links', event)">链接</button>
+                    <button class="tab-btn" onclick="openTab('files', event)">文件</button>
+                    <button class="tab-btn" onclick="openTab('license', event)">许可证</button>
+                </div>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="intro" class="tab-content" style="display:block; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <h3>介绍</h3>
+                <p>作者：Sonic Ether</p>
+                <p>SEUS Renewed v1.0.1</p>
+                <hr class="divider">
+                <hr class="divider">
+                <h3>性能要求：</h3>
+                <p>最低显存要求：2GB</p>
+                <p>最低性能参考：<a href="https://www.techpowerup.com/gpu-specs/radeon-rx-5700.c3437" target="_blank">TechPowerUp</a></p>
+
+            </div>
+            <div id="links" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <a href="https://www.sonicether.com/" target="_blank">官网</a>
+            </div>
+            <div id="files" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <a href="https://sonicether.com/shaders/download/renewed-v1-0-1/index.html" target="_blank">SEUS Renewed v1.0.1</a>
+            </div>
+            <div id="license" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <h1>SEUS 许可协议</h1>
+                <p>Sonic Ether 的令人难以置信的光影包（以下简称“SEUS”）是 Cody Darr（以下简称“Sonic Ether”）的知识产权，其版权归他所有。</p>
+                <p>本文件发布的是 SEUS 的源代码。您被授予权利使用和修改 SEUS 及其源代码，仅供您个人使用。</p>
+                <p>但是，未经 Sonic Ether 明确书面许可，禁止以任何形式（包括全部或部分、原始版本或修改版本）重新分发或传播 SEUS。因此，您不得创建镜像站点，在您自己的作品中使用 SEUS 的任何部分（包括其源代码片段）、声称自己是 SEUS 的作者，或以您自己的或 Sonic Ether 的名义发布衍生的光影包。</p>
+                <p>只要不违反适用法律，您可以自由发布安装了 SEUS 的 Minecraft 游戏视频。如果您将 SEUS 作为主要内容展示，则必须在描述中引用 Minecraft 官方论坛上关于 SEUS 的官方介绍链接。</p>
+                <p>如果您选择发布一系列后续视频，而这些视频并不以 SEUS 为主角（例如“实况游玩”类视频），则只需在首次展示 SEUS 的那一集中提供一次该引用即可。</p>
+                <p>本软件按“原样”提供，不附带任何形式的担保，包括但不限于对其功能、用途或广告宣传效果的隐含担保。在任何情况下，Sonic Ether 均不对因使用或无法使用 SEUS 所导致的任何损害承担责任，包括但不限于硬件故障、收入损失以及对您的 Minecraft 游戏体验造成的负面影响。与 SEUS 相关的所有风险均由您自行承担。</p>
+                <p>本协议通常被称为“SEUS 许可协议”。Sonic Ether 有权在任何时候更改此协议，恕不另行通知。最新的版本请访问 <a href="https://www.sonicether.com">https://www.sonicether.com</a> 查阅。</p>
+                <p>因 SEUS 或其使用所引起或与其相关的任何争议，均应在美国亚利桑那州进行法律管辖。本协议的每一条款均受适用法律约束，并仅在适用法律允许的范围内生效。</p>
+                <p>如果本协议中的任何条款因任何原因被视为无效、非法或不可执行，Sonic Ether 将努力用一个最接近原意且合法有效的条款替代该条款。本协议其余条款的有效性不受影响。</p>
+                <p>通过安装、下载、保存副本或使用 SEUS，即表示您已同意接受本协议所有条款和条件的约束。如有必要，Sonic Ether 有权依法对违反协议的行为进行追责。</p>
+                <p>如有关于 SEUS、其使用或本许可协议的进一步问题，请通过 Twitter 联系 Sonic Ether。</p>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="SEUS_11" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="openTab('intro', event)">介绍</button>
+                    <button class="tab-btn" onclick="openTab('links', event)">链接</button>
+                    <button class="tab-btn" onclick="openTab('files', event)">文件</button>
+                    <button class="tab-btn" onclick="openTab('license', event)">许可证</button>
+                </div>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="intro" class="tab-content" style="display:block; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <h3>介绍</h3>
+                <p>作者：Sonic Ether</p>
+                <p>SEUS v11.0</p>
+                <hr class="divider">
+                <h3>性能要求：</h3>
+                <p>最低显存要求：1536MB</p>
+                <p>最低性能参考：<a href="https://www.techpowerup.com/gpu-specs/radeon-rx-5700.c3437" target="_blank">TechPowerUp</a></p>
+
+            </div>
+            <div id="links" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <a href="https://www.sonicether.com/" target="_blank">官网</a>
+            </div>
+            <div id="files" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <a href="https://sonicether.com/shaders/download/v11-0/" target="_blank">SEUS v11.0</a>
+            </div>
+            <div id="license" class="tab-content" style="display:none; min-height: 300px; overflow: auto; position: relative; z-index: 1002; background: white;">
+                <h1>SEUS 许可协议</h1>
+                <p>Sonic Ether 的令人难以置信的光影包（以下简称“SEUS”）是 Cody Darr（以下简称“Sonic Ether”）的知识产权，其版权归他所有。</p>
+                <p>本文件发布的是 SEUS 的源代码。您被授予权利使用和修改 SEUS 及其源代码，仅供您个人使用。</p>
+                <p>但是，未经 Sonic Ether 明确书面许可，禁止以任何形式（包括全部或部分、原始版本或修改版本）重新分发或传播 SEUS。因此，您不得创建镜像站点，在您自己的作品中使用 SEUS 的任何部分（包括其源代码片段）、声称自己是 SEUS 的作者，或以您自己的或 Sonic Ether 的名义发布衍生的光影包。</p>
+                <p>只要不违反适用法律，您可以自由发布安装了 SEUS 的 Minecraft 游戏视频。如果您将 SEUS 作为主要内容展示，则必须在描述中引用 Minecraft 官方论坛上关于 SEUS 的官方介绍链接。</p>
+                <p>如果您选择发布一系列后续视频，而这些视频并不以 SEUS 为主角（例如“实况游玩”类视频），则只需在首次展示 SEUS 的那一集中提供一次该引用即可。</p>
+                <p>本软件按“原样”提供，不附带任何形式的担保，包括但不限于对其功能、用途或广告宣传效果的隐含担保。在任何情况下，Sonic Ether 均不对因使用或无法使用 SEUS 所导致的任何损害承担责任，包括但不限于硬件故障、收入损失以及对您的 Minecraft 游戏体验造成的负面影响。与 SEUS 相关的所有风险均由您自行承担。</p>
+                <p>本协议通常被称为“SEUS 许可协议”。Sonic Ether 有权在任何时候更改此协议，恕不另行通知。最新的版本请访问 <a href="https://www.sonicether.com">https://www.sonicether.com</a> 查阅。</p>
+                <p>因 SEUS 或其使用所引起或与其相关的任何争议，均应在美国亚利桑那州进行法律管辖。本协议的每一条款均受适用法律约束，并仅在适用法律允许的范围内生效。</p>
+                <p>如果本协议中的任何条款因任何原因被视为无效、非法或不可执行，Sonic Ether 将努力用一个最接近原意且合法有效的条款替代该条款。本协议其余条款的有效性不受影响。</p>
+                <p>通过安装、下载、保存副本或使用 SEUS，即表示您已同意接受本协议所有条款和条件的约束。如有必要，Sonic Ether 有权依法对违反协议的行为进行追责。</p>
+                <p>如有关于 SEUS、其使用或本许可协议的进一步问题，请通过 Twitter 联系 Sonic Ether。</p>
+                </ul>
             </div>
         </div>
     </div>
 
+
+
+    <style>
+        .tab-content {
+            max-height: 720px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .search-box {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 10px;
+            margin-left: 15px;
+            width: 200px;
+            background-color: rgba(200, 200, 200, 0.25);
+            transition: all 0.3s ease;
+        }
+        .search-box:focus {
+            background-color: rgba(230, 230, 230, 0.33);
+            outline: none;
+        }
+    </style>
+    <style>
+        .download-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 5px;
+            background-color: #54edf5;
+            color: #000;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #3ad4dc;
+        }
+        .license-info {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .license-info ul {
+            padding-left: 20px;
+        }
+        .download-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
     <script>
-        function openModal() {
-            document.getElementById('shaderModal').style.display = 'block';
+        function filterCards() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.card-item');
+            
+            cards.forEach(card => {
+                const tags = card.getAttribute('data-tags').toLowerCase();
+                if (tags.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filterCards);
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
         }
         function closeModal() {
-            document.getElementById('shaderModal').style.display = 'none';
+            document.getElementById('SEUS_GFME').style.display = 'none';
+            document.getElementById('SEUS_E12').style.display = 'none';
+            document.getElementById('SEUS_2.1').style.display = 'none';
+            document.getElementById('SEUS_R').style.display = 'none';
+            document.getElementById('SEUS_11').style.display = 'none';
         }
-        function openTab(tabId) {
-            // 隐藏所有内容
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
-            });
-            // 移除所有按钮active类
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // 显示选中内容
-            document.getElementById(tabId).style.display = 'block';
-            // 添加active类到当前按钮
-            event.target.classList.add('active');
+        function openTab(tabId, event) {
+            try {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // 获取当前模态窗口
+                const modal = event.target.closest('.modal');
+                if (!modal) return;
+                
+                // 隐藏当前模态窗口内的所有内容
+                modal.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                // 移除当前模态窗口内所有按钮active类
+                modal.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // 显示选中内容
+                const tabContent = modal.querySelector(`#${tabId}`);
+                if (tabContent) {
+                    tabContent.style.display = 'block';
+                    // 添加active类到当前按钮
+                    event.target.classList.add('active');
+                } else {
+                    console.error('找不到选项卡内容:', tabId);
+                }
+            } catch (e) {
+                console.error('选项卡切换错误:', e);
+            }
         }
+
         // 点击模态窗口外部关闭
         window.onclick = function(event) {
-            const modal = document.getElementById('shaderModal');
-            if (event.target == modal) {
-                closeModal();
-            }
+            const modals = ['SEUS_GFME', 'SEUS_E12', 'SEUS_2.1', 'SEUS_R', 'SEUS_11'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target == modal) {
+                    closeModal();
+                }
+            });
         }
     </script>
 </body>
