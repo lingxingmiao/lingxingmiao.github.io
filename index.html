@@ -1,2 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinecraftShader</title>
+    <style>
+        /* 模态窗口样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 70%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .close-btn {
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .tab-btn {
+            padding: 5px 15px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background: #54edf5;
+            color: white;
+        }
+        .tab-content {
+            padding: 10px 0;
+        }
+        .divider {
+            border: none;
+            height: 1px;
+            background-color: #ddd;
+            margin: 10px 0;
+        }
+        .nav-bar {
+            background-color: #54edf5;
+            padding: 15px 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 18px; /* 添加18px圆角 */
+        }
+        .nav-links {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        a {
+            text-decoration: none;
+            color: #000;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .tools-link {
+            margin-left: auto;
+        }
+        body {
+            padding: 10px;
+        }
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .card-item {
+            background-color: #f0f0f0;
+            border-radius: 18px;
+            padding: 20px;
+            min-height: 150px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .card-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .card-item h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .card-item ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <div class="nav-links">
+            <a href="https://lingxingmiao.github.io" target="_self">MinecraftShader</a>
+            <a href="https://lingxingmiao.github.io/Tools/" class="tools-link">工具</a>
+        </div>
+    </div>
+    <div class="cards-container">
+        <div class="card-item" onclick="openModal()">
+            <h3>SEUS PTGI HRR Test 2.1 GFME 1.18</h3>
+            <ul>
+                <li>1.8.9支持</li>
+                <li>光线追踪：是</li>
+                <li>性能影响：★★★★☆</li>
+            </ul>
+        </div>
+        <!-- 预留8个空卡片位置 -->
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+        <div class="card-item"></div>
+    </div>
 
-<p>1</p>
+    <!-- 模态窗口 -->
+    <div id="shaderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="openTab('intro')">介绍</button>
+                    <button class="tab-btn" onclick="openTab('links')">链接</button>
+                    <button class="tab-btn" onclick="openTab('files')">文件</button>
+                </div>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="intro" class="tab-content" style="display:block;">
+                <p>SEUS PTGI HRR Test 2.1 GFME</p>
+                <hr class="divider">
+                <p>基于 SEUS PTGI 的大型魔改光影，添加了相当的额外效果并且修复了相当的bug。</p>
+                <hr class="divider">
+                <p>参数：</p>
+                <ul>
+                    <li>阴影精度：4k-32k</li>
+                    <li>阴影范围：80-640</li>
+                    <li>光追范围：60-320</li>
+                    <li>光追采样：1-5</li>
+                    <li>最小显存：3G</li>
+                </ul>
+
+            </div>
+            <div id="links" class="tab-content" style="display:none;">
+                <a href="https://github.com/GeForceLegend/SEUS_PTGI_GFME/" target="_blank">GitHub</a>
+            </div>
+            <div id="files" class="tab-content" style="display:none;">
+                <a href="https://raw.githubusercontent.com/lingxingmiao/lingxingmiao.github.io/refs/heads/main/ShaderFiles/SEUS%20PTGI%20HRR%20Test%202.1%20GFME%201.18.zip" target="_blank">SEUS PTGI HRR Test 2.1 GFME 1.18.zip</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('shaderModal').style.display = 'block';
+        }
+        function closeModal() {
+            document.getElementById('shaderModal').style.display = 'none';
+        }
+        function openTab(tabId) {
+            // 隐藏所有内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            // 移除所有按钮active类
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // 显示选中内容
+            document.getElementById(tabId).style.display = 'block';
+            // 添加active类到当前按钮
+            event.target.classList.add('active');
+        }
+        // 点击模态窗口外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('shaderModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
