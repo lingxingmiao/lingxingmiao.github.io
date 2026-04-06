@@ -55,6 +55,10 @@
     .submit-btn:hover { background: var(--primary-hover); }
     .submit-btn:disabled { background: var(--text-secondary); cursor: not-allowed; }
     
+    .cancel-btn { background: var(--error); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.2s; margin-left: 12px; }
+    .cancel-btn:hover { background: #dc2626; }
+    .cancel-btn:disabled { background: var(--text-secondary); cursor: not-allowed; }
+
     .status { margin-top: 20px; padding: 14px 18px; border-radius: 10px; font-size: 0.95rem; display: none; position: relative; }
     .status.show { display: block; animation: fadeIn 0.3s ease; }
     .status.success { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
@@ -62,13 +66,11 @@
     .status.loading { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; }
     .status pre { margin-top: 10px; background: rgba(0,0,0,0.05); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; max-height: 200px; white-space: pre-wrap; }
     
-    /* 排队动画指示器 */
-    .queue-indicator::after {
-      content: ' ⏳';
-      display: inline-block;
-      animation: spin 1.2s linear infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 10px; display: none; }
+    .progress-bar.show { display: block; }
+    .progress-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; width: 0%; }
+    .progress-fill.indeterminate { animation: indeterminate 1.5s infinite; }
+    @keyframes indeterminate { 0% { width: 0; margin-left: 0; } 50% { width: 40%; margin-left: 30%; } 100% { width: 0; margin-left: 100%; } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
     @media (max-width: 768px) {
@@ -83,7 +85,7 @@
   <div class="container">
     <header>
       <h1>🎮 TranslationMinecraft</h1>
-      <p>API 控制台 | 支持翻译/分离/合并 Minecraft 语言文件</p>
+      <p>API 控制台 | 异步任务队列 + WebSocket 实时进度</p>
     </header>
 
     <!-- 🔧 API 配置 -->
@@ -92,7 +94,7 @@
       <div class="config-grid">
         <div class="config-item">
           <label for="apiUrl">API 基础地址</label>
-          <input type="text" id="apiUrl" placeholder="例如: http://127.0.0.1:8000"/>
+          <input type="text" id="apiUrl" placeholder="例如: http://127.0.0.1:25561"/>
           <div class="hint">末尾不要带 /</div>
         </div>
         <div class="config-item">
@@ -103,7 +105,7 @@
       </div>
       <button class="test-btn" id="testConnection">🔗 测试连接</button>
       <div class="hint" style="margin-top:12px; color:var(--warning);">
-        💡 服务端已启用并发限制与请求频率控制。触发限流将返回 <code>429</code> 错误，繁忙时请求将自动进入排队队列。
+        💡 服务端已启用异步任务队列，支持长时间运行任务。实时进度通过 WebSocket 推送。
       </div>
     </div>
 
@@ -146,7 +148,11 @@
           <div class="hint">仅对 jar/zip/.lang/.json 有效，便于人工校对</div>
         </div>
       </div>
-      <button class="submit-btn" id="btnTranslate">🚀 开始翻译</button>
+      <div>
+        <button class="submit-btn" id="btnTranslate">🚀 提交翻译任务</button>
+        <button class="cancel-btn" id="btnCancelTranslate" style="display:none;">⏹️ 取消任务</button>
+      </div>
+      <div class="progress-bar" id="progress_bar_translate"><div class="progress-fill" id="progress_fill_translate"></div></div>
       <div id="status_translate" class="status"></div>
     </div>
 
@@ -180,7 +186,11 @@
         </select>
         <div class="hint">extra 模式输出专为 TranslatorLang 审核设计</div>
       </div>
-      <button class="submit-btn" id="btnSeparate">🚀 开始分离</button>
+      <div>
+        <button class="submit-btn" id="btnSeparate">🚀 提交分离任务</button>
+        <button class="cancel-btn" id="btnCancelSeparate" style="display:none;">⏹️ 取消任务</button>
+      </div>
+      <div class="progress-bar" id="progress_bar_separate"><div class="progress-fill" id="progress_fill_separate"></div></div>
       <div id="status_separate" class="status"></div>
     </div>
 
@@ -219,13 +229,17 @@
           <input type="text" id="m_file1_name" class="filename-display" readonly placeholder="选择文件后自动显示"/>
         </div>
       </div>
-      <button class="submit-btn" id="btnMerge">🚀 开始合并</button>
+      <div>
+        <button class="submit-btn" id="btnMerge">🚀 提交合并任务</button>
+        <button class="cancel-btn" id="btnCancelMerge" style="display:none;">⏹️ 取消任务</button>
+      </div>
+      <div class="progress-bar" id="progress_bar_merge"><div class="progress-fill" id="progress_fill_merge"></div></div>
       <div id="status_merge" class="status"></div>
     </div>
   </div>
 
   <script>
-    // 📦 独立配置区：分开存储各子页的格式提示
+    // 📦 独立配置区
     const UI_CONFIG = {
       hints: {
         translate_file0: "支持: .zip(光影/资源包/整合包/FTB任务/BQ任务), .lang/.json(语言文件), .mrpack(整合包)",
@@ -236,29 +250,41 @@
     };
 
     // ========== 全局状态 ==========
-    const state = { apiUrl: localStorage.getItem('tm_apiUrl') || '', apiKey: localStorage.getItem('tm_apiKey') || '', loading: false };
+    const state = { 
+      apiUrl: localStorage.getItem('tm_apiUrl') || '', 
+      apiKey: localStorage.getItem('tm_apiKey') || '', 
+      loading: false,
+      activeTaskId: null,
+      ws: null
+    };
 
     // ========== 初始化 ==========
     document.addEventListener('DOMContentLoaded', () => {
+      // 渲染提示文本
       document.getElementById('hint_t_file0').textContent = UI_CONFIG.hints.translate_file0;
       document.getElementById('hint_s_file0').textContent = UI_CONFIG.hints.separate_file0;
       document.getElementById('hint_m_file0').textContent = UI_CONFIG.hints.merge_file0;
       document.getElementById('hint_m_notlang').textContent = UI_CONFIG.hints.merge_notlang;
 
+      // 恢复配置
       if (state.apiUrl) document.getElementById('apiUrl').value = state.apiUrl;
       if (state.apiKey) document.getElementById('apiKey').value = state.apiKey;
 
+      // 配置监听
       document.getElementById('apiUrl').addEventListener('change', e => { state.apiUrl = e.target.value.trim(); localStorage.setItem('tm_apiUrl', state.apiUrl); });
       document.getElementById('apiKey').addEventListener('change', e => { state.apiKey = e.target.value.trim(); localStorage.setItem('tm_apiKey', state.apiKey); });
 
+      // 选项卡切换
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
           document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-          btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active');
+          btn.classList.add('active'); 
+          document.getElementById(btn.dataset.tab).classList.add('active');
         });
       });
 
+      // 自动获取文件名
       const filePairs = [
         ['t_file0', 't_file0_name'], ['t_file1', 't_file1_name'],
         ['s_file0', 's_file0_name'], ['s_file1', 's_file1_name'],
@@ -272,16 +298,20 @@
         }
       });
 
+      // 绑定按钮事件
       document.getElementById('testConnection').addEventListener('click', testConnection);
-      document.getElementById('btnTranslate').addEventListener('click', callTranslate);
-      document.getElementById('btnSeparate').addEventListener('click', callSeparate);
-      document.getElementById('btnMerge').addEventListener('click', callMerge);
+      document.getElementById('btnTranslate').addEventListener('click', () => submitTask('translate'));
+      document.getElementById('btnCancelTranslate').addEventListener('click', () => cancelTask('translate'));
+      document.getElementById('btnSeparate').addEventListener('click', () => submitTask('separate'));
+      document.getElementById('btnCancelSeparate').addEventListener('click', () => cancelTask('separate'));
+      document.getElementById('btnMerge').addEventListener('click', () => submitTask('merge'));
+      document.getElementById('btnCancelMerge').addEventListener('click', () => cancelTask('merge'));
     });
 
     // ========== 工具函数 ==========
     function showStatus(panelId, type, message, detail = null) {
       const el = document.getElementById(`status_${panelId}`);
-      el.className = `status show ${type} ${type === 'loading' ? 'queue-indicator' : ''}`;
+      el.className = `status show ${type}`;
       el.innerHTML = `<strong>${message}</strong>${detail ? `<pre>${detail}</pre>` : ''}`;
       if (type === 'success') setTimeout(() => el.classList.remove('show'), 10000);
     }
@@ -289,7 +319,47 @@
     function setLoading(btnId, loading) {
       const btn = document.getElementById(btnId);
       const original = btn.textContent.replace('⏳ 处理中...', '🚀 ');
-      btn.disabled = loading; btn.textContent = loading ? '⏳ 处理中...' : original;
+      btn.disabled = loading; 
+      btn.textContent = loading ? '⏳ 处理中...' : original;
+    }
+
+    function setTaskActive(panelId, isActive, taskId = null) {
+      const submitBtn = document.getElementById(`btn${panelId.charAt(0).toUpperCase() + panelId.slice(1)}`);
+      const cancelBtn = document.getElementById(`btnCancel${panelId.charAt(0).toUpperCase() + panelId.slice(1)}`);
+      const progressBar = document.getElementById(`progress_bar_${panelId}`);
+      const progressFill = document.getElementById(`progress_fill_${panelId}`);
+      
+      if (isActive) {
+        submitBtn.style.display = 'none';
+        cancelBtn.style.display = 'inline-block';
+        cancelBtn.disabled = false;
+        progressBar.classList.add('show');
+        progressFill.classList.add('indeterminate');
+        progressFill.style.width = '0%';
+        state.activeTaskId = taskId;
+      } else {
+        submitBtn.style.display = 'inline-block';
+        cancelBtn.style.display = 'none';
+        progressBar.classList.remove('show');
+        progressFill.classList.remove('indeterminate');
+        state.activeTaskId = null;
+      }
+    }
+
+    function updateProgress(panelId, progress, message) {
+      const progressBar = document.getElementById(`progress_bar_${panelId}`);
+      const progressFill = document.getElementById(`progress_fill_${panelId}`);
+      
+      progressBar.classList.add('show');
+      if (progress === -1 || progress === undefined) {
+        progressFill.classList.add('indeterminate');
+        progressFill.style.width = '0%';
+      } else {
+        progressFill.classList.remove('indeterminate');
+        progressFill.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+      }
+      
+      showStatus(panelId, 'loading', message || '任务处理中...');
     }
 
     function buildAuthHeader() {
@@ -297,113 +367,248 @@
       return { 'Authorization': `Bearer ${state.apiKey}` };
     }
     function buildUrl(endpoint) { return state.apiUrl.replace(/\/$/, '') + endpoint; }
+    function buildWsUrl(taskId) {
+      const url = state.apiUrl.replace(/^http/, 'ws').replace(/\/$/, '');
+      return `${url}/ws/progress/${taskId}?token=${encodeURIComponent(state.apiKey)}`;
+    }
 
-    // 通用请求处理器 (内置限流/排队逻辑)
-    async function apiRequest(panelId, btnId, buildFormData, successMsg) {
+    // ========== WebSocket 管理 ==========
+    function connectWebSocket(panelId, taskId) {
+      const wsUrl = buildWsUrl(taskId);
+      state.ws = new WebSocket(wsUrl);
+      
+      state.ws.onopen = () => {
+        console.log(`[WebSocket] 已连接到任务 ${taskId}`);
+      };
+      
+      state.ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log(`[WebSocket] 进度更新:`, data);
+          
+          if (data.status === 'processing' || data.status === 'queued') {
+            updateProgress(panelId, data.progress, data.message);
+          } else if (data.status === 'completed') {
+            updateProgress(panelId, 100, '任务完成，正在下载...');
+            setTaskActive(panelId, false);
+            showStatus(panelId, 'success', `✅ 任务完成！正在下载结果文件...`);
+            // 自动下载
+            setTimeout(() => {
+              window.location.href = buildUrl(`/translate/download/${taskId}`);
+            }, 500);
+          } else if (data.status === 'failed' || data.status === 'cancelled') {
+            setTaskActive(panelId, false);
+            showStatus(panelId, 'error', `❌ 任务失败: ${data.message}`, data.error);
+          }
+        } catch (e) {
+          console.error('[WebSocket] 解析消息失败:', e);
+        }
+      };
+      
+      state.ws.onerror = (error) => {
+        console.error('[WebSocket] 连接错误:', error);
+        showStatus(panelId, 'error', '⚠️ WebSocket 连接异常，尝试轮询模式...');
+        // Fallback: 轮询
+        startPolling(panelId, taskId);
+      };
+      
+      state.ws.onclose = () => {
+        console.log(`[WebSocket] 连接关闭: ${taskId}`);
+      };
+    }
+
+    // 轮询 Fallback
+    function startPolling(panelId, taskId) {
+      const pollInterval = setInterval(async () => {
+        try {
+          const res = await fetch(buildUrl(`/translate/status/${taskId}`), { headers: buildAuthHeader() });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          
+          const data = await res.json();
+          if (data.status === 'processing' || data.status === 'queued') {
+            updateProgress(panelId, data.progress, data.message);
+          } else if (data.status === 'completed') {
+            clearInterval(pollInterval);
+            updateProgress(panelId, 100, '任务完成，正在下载...');
+            setTaskActive(panelId, false);
+            showStatus(panelId, 'success', `✅ 任务完成！正在下载结果文件...`);
+            window.location.href = buildUrl(`/translate/download/${taskId}`);
+          } else if (data.status === 'failed' || data.status === 'cancelled') {
+            clearInterval(pollInterval);
+            setTaskActive(panelId, false);
+            showStatus(panelId, 'error', `❌ 任务失败: ${data.message}`, data.error);
+          }
+        } catch (err) {
+          console.error('[Polling] 查询失败:', err);
+        }
+      }, 2000);
+    }
+
+    // ========== 任务提交 ==========
+    async function submitTask(panelId) {
       if (state.loading) return;
       
-      state.loading = true; setLoading(btnId, true);
-      let queueTimer = null;
-      showStatus(panelId, 'loading', '📤 正在上传并请求服务器...');
-
-      // 3秒未响应视为进入并发队列
-      queueTimer = setTimeout(() => {
-        showStatus(panelId, 'loading', '⏳ 服务器繁忙，请求已进入排队队列，请耐心等待...');
-      }, 3000);
-
+      // 验证文件
+      let fileInput, fileNameInput, endpoint, formData;
+      const panelPrefix = panelId === 'translate' ? 't' : panelId === 'separate' ? 's' : 'm';
+      
+      if (panelId === 'translate') {
+        fileInput = document.getElementById('t_file0');
+        fileNameInput = document.getElementById('t_file0_name');
+        endpoint = '/translate/submit';
+        
+        if (!fileInput.files[0]) return showStatus('translate', 'error', '❌ 请选择源文件');
+        
+        formData = new FormData();
+        formData.append('file0', fileInput.files[0]);
+        formData.append('file_name0', fileNameInput.value || fileInput.files[0].name);
+        
+        const file1 = document.getElementById('t_file1').files[0];
+        const fileName1 = document.getElementById('t_file1_name').value;
+        if (file1) {
+          formData.append('file1', file1);
+          formData.append('file_name1', fileName1 || file1.name);
+        }
+        formData.append('all_mode', document.getElementById('t_all_mode').checked);
+        formData.append('export_inspection', document.getElementById('t_export_inspection').checked);
+        
+      } else if (panelId === 'separate') {
+        fileInput = document.getElementById('s_file0');
+        fileNameInput = document.getElementById('s_file0_name');
+        endpoint = '/separatelangupdate/submit';
+        
+        if (!fileInput.files[0]) return showStatus('separate', 'error', '❌ 请选择源文件');
+        
+        formData = new FormData();
+        formData.append('file0', fileInput.files[0]);
+        formData.append('file_name0', fileNameInput.value || fileInput.files[0].name);
+        
+        const file1 = document.getElementById('s_file1').files[0];
+        const fileName1 = document.getElementById('s_file1_name').value;
+        if (file1) {
+          formData.append('file1', file1);
+          formData.append('file_name1', fileName1 || file1.name);
+        }
+        formData.append('Mode', document.getElementById('s_mode').value);
+        
+      } else if (panelId === 'merge') {
+        fileInput = document.getElementById('m_file0');
+        fileNameInput = document.getElementById('m_file0_name');
+        endpoint = '/mergelangupdate/submit';
+        
+        const notlangFile = document.getElementById('m_notlang').files[0];
+        const notlangName = document.getElementById('m_notlang_name').value;
+        
+        if (!fileInput.files[0] || !notlangFile) {
+          return showStatus('merge', 'error', '❌ 请选择源文件和待合并文件');
+        }
+        
+        formData = new FormData();
+        formData.append('file0', fileInput.files[0]);
+        formData.append('file_name0', fileNameInput.value || fileInput.files[0].name);
+        formData.append('notlang_file', notlangFile);
+        formData.append('nolang_file_name', notlangName || notlangFile.name);
+        
+        const file1 = document.getElementById('m_file1').files[0];
+        const fileName1 = document.getElementById('m_file1_name').value;
+        if (file1) {
+          formData.append('file1', file1);
+          formData.append('file_name1', fileName1 || file1.name);
+        }
+      }
+      
+      state.loading = true;
+      setLoading(`btn${panelId.charAt(0).toUpperCase() + panelId.slice(1)}`, true);
+      showStatus(panelId, 'loading', '📤 正在提交任务...');
+      
       try {
-        const res = await fetch(buildUrl(panelId === 'translate' ? '/translate' : panelId === 'separate' ? '/separatelangupdate' : '/mergelangupdate'), {
-          method: 'POST', headers: buildAuthHeader(), body: buildFormData()
+        const res = await fetch(buildUrl(endpoint), {
+          method: 'POST',
+          headers: buildAuthHeader(),
+          body: formData
         });
-        clearTimeout(queueTimer);
-
-        // 🛡️ 限流错误处理 (429)
-        if (res.status === 429) {
-          const data = await res.json().catch(() => ({ detail: 'Rate limit exceeded' }));
-          throw new Error(`⛔ 触发服务端限流: ${data.detail || '请求过于频繁，请稍后再试。'}`);
-        }
+        
         if (!res.ok) {
-          const errText = await res.text().catch(() => res.statusText);
-          throw new Error(`HTTP ${res.status}: ${errText}`);
+          if (res.status === 429) {
+            throw new Error('⛔ 触发限流：请求过于频繁，请稍后再试');
+          }
+          throw new Error(`HTTP ${res.status}: ${await res.text().catch(()=>res.statusText)}`);
         }
-
-        handleDownload(res);
-        showStatus(panelId, 'success', successMsg);
+        
+        const data = await res.json();
+        const taskId = data.task_id;
+        
+        console.log(`[任务提交] 任务ID: ${taskId}`);
+        setTaskActive(panelId, true, taskId);
+        showStatus(panelId, 'loading', `✅ 任务已提交 (ID: ${taskId})，正在连接 WebSocket...`);
+        
+        // 连接 WebSocket
+        connectWebSocket(panelId, taskId);
+        
       } catch (err) {
-        clearTimeout(queueTimer);
-        showStatus(panelId, 'error', '❌ 请求失败', err.message);
+        showStatus(panelId, 'error', '❌ 提交失败', err.message);
       } finally {
-        state.loading = false; setLoading(btnId, false);
+        state.loading = false;
+        setLoading(`btn${panelId.charAt(0).toUpperCase() + panelId.slice(1)}`, false);
       }
     }
 
-    // ========== 业务调用 ==========
+    // ========== 取消任务 ==========
+    async function cancelTask(panelId) {
+      if (!state.activeTaskId) return;
+      
+      if (!confirm('确定要取消当前任务吗？')) return;
+      
+      try {
+        const res = await fetch(buildUrl(`/translate/cancel/${state.activeTaskId}`), {
+          method: 'DELETE',
+          headers: buildAuthHeader()
+        });
+        
+        if (res.ok) {
+          showStatus(panelId, 'loading', '⏹️ 取消请求已发送，等待任务停止...');
+          // 关闭 WebSocket
+          if (state.ws) {
+            state.ws.close();
+            state.ws = null;
+          }
+          setTaskActive(panelId, false);
+        } else {
+          const data = await res.json().catch(() => ({}));
+          showStatus(panelId, 'error', '❌ 取消失败', data.detail || res.statusText);
+        }
+      } catch (err) {
+        showStatus(panelId, 'error', '❌ 取消请求失败', err.message);
+      }
+    }
+
+    // ========== 测试连接 ==========
     async function testConnection() {
       const btn = document.getElementById('testConnection');
-      const original = btn.textContent; btn.disabled = true; btn.textContent = '🔍 测试中...';
-      try {
-        const res = await fetch(buildUrl('/translate'), { method: 'HEAD', headers: buildAuthHeader() });
-        if (res.ok || res.status === 401 || res.status === 403 || res.status === 405) showStatus('translate', 'success', '✅ API 服务可达！');
-        else throw new Error(`状态码: ${res.status}`);
-      } catch (err) { showStatus('translate', 'error', '❌ 连接失败', err.message); }
-      finally { btn.disabled = false; btn.textContent = original; }
-    }
-
-    function callTranslate() {
-      const f0 = document.getElementById('t_file0').files[0];
-      if (!f0) return showStatus('translate', 'error', '❌ 请选择源文件');
+      const original = btn.textContent;
+      btn.disabled = true; 
+      btn.textContent = '🔍 测试中...';
       
-      apiRequest('translate', 'btnTranslate', () => {
-        const fd = new FormData();
-        fd.append('file0', f0); fd.append('file_name0', f0.name);
-        const f1 = document.getElementById('t_file1').files[0];
-        if (f1) { fd.append('file1', f1); fd.append('file_name1', f1.name); }
-        fd.append('all_mode', document.getElementById('t_all_mode').checked);
-        fd.append('export_inspection', document.getElementById('t_export_inspection').checked);
-        return fd;
-      }, `✅ 翻译完成！文件已自动下载`);
-    }
-
-    function callSeparate() {
-      const f0 = document.getElementById('s_file0').files[0];
-      if (!f0) return showStatus('separate', 'error', '❌ 请选择源文件');
-
-      apiRequest('separate', 'btnSeparate', () => {
-        const fd = new FormData();
-        fd.append('file0', f0); fd.append('file_name0', f0.name);
-        const f1 = document.getElementById('s_file1').files[0];
-        if (f1) { fd.append('file1', f1); fd.append('file_name1', f1.name); }
-        fd.append('Mode', document.getElementById('s_mode').value);
-        return fd;
-      }, `✅ 分离完成！文件已自动下载`);
-    }
-
-    function callMerge() {
-      const f0 = document.getElementById('m_file0').files[0];
-      const nf = document.getElementById('m_notlang').files[0];
-      if (!f0 || !nf) return showStatus('merge', 'error', '❌ 请选择源文件与待合并文件');
-
-      apiRequest('merge', 'btnMerge', () => {
-        const fd = new FormData();
-        fd.append('file0', f0); fd.append('file_name0', f0.name);
-        fd.append('notlang_file', nf); fd.append('nolang_file_name', nf.name);
-        const f1 = document.getElementById('m_file1').files[0];
-        if (f1) { fd.append('file1', f1); fd.append('file_name1', f1.name); }
-        return fd;
-      }, `✅ 合并完成！文件已自动下载`);
-    }
-
-    function handleDownload(response) {
-      const disp = response.headers.get('Content-Disposition');
-      let filename = 'translation_output';
-      if (disp && disp.includes('filename=')) {
-        const m = disp.match(/filename\*=UTF-8''(.+)|filename="(.+?)"/);
-        if (m) filename = decodeURIComponent(m[1] || m[2]);
+      try {
+        const res = await fetch(buildUrl('/translate/status/test'), { 
+          method: 'GET',
+          headers: buildAuthHeader()
+        });
+        
+        // 404 表示服务正常（任务不存在），401/403 表示认证正常但密钥无效
+        if (res.status === 404 || res.status === 401 || res.status === 403) {
+          showStatus('translate', 'success', '✅ API 服务可达！');
+        } else if (res.ok) {
+          showStatus('translate', 'success', '✅ API 服务正常！');
+        } else {
+          throw new Error(`状态码: ${res.status}`);
+        }
+      } catch (err) {
+        showStatus('translate', 'error', '❌ 连接失败', err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
       }
-      response.blob().then(b => {
-        const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-      });
     }
   </script>
 </body>
