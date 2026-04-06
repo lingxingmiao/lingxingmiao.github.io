@@ -8,6 +8,7 @@
     :root {
       --primary: #4f46e5; --primary-hover: #4338ca; --bg: #f8fafc; --card-bg: #ffffff;
       --border: #e2e8f0; --text: #1e293b; --text-secondary: #64748b;
+      --warning: #f59e0b; --error: #ef4444; --success: #22c55e;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -54,12 +55,21 @@
     .submit-btn:hover { background: var(--primary-hover); }
     .submit-btn:disabled { background: var(--text-secondary); cursor: not-allowed; }
     
-    .status { margin-top: 20px; padding: 14px 18px; border-radius: 10px; font-size: 0.95rem; display: none; }
-    .status.show { display: block; }
+    .status { margin-top: 20px; padding: 14px 18px; border-radius: 10px; font-size: 0.95rem; display: none; position: relative; }
+    .status.show { display: block; animation: fadeIn 0.3s ease; }
     .status.success { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
     .status.error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
     .status.loading { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; }
     .status pre { margin-top: 10px; background: rgba(0,0,0,0.05); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; max-height: 200px; white-space: pre-wrap; }
+    
+    /* 排队动画指示器 */
+    .queue-indicator::after {
+      content: ' ⏳';
+      display: inline-block;
+      animation: spin 1.2s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
     @media (max-width: 768px) {
       .config-grid, .form-row { grid-template-columns: 1fr; }
@@ -81,8 +91,8 @@
       <h3>⚙️ API 配置</h3>
       <div class="config-grid">
         <div class="config-item">
-          <label for="apiUrl">API 地址</label>
-          <input type="text" id="apiUrl" placeholder="请输入您的 API 地址"/>
+          <label for="apiUrl">API 基础地址</label>
+          <input type="text" id="apiUrl" placeholder="例如: http://127.0.0.1:8000"/>
           <div class="hint">末尾不要带 /</div>
         </div>
         <div class="config-item">
@@ -92,6 +102,9 @@
         </div>
       </div>
       <button class="test-btn" id="testConnection">🔗 测试连接</button>
+      <div class="hint" style="margin-top:12px; color:var(--warning);">
+        💡 服务端已启用并发限制与请求频率控制。触发限流将返回 <code>429</code> 错误，繁忙时请求将自动进入排队队列。
+      </div>
     </div>
 
     <!-- 🗂️ 功能选项卡 -->
@@ -215,10 +228,10 @@
     // 📦 独立配置区：分开存储各子页的格式提示
     const UI_CONFIG = {
       hints: {
-        translate_file0: "支持: .zip(光影/资源包/整合包/FTB任务/BQ任务) .lang/.json(语言文件) .mrpack(整合包) .jar(模组)",
-        separate_file0:  "支持: .zip(光影/资源包) .lang/.json(语言文件) .jar(模组)",
-        merge_file0:     "支持: .zip(光影/资源包) .lang/.json(语言文件) .jar(模组)",
-        merge_notlang:   "支持: .zip(光影/资源包) .lang/.json/.translatorlang(语言文件) .jar(模组)"
+        translate_file0: "支持: .zip(光影/资源包/整合包/FTB任务/BQ任务), .lang/.json(语言文件), .mrpack(整合包)",
+        separate_file0:  "支持: .jar/.zip(模组/光影/资源包), .lang/.json(语言文件)",
+        merge_file0:     "支持: .jar/.zip(模组/光影/资源包), .lang/.json(语言文件)",
+        merge_notlang:   "支持: .lang/.json/.translatorlang(语言文件), 或含语言文件的压缩包"
       }
     };
 
@@ -227,7 +240,6 @@
 
     // ========== 初始化 ==========
     document.addEventListener('DOMContentLoaded', () => {
-      // 渲染独立存储的提示文本
       document.getElementById('hint_t_file0').textContent = UI_CONFIG.hints.translate_file0;
       document.getElementById('hint_s_file0').textContent = UI_CONFIG.hints.separate_file0;
       document.getElementById('hint_m_file0').textContent = UI_CONFIG.hints.merge_file0;
@@ -269,22 +281,63 @@
     // ========== 工具函数 ==========
     function showStatus(panelId, type, message, detail = null) {
       const el = document.getElementById(`status_${panelId}`);
-      el.className = `status show ${type}`;
+      el.className = `status show ${type} ${type === 'loading' ? 'queue-indicator' : ''}`;
       el.innerHTML = `<strong>${message}</strong>${detail ? `<pre>${detail}</pre>` : ''}`;
-      if (type === 'success') setTimeout(() => el.classList.remove('show'), 8000);
+      if (type === 'success') setTimeout(() => el.classList.remove('show'), 10000);
     }
+
     function setLoading(btnId, loading) {
       const btn = document.getElementById(btnId);
       const original = btn.textContent.replace('⏳ 处理中...', '🚀 ');
       btn.disabled = loading; btn.textContent = loading ? '⏳ 处理中...' : original;
     }
+
     function buildAuthHeader() {
       if (!state.apiKey) throw new Error('请先填写 API Key');
       return { 'Authorization': `Bearer ${state.apiKey}` };
     }
     function buildUrl(endpoint) { return state.apiUrl.replace(/\/$/, '') + endpoint; }
 
-    // ========== API 调用 ==========
+    // 通用请求处理器 (内置限流/排队逻辑)
+    async function apiRequest(panelId, btnId, buildFormData, successMsg) {
+      if (state.loading) return;
+      
+      state.loading = true; setLoading(btnId, true);
+      let queueTimer = null;
+      showStatus(panelId, 'loading', '📤 正在上传并请求服务器...');
+
+      // 3秒未响应视为进入并发队列
+      queueTimer = setTimeout(() => {
+        showStatus(panelId, 'loading', '⏳ 服务器繁忙，请求已进入排队队列，请耐心等待...');
+      }, 3000);
+
+      try {
+        const res = await fetch(buildUrl(panelId === 'translate' ? '/translate' : panelId === 'separate' ? '/separatelangupdate' : '/mergelangupdate'), {
+          method: 'POST', headers: buildAuthHeader(), body: buildFormData()
+        });
+        clearTimeout(queueTimer);
+
+        // 🛡️ 限流错误处理 (429)
+        if (res.status === 429) {
+          const data = await res.json().catch(() => ({ detail: 'Rate limit exceeded' }));
+          throw new Error(`⛔ 触发服务端限流: ${data.detail || '请求过于频繁，请稍后再试。'}`);
+        }
+        if (!res.ok) {
+          const errText = await res.text().catch(() => res.statusText);
+          throw new Error(`HTTP ${res.status}: ${errText}`);
+        }
+
+        handleDownload(res);
+        showStatus(panelId, 'success', successMsg);
+      } catch (err) {
+        clearTimeout(queueTimer);
+        showStatus(panelId, 'error', '❌ 请求失败', err.message);
+      } finally {
+        state.loading = false; setLoading(btnId, false);
+      }
+    }
+
+    // ========== 业务调用 ==========
     async function testConnection() {
       const btn = document.getElementById('testConnection');
       const original = btn.textContent; btn.disabled = true; btn.textContent = '🔍 测试中...';
@@ -296,71 +349,58 @@
       finally { btn.disabled = false; btn.textContent = original; }
     }
 
-    async function callTranslate() {
-      if (state.loading) return;
-      const file0 = document.getElementById('t_file0').files[0];
-      if (!file0) return showStatus('translate', 'error', '❌ 请选择源文件');
-      state.loading = true; setLoading('btnTranslate', true); showStatus('translate', 'loading', '📤 正在上传并翻译...');
-      try {
-        const fd = new FormData(); fd.append('file0', file0); fd.append('file_name0', file0.name);
+    function callTranslate() {
+      const f0 = document.getElementById('t_file0').files[0];
+      if (!f0) return showStatus('translate', 'error', '❌ 请选择源文件');
+      
+      apiRequest('translate', 'btnTranslate', () => {
+        const fd = new FormData();
+        fd.append('file0', f0); fd.append('file_name0', f0.name);
         const f1 = document.getElementById('t_file1').files[0];
         if (f1) { fd.append('file1', f1); fd.append('file_name1', f1.name); }
         fd.append('all_mode', document.getElementById('t_all_mode').checked);
         fd.append('export_inspection', document.getElementById('t_export_inspection').checked);
-        const res = await fetch(buildUrl('/translate'), { method: 'POST', headers: buildAuthHeader(), body: fd });
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text().catch(()=>res.statusText)}`);
-        handleDownload(res, file0.name);
-        showStatus('translate', 'success', `✅ 翻译完成！文件已下载`);
-      } catch (err) { showStatus('translate', 'error', '❌ 翻译失败', err.message); }
-      finally { state.loading = false; setLoading('btnTranslate', false); }
+        return fd;
+      }, `✅ 翻译完成！文件已自动下载`);
     }
 
-    async function callSeparate() {
-      if (state.loading) return;
-      const file0 = document.getElementById('s_file0').files[0];
-      if (!file0) return showStatus('separate', 'error', '❌ 请选择源文件');
-      state.loading = true; setLoading('btnSeparate', true); showStatus('separate', 'loading', '📤 正在分离语言更新...');
-      try {
-        const fd = new FormData(); fd.append('file0', file0); fd.append('file_name0', file0.name);
+    function callSeparate() {
+      const f0 = document.getElementById('s_file0').files[0];
+      if (!f0) return showStatus('separate', 'error', '❌ 请选择源文件');
+
+      apiRequest('separate', 'btnSeparate', () => {
+        const fd = new FormData();
+        fd.append('file0', f0); fd.append('file_name0', f0.name);
         const f1 = document.getElementById('s_file1').files[0];
         if (f1) { fd.append('file1', f1); fd.append('file_name1', f1.name); }
         fd.append('Mode', document.getElementById('s_mode').value);
-        const res = await fetch(buildUrl('/separatelangupdate'), { method: 'POST', headers: buildAuthHeader(), body: fd });
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text().catch(()=>res.statusText)}`);
-        handleDownload(res);
-        showStatus('separate', 'success', `✅ 分离完成！文件已下载`);
-      } catch (err) { showStatus('separate', 'error', '❌ 分离失败', err.message); }
-      finally { state.loading = false; setLoading('btnSeparate', false); }
+        return fd;
+      }, `✅ 分离完成！文件已自动下载`);
     }
 
-    async function callMerge() {
-      if (state.loading) return;
-      const file0 = document.getElementById('m_file0').files[0];
-      const notlang = document.getElementById('m_notlang').files[0];
-      if (!file0 || !notlang) return showStatus('merge', 'error', '❌ 请选择源文件与待合并文件');
-      state.loading = true; setLoading('btnMerge', true); showStatus('merge', 'loading', '📤 正在合并语言更新...');
-      try {
-        const fd = new FormData(); fd.append('file0', file0); fd.append('file_name0', file0.name);
-        fd.append('notlang_file', notlang); fd.append('nolang_file_name', notlang.name);
+    function callMerge() {
+      const f0 = document.getElementById('m_file0').files[0];
+      const nf = document.getElementById('m_notlang').files[0];
+      if (!f0 || !nf) return showStatus('merge', 'error', '❌ 请选择源文件与待合并文件');
+
+      apiRequest('merge', 'btnMerge', () => {
+        const fd = new FormData();
+        fd.append('file0', f0); fd.append('file_name0', f0.name);
+        fd.append('notlang_file', nf); fd.append('nolang_file_name', nf.name);
         const f1 = document.getElementById('m_file1').files[0];
         if (f1) { fd.append('file1', f1); fd.append('file_name1', f1.name); }
-        const res = await fetch(buildUrl('/mergelangupdate'), { method: 'POST', headers: buildAuthHeader(), body: fd });
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text().catch(()=>res.statusText)}`);
-        handleDownload(res, file0.name);
-        showStatus('merge', 'success', `✅ 合并完成！文件已下载`);
-      } catch (err) { showStatus('merge', 'error', '❌ 合并失败', err.message); }
-      finally { state.loading = false; setLoading('btnMerge', false); }
+        return fd;
+      }, `✅ 合并完成！文件已自动下载`);
     }
 
-    function handleDownload(response, fallbackName = 'output') {
-      const blob = response.blob();
+    function handleDownload(response) {
       const disp = response.headers.get('Content-Disposition');
-      let filename = fallbackName;
+      let filename = 'translation_output';
       if (disp && disp.includes('filename=')) {
         const m = disp.match(/filename\*=UTF-8''(.+)|filename="(.+?)"/);
         if (m) filename = decodeURIComponent(m[1] || m[2]);
       }
-      blob.then(b => {
+      response.blob().then(b => {
         const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = filename;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
       });
