@@ -515,31 +515,6 @@
                 padding: 20px;
             }
         }
-        
-        /* 新增：CORS 错误提示 */
-        .cors-warning {
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            display: none;
-        }
-        
-        .cors-warning p {
-            color: #856404;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        
-        .cors-warning ul {
-            padding-left: 20px;
-            color: #856404;
-        }
-        
-        .cors-warning li {
-            margin-bottom: 8px;
-        }
     </style>
 </head>
 <body>
@@ -548,17 +523,6 @@
             <h1><i class="fas fa-cube"></i> Minecraft 翻译服务</h1>
             <p class="subtitle">专为 Minecraft 模组、资源包、整合包设计的智能翻译工具，支持多格式文件与增量汉化</p>
         </header>
-        
-        <!-- CORS 错误提示 -->
-        <div class="cors-warning" id="cors-warning">
-            <p><i class="fas fa-exclamation-triangle"></i> 检测到跨域请求问题 (CORS)</p>
-            <ul>
-                <li>GitHub Pages 使用 HTTPS 协议，但您的 API 服务器可能使用 HTTP 协议</li>
-                <li>请确保您的 API 服务器已正确配置 CORS 支持</li>
-                <li>推荐解决方案: 为 API 服务器添加 CORS 中间件</li>
-            </ul>
-            <p>请检查浏览器控制台获取详细错误信息</p>
-        </div>
         
         <div class="api-config">
             <div class="config-group">
@@ -569,7 +533,7 @@
                 <label for="api-key"><i class="fas fa-key"></i> API 密钥</label>
                 <input type="password" id="api-key" class="config-input" placeholder="输入您的 API 密钥">
             </div>
-            <div class="config-group" style="min-width: auto; flex-basis: px;">
+            <div class="config-group" style="min-width: auto; flex-basis: 180px;">
                 <button id="save-config" class="btn btn-save" type="button">
                     <i class="fas fa-save"></i> 保存配置
                 </button>
@@ -648,7 +612,6 @@
                 <h3><i class="fas fa-check-circle"></i> 任务已提交!</h3>
                 <p>任务 ID (已自动复制到剪贴板):</p>
                 <div class="task-id" id="translate-task-id" data-clipboard-text="">-</div>
-                <span class="copy-hint" id="translate-copy-hint">✓ 已复制!</span>
                 <span class="status-badge status-pending">等待处理中</span>
                 <p class="hint">请保留此页面，或记录任务 ID 以便后续查询状态</p>
             </div>
@@ -703,7 +666,6 @@
                 <h3><i class="fas fa-check-circle"></i> 任务已提交!</h3>
                 <p>任务 ID (已自动复制到剪贴板):</p>
                 <div class="task-id" id="separate-task-id" data-clipboard-text="">-</div>
-                <span class="copy-hint" id="separate-copy-hint">✓ 已复制!</span>
                 <span class="status-badge status-pending">等待处理中</span>
                 <p class="hint">请保留此页面，或记录任务 ID 以便后续查询状态</p>
             </div>
@@ -755,7 +717,6 @@
                 <h3><i class="fas fa-check-circle"></i> 任务已提交!</h3>
                 <p>任务 ID (已自动复制到剪贴板):</p>
                 <div class="task-id" id="merge-task-id" data-clipboard-text="">-</div>
-                <span class="copy-hint" id="merge-copy-hint">✓ 已复制!</span>
                 <span class="status-badge status-pending">等待处理中</span>
                 <p class="hint">请保留此页面，或记录任务 ID 以便后续查询状态</p>
             </div>
@@ -767,7 +728,7 @@
             <p class="subtitle">输入任务 ID 查看翻译进度与结果</p>
             
             <div class="task-input-group">
-                <input type="text" id="task-id-input" class="config-input" placeholder="输入任务 ID (例如: 550e8400-e29b-41d4-a716-446655440000)">
+                <input type="text" id="task-id-input" class="config-input" placeholder="输入任务 ID (例如: f2cd696b-2126-4cf5-90e4-893dda7936e4)">
                 <button id="check-status" class="btn btn-status" type="button">
                     <i class="fas fa-search"></i> 查询状态
                 </button>
@@ -827,20 +788,6 @@
         document.getElementById('api-url').value = apiConfig.url;
         document.getElementById('api-key').value = apiConfig.key;
         
-        // 检测 CORS 问题
-        function checkCORSCompatibility() {
-            // 检查是否在 GitHub Pages 上运行
-            const isGitHubPages = window.location.hostname.endsWith('github.io');
-            const isHTTP = apiConfig.url.startsWith('http://');
-            
-            if (isGitHubPages && isHTTP) {
-                document.getElementById('cors-warning').style.display = 'block';
-                showNotification('⚠️ 检测到可能的 CORS 问题: GitHub Pages 使用 HTTPS，但 API 服务器使用 HTTP', 'warning');
-            } else {
-                document.getElementById('cors-warning').style.display = 'none';
-            }
-        }
-        
         // 保存配置
         document.getElementById('save-config').addEventListener('click', (e) => {
             e.preventDefault();
@@ -861,7 +808,6 @@
             localStorage.setItem('mcTranslatorApiUrl', url);
             localStorage.setItem('mcTranslatorApiKey', key);
             showNotification('API 配置已保存!', 'success');
-            checkCORSCompatibility();
         });
         
         // 标签页切换
@@ -966,17 +912,19 @@
         }
         
         // 复制文本到剪贴板
-        function copyToClipboard(text, hintElement) {
+        function copyToClipboard(text, taskIdElement) {
             navigator.clipboard.writeText(text).then(() => {
-                if (hintElement) {
-                    hintElement.classList.add('show');
+                // 显示复制成功动画
+                if (taskIdElement) {
+                    taskIdElement.classList.add('copied');
                     setTimeout(() => {
-                        hintElement.classList.remove('show');
-                    }, 1500);
+                        taskIdElement.classList.remove('copied');
+                    }, 1000);
                 }
+                showNotification('✅ 任务 ID 已复制到剪贴板', 'success');
             }).catch(err => {
                 console.warn('复制失败:', err);
-                showNotification('复制到剪贴板失败，请手动复制', 'info');
+                showNotification('复制到剪贴板失败', 'info');
             });
         }
         
@@ -986,24 +934,19 @@
                 throw new Error('请先配置 API 地址和密钥');
             }
             
-            const url = `${apiConfig.url}${endpoint}`;
+            // 修复 URL 路径
+            let apiUrl = apiConfig.url;
+            if (apiUrl.endsWith('/')) {
+                apiUrl = apiUrl.slice(0, -1);
+            }
+            
+            const url = `${apiUrl}${endpoint}`;
             const headers = {
                 'Authorization': `Bearer ${apiConfig.key}`,
                 'Accept': 'application/json'
             };
             
             try {
-                // 检查是否为 GitHub Pages
-                const isGitHubPages = window.location.hostname.endsWith('github.io');
-                
-                // 如果是 GitHub Pages，强制使用 HTTPS
-                if (isGitHubPages && url.startsWith('http://')) {
-                    showNotification('⚠️ 检测到 GitHub Pages 部署，已自动将 API 地址转换为 HTTPS', 'warning');
-                    // 尝试将 http 转换为 https
-                    const httpsUrl = url.replace('http://', 'https://');
-                    return await apiRequest(httpsUrl, formData, method);
-                }
-                
                 const options = {
                     method,
                     headers
@@ -1026,6 +969,12 @@
                     throw new Error('API 密钥无效或未授权，请检查配置');
                 }
                 
+                // 检查响应内容类型
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error(`无效的响应内容类型: ${contentType}`);
+                }
+                
                 // 处理其他错误
                 if (!response.ok) {
                     let errorDetail = '服务器返回错误';
@@ -1033,7 +982,6 @@
                         const errorData = await response.json();
                         errorDetail = errorData.detail || errorDetail;
                     } catch (e) {
-                        // 尝试获取文本错误
                         try {
                             errorDetail = await response.text();
                         } catch (e) {}
@@ -1041,50 +989,14 @@
                     throw new Error(`请求失败 (${response.status}): ${errorDetail}`);
                 }
                 
-                // 对于任务提交，返回 JSON
-                if (method === 'POST') {
-                    return await response.json();
-                } 
-                // 对于任务状态查询，如果是文件则返回 blob，否则返回 JSON
-                else if (endpoint.includes('/task/')) {
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        return await response.json();
-                    } else {
-                        // 返回文件下载信息
-                        return {
-                            isFile: true,
-                            blob: await response.blob(),
-                            filename: getFileNameFromResponse(response)
-                        };
-                    }
-                }
+                // 解析 JSON 响应
+                const result = await response.json();
+                return result;
                 
-                return await response.json();
             } catch (error) {
-                if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-                    // 检测是否是 CORS 错误
-                    if (apiConfig.url.startsWith('http://') && window.location.protocol === 'https:') {
-                        showNotification('⚠️ 检测到 CORS 错误: GitHub Pages (HTTPS) 无法访问 HTTP API 服务器', 'error');
-                        document.getElementById('cors-warning').style.display = 'block';
-                    } else {
-                        showNotification('无法连接到 API 服务器，请检查地址是否正确', 'error');
-                    }
-                    throw error;
-                }
+                console.error('API 请求错误:', error);
                 throw error;
             }
-        }
-        
-        function getFileNameFromResponse(response) {
-            const contentDisposition = response.headers.get('Content-Disposition');
-            if (contentDisposition) {
-                const filenameMatch = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?/i);
-                if (filenameMatch && filenameMatch[1]) {
-                    return decodeURIComponent(filenameMatch[1]);
-                }
-            }
-            return 'translation_result.zip';
         }
         
         // 提交翻译任务
@@ -1105,9 +1017,6 @@
                 showNotification('请先配置 API 密钥', 'error');
                 return;
             }
-            
-            // 检查 CORS 兼容性
-            checkCORSCompatibility();
             
             // 显示加载状态
             const submitBtn = document.getElementById('submit-translate');
@@ -1130,26 +1039,40 @@
                 
                 const result = await apiRequest('/translate', formData);
                 
-                if (result.task_id) {
-                    const taskIdElement = document.getElementById('translate-task-id');
-                    taskIdElement.textContent = result.task_id;
-                    taskIdElement.setAttribute('data-clipboard-text', result.task_id);
-                    
-                    // 自动复制到剪贴板
-                    copyToClipboard(result.task_id, document.getElementById('translate-copy-hint'));
-                    
-                    document.getElementById('translate-result').style.display = 'block';
-                    
-                    // 滚动到结果区域
-                    document.getElementById('translate-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    
-                    showNotification(`✅ 任务已提交! ID: ${result.task_id.substring(08)}... (已自动复制)`, 'success');
-                } else {
+                // 检查返回结果
+                if (!result) {
+                    throw new Error('服务器返回了空响应');
+                }
+                
+                if (typeof result !== 'object') {
+                    throw new Error('服务器返回了无效的响应格式');
+                }
+                
+                // 检查是否有 task_id
+                if (!result.task_id) {
                     throw new Error('服务器未返回任务ID');
                 }
+                
+                // 显示任务结果
+                const taskIdElement = document.getElementById('translate-task-id');
+                taskIdElement.textContent = result.task_id;
+                taskIdElement.setAttribute('data-clipboard-text', result.task_id);
+                
+                // 自动复制到剪贴板
+                copyToClipboard(result.task_id, taskIdElement);
+                
+                // 显示结果区域
+                document.getElementById('translate-result').style.display = 'block';
+                
+                // 滚动到结果区域
+                document.getElementById('translate-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                // 显示成功通知
+                showNotification(`✅ 任务已提交! ID: ${result.task_id.substring(0, 8)}...`, 'success');
+                
             } catch (error) {
-                showNotification(error.message || '提交翻译任务时出错', 'error');
                 console.error('翻译任务错误:', error);
+                showNotification(error.message || '提交翻译任务时出错', 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
@@ -1174,9 +1097,6 @@
                 return;
             }
             
-            // 检查 CORS 兼容性
-            checkCORSCompatibility();
-            
             // 显示加载状态
             const submitBtn = document.getElementById('submit-separate');
             const originalText = submitBtn.innerHTML;
@@ -1197,22 +1117,23 @@
                 
                 const result = await apiRequest('/separatelangupdate', formData);
                 
-                if (result.task_id) {
-                    const taskIdElement = document.getElementById('separate-task-id');
-                    taskIdElement.textContent = result.task_id;
-                    taskIdElement.setAttribute('data-clipboard-text', result.task_id);
-                    
-                    copyToClipboard(result.task_id, document.getElementById('separate-copy-hint'));
-                    
-                    document.getElementById('separate-result').style.display = 'block';
-                    document.getElementById('separate-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    showNotification(`✅ 分离任务已提交! ID: ${result.task_id.substring(0, 8)}... (已自动复制)`, 'success');
-                } else {
+                if (!result || !result.task_id) {
                     throw new Error('服务器未返回任务ID');
                 }
+                
+                const taskIdElement = document.getElementById('separate-task-id');
+                taskIdElement.textContent = result.task_id;
+                taskIdElement.setAttribute('data-clipboard-text', result.task_id);
+                
+                copyToClipboard(result.task_id, taskIdElement);
+                
+                document.getElementById('separate-result').style.display = 'block';
+                document.getElementById('separate-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                showNotification(`✅ 任务已提交! ID: ${result.task_id.substring(0, 8)}...`, 'success');
+                
             } catch (error) {
-                showNotification(error.message || '提交分离任务时出错', 'error');
                 console.error('分离任务错误:', error);
+                showNotification(error.message || '提交分离任务时出错', 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
@@ -1242,9 +1163,6 @@
                 return;
             }
             
-            // 检查 CORS 兼容性
-            checkCORSCompatibility();
-            
             // 显示加载状态
             const submitBtn = document.getElementById('submit-merge');
             const originalText = submitBtn.innerHTML;
@@ -1265,22 +1183,23 @@
                 
                 const result = await apiRequest('/mergelangupdate', formData);
                 
-                if (result.task_id) {
-                    const taskIdElement = document.getElementById('merge-task-id');
-                    taskIdElement.textContent = result.task_id;
-                    taskIdElement.setAttribute('data-clipboard-text', result.task_id);
-                    
-                    copyToClipboard(result.task_id, document.getElementById('merge-copy-hint'));
-                    
-                    document.getElementById('merge-result').style.display = 'block';
-                    document.getElementById('merge-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    showNotification(`✅ 合并任务已提交! ID: ${result.task_id.substring(0, 8)}... (已自动复制)`, 'success');
-                } else {
+                if (!result || !result.task_id) {
                     throw new Error('服务器未返回任务ID');
                 }
+                
+                const taskIdElement = document.getElementById('merge-task-id');
+                taskIdElement.textContent = result.task_id;
+                taskIdElement.setAttribute('data-clipboard-text', result.task_id);
+                
+                copyToClipboard(result.task_id, taskIdElement);
+                
+                document.getElementById('merge-result').style.display = 'block';
+                document.getElementById('merge-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                showNotification(`✅ 任务已提交! ID: ${result.task_id.substring(0, 8)}...`, 'success');
+                
             } catch (error) {
-                showNotification(error.message || '提交合并任务时出错', 'error');
                 console.error('合并任务错误:', error);
+                showNotification(error.message || '提交合并任务时出错', 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
@@ -1302,9 +1221,6 @@
                 showNotification('请先配置 API 密钥', 'error');
                 return;
             }
-            
-            // 检查 CORS 兼容性
-            checkCORSCompatibility();
             
             // 显示加载状态
             const checkBtn = document.getElementById('check-status');
@@ -1365,7 +1281,7 @@
                     // 显示详情
                     statusDetails.style.display = 'block';
                     document.getElementById('status-created').textContent = new Date().toLocaleString();
-                    document.getElementById('status-progress').textContent = '100% - 处理完成';
+                    document.getElementById('status-progress').textContent = '100% - 处理完成 ✓';
                     
                 } else if (result.status === 'completed') {
                     // 任务完成但返回JSON（可能包含文件路径）
@@ -1430,11 +1346,7 @@
                 e.preventDefault();
                 const text = el.getAttribute('data-clipboard-text');
                 if (text && text !== '-') {
-                    copyToClipboard(text, el.nextElementSibling);
-                    el.classList.add('copied');
-                    setTimeout(() => {
-                        el.classList.remove('copied');
-                    }, 1000);
+                    copyToClipboard(text, el);
                 }
             });
         });
@@ -1442,7 +1354,6 @@
         // 初始化时检查本地存储的配置
         if (apiConfig.key) {
             showNotification('✅ 已加载保存的 API 配置', 'info');
-            checkCORSCompatibility();
         } else {
             showNotification('ℹ️ 请先在顶部配置 API 地址和密钥', 'info');
         }
