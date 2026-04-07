@@ -1,615 +1,1397 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🎮 TranslationMinecraft - API 控制台</title>
-  <style>
-    :root {
-      --primary: #4f46e5; --primary-hover: #4338ca; --bg: #f8fafc; --card-bg: #ffffff;
-      --border: #e2e8f0; --text: #1e293b; --text-secondary: #64748b;
-      --warning: #f59e0b; --error: #ef4444; --success: #22c55e;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--bg); color: var(--text); line-height: 1.6; padding: 20px;
-    }
-    .container { max-width: 900px; margin: 0 auto; }
-    header { text-align: center; padding: 20px 0 30px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
-    header h1 { font-size: 1.8rem; color: var(--primary); margin-bottom: 8px; }
-    header p { color: var(--text-secondary); font-size: 0.95rem; }
-
-    .config-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .config-card h3 { margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .config-item label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 6px; color: var(--text-secondary); }
-    .config-item input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; transition: border-color 0.2s; }
-    .config-item input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
-    .config-item input[type="password"] { font-family: monospace; }
-    .hint { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
-    .test-btn { margin-top: 16px; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
-    .test-btn:hover { background: var(--primary-hover); }
-    .test-btn:disabled { background: var(--text-secondary); cursor: not-allowed; }
-
-    .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab-btn { padding: 10px 18px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 500; color: var(--text-secondary); transition: all 0.2s; }
-    .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-    .tab-btn:hover:not(.active) { background: #f1f5f9; }
-
-    .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 0 12px 12px 12px; padding: 24px; display: none; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .panel.active { display: block; }
-    .panel h3 { margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-    .form-group { margin-bottom: 18px; }
-    .form-group label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 0.95rem; }
-    .form-group input[type="file"] { display: block; width: 100%; padding: 8px 0; }
-    .form-group input[type="text"], .form-group select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-    .checkbox-group input { width: auto; margin: 0; }
-
-    .filename-display { background-color: #f8fafc; border-color: #cbd5e1; color: #475569; cursor: not-allowed; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-    .filename-display::placeholder { color: #94a3b8; }
-
-    .submit-btn { background: var(--primary); color: white; border: none; padding: 12px 28px; border-radius: 10px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
-    .submit-btn:hover { background: var(--primary-hover); }
-    .submit-btn:disabled { background: var(--text-secondary); cursor: not-allowed; }
-    
-    .cancel-btn { background: var(--error); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.2s; margin-left: 12px; }
-    .cancel-btn:hover { background: #dc2626; }
-    .cancel-btn:disabled { background: var(--text-secondary); cursor: not-allowed; }
-
-    .status { margin-top: 20px; padding: 14px 18px; border-radius: 10px; font-size: 0.95rem; display: none; position: relative; }
-    .status.show { display: block; animation: fadeIn 0.3s ease; }
-    .status.success { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
-    .status.error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
-    .status.loading { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; }
-    .status pre { margin-top: 10px; background: rgba(0,0,0,0.05); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; max-height: 200px; white-space: pre-wrap; }
-    
-    .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 10px; display: none; }
-    .progress-bar.show { display: block; }
-    .progress-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; width: 0%; }
-    .progress-fill.indeterminate { animation: indeterminate 1.5s infinite; }
-    @keyframes indeterminate { 0% { width: 0; margin-left: 0; } 50% { width: 40%; margin-left: 30%; } 100% { width: 0; margin-left: 100%; } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
-    @media (max-width: 768px) {
-      .config-grid, .form-row { grid-template-columns: 1fr; }
-      .tabs { flex-direction: column; }
-      .tab-btn { border-radius: 8px; }
-      .panel { border-radius: 12px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft 翻译服务</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4876ff;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --warning: #f77f00;
+            --danger: #d62828;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(45deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            color: var(--gray);
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 20px;
+        }
+        
+        .api-config {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+        }
+        
+        .config-group {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .config-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        .config-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e6ef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: #f8fafc;
+        }
+        
+        .config-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            outline: none;
+        }
+        
+        .config-input::placeholder {
+            color: var(--gray);
+            opacity: 0.7;
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+            /* 修复关键：防止按钮触发表单提交 */
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-save {
+            background: #06d6a0;
+            box-shadow: 0 4px 10px rgba(6, 214, 160, 0.3);
+        }
+        
+        .btn-save:hover {
+            background: #05b88e;
+            box-shadow: 0 6px 15px rgba(6, 214, 160, 0.4);
+        }
+        
+        .btn-status {
+            background: #7209b7;
+            box-shadow: 0 4px 10px rgba(114, 9, 183, 0.3);
+        }
+        
+        .btn-status:hover {
+            background: #6a08a7;
+            box-shadow: 0 6px 15px rgba(114, 9, 183, 0.4);
+        }
+        
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 18px 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            color: var(--gray);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.08);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary);
+        }
+        
+        .tab:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--dark);
+        }
+        
+        .tab i {
+            font-size: 1.4rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--dark);
+        }
+        
+        .form-group .hint {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+        
+        .file-upload {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #f8fafc;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .file-upload:hover {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.03);
+        }
+        
+        .file-upload.dragover {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
+        .file-upload i {
+            font-size: 3.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .file-upload p {
+            font-size: 1.15rem;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+        
+        .file-upload small {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .file-name {
+            background: #eef2ff;
+            border-left: 4px solid var(--primary);
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 0.95rem;
+            word-break: break-all;
+            display: none;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 25px;
+            margin-top: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-item input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .checkbox-item label {
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0;
+            font-size: 1.05rem;
+        }
+        
+        .select-container {
+            position: relative;
+        }
+        
+        .select-container select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e6ef;
+            border-radius: 10px;
+            font-size: 1rem;
+            background-color: #f8fafc;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%236c757d' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            transition: var(--transition);
+        }
+        
+        .select-container select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            outline: none;
+        }
+        
+        .task-result {
+            background: #eef9ff;
+            border: 2px solid #4cc9f0;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            position: relative;
+        }
+        
+        .task-id {
+            font-family: monospace;
+            font-size: 1.3rem;
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            letter-spacing: 1px;
+            margin: 15px 0;
+            word-break: break-all;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .task-id:hover {
+            background: rgba(67, 97, 238, 0.2);
+            transform: scale(1.02);
+        }
+        
+        .task-id.copied {
+            background: rgba(6, 214, 160, 0.2);
+            color: #06d6a0;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-top: 10px;
+        }
+        
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-processing { background: #d1ecf1; color: #0c5460; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        
+        .download-btn {
+            background: var(--success);
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+        }
+        
+        .download-btn:hover {
+            background: #3ab0e0;
+        }
+        
+        .task-input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .task-input-group input {
+            flex: 1;
+            padding: 14px 16px;
+            border: 2px solid #e0e6ef;
+            border-radius: 10px;
+            font-size: 1rem;
+            background-color: #f8fafc;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 18px 25px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            font-size: 1.05rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease-out;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success { background: #06d6a0; }
+        .notification.error { background: var(--danger); }
+        .notification.info { background: var(--primary); }
+        
+        .notification i {
+            font-size: 1.5rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            color: var(--gray);
+            font-size: 0.95rem;
+            border-top: 1px solid #e0e6ef;
+        }
+        
+        @media (max-width: 768px) {
+            .api-config {
+                flex-direction: column;
+            }
+            
+            .task-input-group {
+                flex-direction: column;
+            }
+            
+            .checkbox-group {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .tab {
+                padding: 15px 5px;
+                font-size: 0.95rem;
+            }
+            
+            .tab i {
+                font-size: 1.2rem;
+                margin-bottom: 5px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .tab-content {
+                padding: 20px;
+            }
+        }
+        
+        /* 新增：复制成功提示 */
+        .copy-hint {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(6, 214, 160, 0.9);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .copy-hint.show {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>🎮 TranslationMinecraft</h1>
-      <p>API 控制台 | 异步任务队列 + WebSocket 实时进度</p>
-    </header>
-
-    <!-- 🔧 API 配置 -->
-    <div class="config-card">
-      <h3>⚙️ API 配置</h3>
-      <div class="config-grid">
-        <div class="config-item">
-          <label for="apiUrl">API 基础地址</label>
-          <input type="text" id="apiUrl" placeholder="例如: http://127.0.0.1:25561"/>
-          <div class="hint">末尾不要带 /</div>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cube"></i> Minecraft 翻译服务</h1>
+            <p class="subtitle">专为 Minecraft 模组、资源包、整合包设计的智能翻译工具，支持多格式文件与增量汉化</p>
+        </header>
+        
+        <div class="api-config">
+            <div class="config-group">
+                <label for="api-url"><i class="fas fa-globe"></i> API 服务器地址</label>
+                <input type="text" id="api-url" class="config-input" placeholder="例如: http://localhost:8000" value="http://localhost:8000">
+            </div>
+            <div class="config-group">
+                <label for="api-key"><i class="fas fa-key"></i> API 密钥</label>
+                <input type="password" id="api-key" class="config-input" placeholder="输入您的 API 密钥">
+            </div>
+            <div class="config-group" style="min-width: auto; flex-basis: 180px;">
+                <button id="save-config" class="btn btn-save" type="button">
+                    <i class="fas fa-save"></i> 保存配置
+                </button>
+            </div>
         </div>
-        <div class="config-item">
-          <label for="apiKey">API Key (Bearer Token)</label>
-          <input type="password" id="apiKey" placeholder="请输入您的 API 密钥"/>
-          <div class="hint">联系 QQ3254693390 获取</div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="translate">
+                <i class="fas fa-language"></i>
+                <div>翻译任务</div>
+            </div>
+            <div class="tab" data-tab="separate">
+                <i class="fas fa-code-branch"></i>
+                <div>分离语言更新</div>
+            </div>
+            <div class="tab" data-tab="merge">
+                <i class="fas fa-code-merge"></i>
+                <div>合并语言更新</div>
+            </div>
+            <div class="tab" data-tab="status">
+                <i class="fas fa-tasks"></i>
+                <div>任务状态</div>
+            </div>
         </div>
-      </div>
-      <button class="test-btn" id="testConnection">🔗 测试连接</button>
-      <div class="hint" style="margin-top:12px; color:var(--warning);">
-        💡 服务端已启用异步任务队列，支持长时间运行任务。实时进度通过 WebSocket 推送。
-      </div>
+        
+        <!-- 翻译任务标签页 -->
+        <div id="translate" class="tab-content active">
+            <h2><i class="fas fa-language"></i> 翻译 Minecraft 内容</h2>
+            <p class="subtitle">支持 .zip/.jar/.mrpack 整合包、.lang/.json 语言文件等多种格式</p>
+            
+            <div class="form-group">
+                <label for="file0"><i class="fas fa-file-upload"></i> 源文件 (必填)</label>
+                <div class="file-upload" id="drop-zone-0">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>拖放文件至此或点击上传</p>
+                    <small>支持: .zip, .jar, .mrpack, .lang, .json 等 Minecraft 相关文件</small>
+                    <input type="file" id="file0" class="file-input" hidden>
+                </div>
+                <div class="file-name" id="file0-name"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="file1"><i class="fas fa-file-alt"></i> 参考文件 (可选)</label>
+                <div class="file-upload" id="drop-zone-1">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>拖放参考文件 (如已有目标语言文件)</p>
+                    <small>用于差异计算或合并翻译结果</small>
+                    <input type="file" id="file1" class="file-input" hidden>
+                </div>
+                <div class="file-name" id="file1-name"></div>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-sliders-h"></i> 高级选项</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="all-mode" name="all-mode">
+                        <label for="all-mode">完整模式 (翻译所有模组)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="export-inspection" name="export-inspection">
+                        <label for="export-inspection">导出审核文件 (.translatorlang)</label>
+                    </div>
+                </div>
+                <div class="hint">
+                    <i class="fas fa-info-circle"></i> 完整模式: 跳过已汉化模组检测，翻译所有内容<br>
+                    <i class="fas fa-info-circle"></i> 审核文件: 生成可人工校对的中间格式文件
+                </div>
+            </div>
+            
+            <!-- 修复关键：添加 type="button" -->
+            <button id="submit-translate" class="btn" type="button">
+                <i class="fas fa-play"></i> 开始翻译
+            </button>
+            
+            <div class="task-result" id="translate-result">
+                <h3><i class="fas fa-check-circle"></i> 任务已提交!</h3>
+                <p>任务 ID (已自动复制到剪贴板):</p>
+                <div class="task-id" id="translate-task-id" data-clipboard-text="">-</div>
+                <span class="copy-hint" id="translate-copy-hint">✓ 已复制!</span>
+                <span class="status-badge status-pending">等待处理中</span>
+                <p class="hint">请保留此页面，或记录任务 ID 以便后续查询状态</p>
+            </div>
+        </div>
+        
+        <!-- 分离语言更新标签页 -->
+        <div id="separate" class="tab-content">
+            <h2><i class="fas fa-code-branch"></i> 分离语言更新</h2>
+            <p class="subtitle">提取源文件中新增/缺失的键值对，用于增量汉化</p>
+            
+            <div class="form-group">
+                <label for="sep-file0"><i class="fas fa-file-upload"></i> 源文件 (必填)</label>
+                <div class="file-upload" id="drop-zone-sep0">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>拖放最新版本语言文件</p>
+                    <small>将与参考文件对比提取差异</small>
+                    <input type="file" id="sep-file0" class="file-input" hidden>
+                </div>
+                <div class="file-name" id="sep-file0-name"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="sep-file1"><i class="fas fa-file-alt"></i> 参考文件 (可选)</label>
+                <div class="file-upload" id="drop-zone-sep1">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>拖放已有翻译文件作为参考</p>
+                    <small>用于识别新增/缺失的键值对</small>
+                    <input type="file" id="sep-file1" class="file-input" hidden>
+                </div>
+                <div class="file-name" id="sep-file1-name"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="sep-mode"><i class="fas fa-cog"></i> 处理模式</label>
+                <div class="select-container">
+                    <select id="sep-mode">
+                        <option value="none">标准模式 - 输出标准语言文件</option>
+                        <option value="extra">附加模式 - 输出 .translatorlang 格式(含元数据)</option>
+                    </select>
+                </div>
+                <div class="hint">
+                    <i class="fas fa-info-circle"></i> 标准模式: 生成可直接使用的 .lang/.json 文件<br>
+                    <i class="fas fa-info-circle"></i> 附加模式: 生成含上下文信息的审核格式，适合人工校对
+                </div>
+            </div>
+            
+            <button id="submit-separate" class="btn" type="button">
+                <i class="fas fa-code-branch"></i> 开始分离
+            </button>
+            
+            <div class="task-result" id="separate-result">
+                <h3><i class="fas fa-check-circle"></i> 任务已提交!</h3>
+                <p>任务 ID (已自动复制到剪贴板):</p>
+                <div class="task-id" id="separate-task-id" data-clipboard-text="">-</div>
+                <span class="copy-hint" id="separate-copy-hint">✓ 已复制!</span>
+                <span class="status-badge status-pending">等待处理中</span>
+                <p class="hint">请保留此页面，或记录任务 ID 以便后续查询状态</p>
+            </div>
+        </div>
+        
+        <!-- 合并语言更新标签页 -->
+        <div id="merge" class="tab-content">
+            <h2><i class="fas fa-code-merge"></i> 合并语言更新</h2>
+            <p class="subtitle">将人工翻译结果合并回原始语言文件</p>
+            
+            <div class="form-group">
+                <label for="merge-file0"><i class="fas fa-file-upload"></i> 原始文件 (必填)</label>
+                <div class="file-upload" id="drop-zone-merge0">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>拖放原始语言文件/资源包</p>
+                    <small>将作为合并的基础文件</small>
+                    <input type="file" id="merge-file0" class="file-input" hidden>
+                </div>
+                <div class="file-name" id="merge-file0-name"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="merge-notlang"><i class="fas fa-file-edit"></i> 翻译更新文件 (必填)</label>
+                <div class="file-upload" id="drop-zone-merge-notlang">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>拖放人工翻译/校对后的文件</p>
+                    <small>支持 .lang/.json/.translatorlang 格式</small>
+                    <input type="file" id="merge-notlang" class="file-input" hidden>
+                </div>
+                <div class="file-name" id="merge-notlang-name"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="merge-file1"><i class="fas fa-file-alt"></i> 参考文件 (可选)</label>
+                <div class="file-upload" id="drop-zone-merge1">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>拖放额外参考文件</p>
+                    <small>用于辅助合并决策</small>
+                    <input type="file" id="merge-file1" class="file-input" hidden>
+                </div>
+                <div class="file-name" id="merge-file1-name"></div>
+            </div>
+            
+            <button id="submit-merge" class="btn" type="button">
+                <i class="fas fa-code-merge"></i> 开始合并
+            </button>
+            
+            <div class="task-result" id="merge-result">
+                <h3><i class="fas fa-check-circle"></i> 任务已提交!</h3>
+                <p>任务 ID (已自动复制到剪贴板):</p>
+                <div class="task-id" id="merge-task-id" data-clipboard-text="">-</div>
+                <span class="copy-hint" id="merge-copy-hint">✓ 已复制!</span>
+                <span class="status-badge status-pending">等待处理中</span>
+                <p class="hint">请保留此页面，或记录任务 ID 以便后续查询状态</p>
+            </div>
+        </div>
+        
+        <!-- 任务状态标签页 -->
+        <div id="status" class="tab-content">
+            <h2><i class="fas fa-tasks"></i> 任务状态查询</h2>
+            <p class="subtitle">输入任务 ID 查看翻译进度与结果</p>
+            
+            <div class="task-input-group">
+                <input type="text" id="task-id-input" class="config-input" placeholder="输入任务 ID (例如: 550e8400-e29b-41d4-a716-446655440000)">
+                <button id="check-status" class="btn btn-status" type="button">
+                    <i class="fas fa-search"></i> 查询状态
+                </button>
+            </div>
+            
+            <div id="status-result" style="display: none; margin-top: 30px;">
+                <div class="task-result" style="background: #f8f9ff; border-color: #adb5bd;">
+                    <h3><i class="fas fa-info-circle"></i> 任务状态</h3>
+                    <p>任务 ID: <span id="status-task-id" class="task-id" style="display: inline-block; margin: 8px 0;"></span></p>
+                    <p>当前状态: <span id="status-badge" class="status-badge status-pending">-</span></p>
+                    <div id="status-details" style="margin-top: 20px; text-align: left; display: none;">
+                        <p><strong>创建时间:</strong> <span id="status-created"></span></p>
+                        <p><strong>处理进度:</strong> <span id="status-progress">-</span></p>
+                        <div id="download-section" style="margin-top: 25px; display: none;">
+                            <p><strong>结果文件:</strong></p>
+                            <button id="download-btn" class="btn download-btn" type="button">
+                                <i class="fas fa-download"></i> 下载结果文件
+                            </button>
+                        </div>
+                    </div>
+                    <div id="status-error" class="hint" style="color: var(--danger); margin-top: 15px; display: none;">
+                        <i class="fas fa-exclamation-triangle"></i> <span id="error-message"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hint" style="margin-top: 25px; padding: 15px; background: #eef9ff; border-radius: 10px;">
+                <p><i class="fas fa-lightbulb"></i> <strong>提示:</strong></p>
+                <p>• 任务提交后通常需要几分钟处理时间，取决于文件大小和服务器负载</p>
+                <p>• 翻译任务会自动使用您设置的 API 密钥和语言配置</p>
+                <p>• 完成后结果文件将自动下载或提供下载链接</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Minecraft 翻译服务 v2.0 • 专为 Minecraft 社区打造的本地化解决方案</p>
+            <p style="margin-top: 8px; color: var(--gray); font-size: 0.9rem;">
+                <i class="fas fa-shield-alt"></i> 所有文件仅在内存中处理，任务完成后自动清理 • 
+                <i class="fas fa-lock"></i> API 密钥仅在本地浏览器存储
+            </p>
+        </footer>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-info-circle"></i>
+        <span id="notification-message">通知内容</span>
     </div>
 
-    <!-- 🗂️ 功能选项卡 -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="translate">🌐 翻译核心</button>
-      <button class="tab-btn" data-tab="separate">✂️ 分离更新</button>
-      <button class="tab-btn" data-tab="merge">🔗 合并更新</button>
-    </div>
-
-    <!-- 🌐 翻译核心面板 -->
-    <div id="translate" class="panel active">
-      <h3>📦 翻译语言文件 / 压缩包 / 整合包</h3>
-      <div class="form-group">
-        <label for="t_file0">📁 源文件 (File0) *</label>
-        <input type="file" id="t_file0" accept=".zip,.jar,.mrpack,.lang,.json"/>
-        <div class="hint" id="hint_t_file0"></div>
-      </div>
-      <div class="form-group">
-        <label for="t_file0_name">🏷️ 源文件名 (自动获取)</label>
-        <input type="text" id="t_file0_name" class="filename-display" readonly placeholder="选择文件后自动显示"/>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="t_file1">📎 参考文件 (File1, 可选)</label>
-          <input type="file" id="t_file1" accept=".zip,.jar,.lang,.json"/>
-        </div>
-        <div class="form-group">
-          <label for="t_file1_name">🏷️ 参考文件名 (自动获取)</label>
-          <input type="text" id="t_file1_name" class="filename-display" readonly placeholder="选择文件后自动显示"/>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label><div class="checkbox-group"><input type="checkbox" id="t_all_mode"/><span>🔄 AllMode: 翻译整合包时处理所有模组</span></div></label>
-          <div class="hint">False=跳过已含 I18n 模组的汉化; True=翻译所有可翻译模组</div>
-        </div>
-        <div class="form-group">
-          <label><div class="checkbox-group"><input type="checkbox" id="t_export_inspection"/><span>📋 ExportInspection: 导出审核文件 (.translatorlang)</span></div></label>
-          <div class="hint">仅对 jar/zip/.lang/.json 有效，便于人工校对</div>
-        </div>
-      </div>
-      <div>
-        <button class="submit-btn" id="btnTranslate">🚀 提交翻译任务</button>
-        <button class="cancel-btn" id="btnCancelTranslate" style="display:none;">⏹️ 取消任务</button>
-      </div>
-      <div class="progress-bar" id="progress_bar_translate"><div class="progress-fill" id="progress_fill_translate"></div></div>
-      <div id="status_translate" class="status"></div>
-    </div>
-
-    <!-- ✂️ 分离更新面板 -->
-    <div id="separate" class="panel">
-      <h3>✂️ 提取新增键值 / 生成待翻译片段</h3>
-      <div class="form-group">
-        <label for="s_file0">📁 源文件 (File0) *</label>
-        <input type="file" id="s_file0" accept=".zip,.jar,.lang,.json"/>
-        <div class="hint" id="hint_s_file0"></div>
-      </div>
-      <div class="form-group">
-        <label for="s_file0_name">🏷️ 源文件名 (自动获取)</label>
-        <input type="text" id="s_file0_name" class="filename-display" readonly placeholder="选择文件后自动显示"/>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="s_file1">📎 参考文件 (File1, 可选)</label>
-          <input type="file" id="s_file1" accept=".zip,.jar,.lang,.json"/>
-        </div>
-        <div class="form-group">
-          <label for="s_file1_name">🏷️ 参考文件名 (自动获取)</label>
-          <input type="text" id="s_file1_name" class="filename-display" readonly placeholder="选择文件后自动显示"/>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="s_mode">🔧 处理模式</label>
-        <select id="s_mode">
-          <option value="none">none - 默认: 返回缺失键值对的语言文件</option>
-          <option value="extra">extra - 返回 .translatorlang 格式文件 (带翻译提示)</option>
-        </select>
-        <div class="hint">extra 模式输出专为 TranslatorLang 审核设计</div>
-      </div>
-      <div>
-        <button class="submit-btn" id="btnSeparate">🚀 提交分离任务</button>
-        <button class="cancel-btn" id="btnCancelSeparate" style="display:none;">⏹️ 取消任务</button>
-      </div>
-      <div class="progress-bar" id="progress_bar_separate"><div class="progress-fill" id="progress_fill_separate"></div></div>
-      <div id="status_separate" class="status"></div>
-    </div>
-
-    <!-- 🔗 合并更新面板 -->
-    <div id="merge" class="panel">
-      <h3>🔗 合并翻译结果 / 人工校对内容</h3>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="m_file0">📁 源文件 (File0) *</label>
-          <input type="file" id="m_file0" accept=".zip,.jar,.lang,.json"/>
-          <div class="hint" id="hint_m_file0"></div>
-        </div>
-        <div class="form-group">
-          <label for="m_file0_name">🏷️ 源文件名 (自动获取)</label>
-          <input type="text" id="m_file0_name" class="filename-display" readonly placeholder="选择文件后自动显示"/>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="m_notlang">📎 待合并文件 (NotLangFile) *</label>
-          <input type="file" id="m_notlang" accept=".zip,.jar,.lang,.json,.translatorlang"/>
-          <div class="hint" id="hint_m_notlang"></div>
-        </div>
-        <div class="form-group">
-          <label for="m_notlang_name">🏷️ 待合并文件名 (自动获取)</label>
-          <input type="text" id="m_notlang_name" class="filename-display" readonly placeholder="选择文件后自动显示"/>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="m_file1">📁 参考文件 (File1, 可选)</label>
-          <input type="file" id="m_file1" accept=".zip,.jar,.lang,.json"/>
-        </div>
-        <div class="form-group">
-          <label for="m_file1_name">🏷️ 参考文件名 (自动获取)</label>
-          <input type="text" id="m_file1_name" class="filename-display" readonly placeholder="选择文件后自动显示"/>
-        </div>
-      </div>
-      <div>
-        <button class="submit-btn" id="btnMerge">🚀 提交合并任务</button>
-        <button class="cancel-btn" id="btnCancelMerge" style="display:none;">⏹️ 取消任务</button>
-      </div>
-      <div class="progress-bar" id="progress_bar_merge"><div class="progress-fill" id="progress_fill_merge"></div></div>
-      <div id="status_merge" class="status"></div>
-    </div>
-  </div>
-
-  <script>
-    // 📦 独立配置区
-    const UI_CONFIG = {
-      hints: {
-        translate_file0: "支持: .zip(光影/资源包/整合包/FTB任务/BQ任务), .lang/.json(语言文件), .mrpack(整合包)",
-        separate_file0:  "支持: .jar/.zip(模组/光影/资源包), .lang/.json(语言文件)",
-        merge_file0:     "支持: .jar/.zip(模组/光影/资源包), .lang/.json(语言文件)",
-        merge_notlang:   "支持: .lang/.json/.translatorlang(语言文件), 或含语言文件的压缩包"
-      }
-    };
-
-    // ========== 全局状态 ==========
-    const state = { 
-      apiUrl: localStorage.getItem('tm_apiUrl') || '', 
-      apiKey: localStorage.getItem('tm_apiKey') || '', 
-      loading: false,
-      activeTaskId: null,
-      ws: null
-    };
-
-    // ========== 初始化 ==========
-    document.addEventListener('DOMContentLoaded', () => {
-      // 渲染提示文本
-      document.getElementById('hint_t_file0').textContent = UI_CONFIG.hints.translate_file0;
-      document.getElementById('hint_s_file0').textContent = UI_CONFIG.hints.separate_file0;
-      document.getElementById('hint_m_file0').textContent = UI_CONFIG.hints.merge_file0;
-      document.getElementById('hint_m_notlang').textContent = UI_CONFIG.hints.merge_notlang;
-
-      // 恢复配置
-      if (state.apiUrl) document.getElementById('apiUrl').value = state.apiUrl;
-      if (state.apiKey) document.getElementById('apiKey').value = state.apiKey;
-
-      // 配置监听
-      document.getElementById('apiUrl').addEventListener('change', e => { state.apiUrl = e.target.value.trim(); localStorage.setItem('tm_apiUrl', state.apiUrl); });
-      document.getElementById('apiKey').addEventListener('change', e => { state.apiKey = e.target.value.trim(); localStorage.setItem('tm_apiKey', state.apiKey); });
-
-      // 选项卡切换
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-          document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-          btn.classList.add('active'); 
-          document.getElementById(btn.dataset.tab).classList.add('active');
+    <script>
+        // 全局配置
+        let apiConfig = {
+            url: localStorage.getItem('mcTranslatorApiUrl') || 'http://localhost:8000',
+            key: localStorage.getItem('mcTranslatorApiKey') || ''
+        };
+        
+        // 初始化配置输入框
+        document.getElementById('api-url').value = apiConfig.url;
+        document.getElementById('api-key').value = apiConfig.key;
+        
+        // 保存配置
+        document.getElementById('save-config').addEventListener('click', (e) => {
+            e.preventDefault(); // 防止默认行为
+            const url = document.getElementById('api-url').value.trim();
+            const key = document.getElementById('api-key').value.trim();
+            
+            if (!url) {
+                showNotification('请输入有效的 API 服务器地址', 'error');
+                return;
+            }
+            
+            if (!key) {
+                showNotification('请输入 API 密钥', 'error');
+                return;
+            }
+            
+            apiConfig = { url, key };
+            localStorage.setItem('mcTranslatorApiUrl', url);
+            localStorage.setItem('mcTranslatorApiKey', key);
+            showNotification('API 配置已保存!', 'success');
         });
-      });
-
-      // 自动获取文件名
-      const filePairs = [
-        ['t_file0', 't_file0_name'], ['t_file1', 't_file1_name'],
-        ['s_file0', 's_file0_name'], ['s_file1', 's_file1_name'],
-        ['m_file0', 'm_file0_name'], ['m_file1', 'm_file1_name'], ['m_notlang', 'm_notlang_name']
-      ];
-      filePairs.forEach(([fileId, nameId]) => {
-        const fileInput = document.getElementById(fileId);
-        const nameInput = document.getElementById(nameId);
-        if (fileInput && nameInput) {
-          fileInput.addEventListener('change', () => { nameInput.value = fileInput.files[0]?.name || ''; });
+        
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                // 移除所有 active 类
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // 添加 active 类到当前标签
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // 文件上传处理
+        function setupFileUpload(dropZoneId, fileInputId, fileNameId) {
+            const dropZone = document.getElementById(dropZoneId);
+            const fileInput = document.getElementById(fileInputId);
+            const fileNameDisplay = document.getElementById(fileNameId);
+            
+            // 点击区域触发文件选择
+            dropZone.addEventListener('click', (e) => {
+                // 防止点击文件名区域时触发
+                if (e.target !== fileNameDisplay && e.target !== dropZone.querySelector('input')) {
+                    fileInput.click();
+                }
+            });
+            
+            // 文件选择变化
+            fileInput.addEventListener('change', (e) => {
+                e.preventDefault();
+                if (e.target.files.length > 0) {
+                    const fileName = e.target.files[0].name;
+                    fileNameDisplay.textContent = fileName;
+                    fileNameDisplay.style.display = 'block';
+                    dropZone.querySelector('p').textContent = '文件已选择:';
+                }
+            });
+            
+            // 拖放支持
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.add('dragover');
+                });
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('dragover');
+                });
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    const fileName = files[0].name;
+                    fileNameDisplay.textContent = fileName;
+                    fileNameDisplay.style.display = 'block';
+                    dropZone.querySelector('p').textContent = '文件已选择:';
+                }
+            });
         }
-      });
-
-      // 绑定按钮事件
-      document.getElementById('testConnection').addEventListener('click', testConnection);
-      document.getElementById('btnTranslate').addEventListener('click', () => submitTask('translate'));
-      document.getElementById('btnCancelTranslate').addEventListener('click', () => cancelTask('translate'));
-      document.getElementById('btnSeparate').addEventListener('click', () => submitTask('separate'));
-      document.getElementById('btnCancelSeparate').addEventListener('click', () => cancelTask('separate'));
-      document.getElementById('btnMerge').addEventListener('click', () => submitTask('merge'));
-      document.getElementById('btnCancelMerge').addEventListener('click', () => cancelTask('merge'));
-    });
-
-    // ========== 工具函数 ==========
-    function showStatus(panelId, type, message, detail = null) {
-      const el = document.getElementById(`status_${panelId}`);
-      el.className = `status show ${type}`;
-      el.innerHTML = `<strong>${message}</strong>${detail ? `<pre>${detail}</pre>` : ''}`;
-      if (type === 'success') setTimeout(() => el.classList.remove('show'), 10000);
-    }
-
-    function setLoading(btnId, loading) {
-      const btn = document.getElementById(btnId);
-      const original = btn.textContent.replace('⏳ 处理中...', '🚀 ');
-      btn.disabled = loading; 
-      btn.textContent = loading ? '⏳ 处理中...' : original;
-    }
-
-    function setTaskActive(panelId, isActive, taskId = null) {
-      const submitBtn = document.getElementById(`btn${panelId.charAt(0).toUpperCase() + panelId.slice(1)}`);
-      const cancelBtn = document.getElementById(`btnCancel${panelId.charAt(0).toUpperCase() + panelId.slice(1)}`);
-      const progressBar = document.getElementById(`progress_bar_${panelId}`);
-      const progressFill = document.getElementById(`progress_fill_${panelId}`);
-      
-      if (isActive) {
-        submitBtn.style.display = 'none';
-        cancelBtn.style.display = 'inline-block';
-        cancelBtn.disabled = false;
-        progressBar.classList.add('show');
-        progressFill.classList.add('indeterminate');
-        progressFill.style.width = '0%';
-        state.activeTaskId = taskId;
-      } else {
-        submitBtn.style.display = 'inline-block';
-        cancelBtn.style.display = 'none';
-        progressBar.classList.remove('show');
-        progressFill.classList.remove('indeterminate');
-        state.activeTaskId = null;
-      }
-    }
-
-    function updateProgress(panelId, progress, message) {
-      const progressBar = document.getElementById(`progress_bar_${panelId}`);
-      const progressFill = document.getElementById(`progress_fill_${panelId}`);
-      
-      progressBar.classList.add('show');
-      if (progress === -1 || progress === undefined) {
-        progressFill.classList.add('indeterminate');
-        progressFill.style.width = '0%';
-      } else {
-        progressFill.classList.remove('indeterminate');
-        progressFill.style.width = `${Math.min(100, Math.max(0, progress))}%`;
-      }
-      
-      showStatus(panelId, 'loading', message || '任务处理中...');
-    }
-
-    function buildAuthHeader() {
-      if (!state.apiKey) throw new Error('请先填写 API Key');
-      return { 'Authorization': `Bearer ${state.apiKey}` };
-    }
-    function buildUrl(endpoint) { return state.apiUrl.replace(/\/$/, '') + endpoint; }
-    function buildWsUrl(taskId) {
-      const url = state.apiUrl.replace(/^http/, 'ws').replace(/\/$/, '');
-      return `${url}/ws/progress/${taskId}?token=${encodeURIComponent(state.apiKey)}`;
-    }
-
-    // ========== WebSocket 管理 ==========
-    function connectWebSocket(panelId, taskId) {
-      const wsUrl = buildWsUrl(taskId);
-      state.ws = new WebSocket(wsUrl);
-      
-      state.ws.onopen = () => {
-        console.log(`[WebSocket] 已连接到任务 ${taskId}`);
-      };
-      
-      state.ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log(`[WebSocket] 进度更新:`, data);
-          
-          if (data.status === 'processing' || data.status === 'queued') {
-            updateProgress(panelId, data.progress, data.message);
-          } else if (data.status === 'completed') {
-            updateProgress(panelId, 100, '任务完成，正在下载...');
-            setTaskActive(panelId, false);
-            showStatus(panelId, 'success', `✅ 任务完成！正在下载结果文件...`);
-            // 自动下载
+        
+        // 初始化所有文件上传区域
+        setupFileUpload('drop-zone-0', 'file0', 'file0-name');
+        setupFileUpload('drop-zone-1', 'file1', 'file1-name');
+        setupFileUpload('drop-zone-sep0', 'sep-file0', 'sep-file0-name');
+        setupFileUpload('drop-zone-sep1', 'sep-file1', 'sep-file1-name');
+        setupFileUpload('drop-zone-merge0', 'merge-file0', 'merge-file0-name');
+        setupFileUpload('drop-zone-merge-notlang', 'merge-notlang', 'merge-notlang-name');
+        setupFileUpload('drop-zone-merge1', 'merge-file1', 'merge-file1-name');
+        
+        // 通知系统
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const icon = notification.querySelector('i');
+            
+            notification.className = `notification ${type} show`;
+            document.getElementById('notification-message').textContent = message;
+            
+            if (type === 'success') icon.className = 'fas fa-check-circle';
+            else if (type === 'error') icon.className = 'fas fa-exclamation-triangle';
+            else icon.className = 'fas fa-info-circle';
+            
             setTimeout(() => {
-              window.location.href = buildUrl(`/translate/download/${taskId}`);
-            }, 500);
-          } else if (data.status === 'failed' || data.status === 'cancelled') {
-            setTaskActive(panelId, false);
-            showStatus(panelId, 'error', `❌ 任务失败: ${data.message}`, data.error);
-          }
-        } catch (e) {
-          console.error('[WebSocket] 解析消息失败:', e);
-        }
-      };
-      
-      state.ws.onerror = (error) => {
-        console.error('[WebSocket] 连接错误:', error);
-        showStatus(panelId, 'error', '⚠️ WebSocket 连接异常，尝试轮询模式...');
-        // Fallback: 轮询
-        startPolling(panelId, taskId);
-      };
-      
-      state.ws.onclose = () => {
-        console.log(`[WebSocket] 连接关闭: ${taskId}`);
-      };
-    }
-
-    // 轮询 Fallback
-    function startPolling(panelId, taskId) {
-      const pollInterval = setInterval(async () => {
-        try {
-          const res = await fetch(buildUrl(`/translate/status/${taskId}`), { headers: buildAuthHeader() });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          
-          const data = await res.json();
-          if (data.status === 'processing' || data.status === 'queued') {
-            updateProgress(panelId, data.progress, data.message);
-          } else if (data.status === 'completed') {
-            clearInterval(pollInterval);
-            updateProgress(panelId, 100, '任务完成，正在下载...');
-            setTaskActive(panelId, false);
-            showStatus(panelId, 'success', `✅ 任务完成！正在下载结果文件...`);
-            window.location.href = buildUrl(`/translate/download/${taskId}`);
-          } else if (data.status === 'failed' || data.status === 'cancelled') {
-            clearInterval(pollInterval);
-            setTaskActive(panelId, false);
-            showStatus(panelId, 'error', `❌ 任务失败: ${data.message}`, data.error);
-          }
-        } catch (err) {
-          console.error('[Polling] 查询失败:', err);
-        }
-      }, 2000);
-    }
-
-    // ========== 任务提交 ==========
-    async function submitTask(panelId) {
-      if (state.loading) return;
-      
-      // 验证文件
-      let fileInput, fileNameInput, endpoint, formData;
-      const panelPrefix = panelId === 'translate' ? 't' : panelId === 'separate' ? 's' : 'm';
-      
-      if (panelId === 'translate') {
-        fileInput = document.getElementById('t_file0');
-        fileNameInput = document.getElementById('t_file0_name');
-        endpoint = '/translate/submit';
-        
-        if (!fileInput.files[0]) return showStatus('translate', 'error', '❌ 请选择源文件');
-        
-        formData = new FormData();
-        formData.append('file0', fileInput.files[0]);
-        formData.append('file_name0', fileNameInput.value || fileInput.files[0].name);
-        
-        const file1 = document.getElementById('t_file1').files[0];
-        const fileName1 = document.getElementById('t_file1_name').value;
-        if (file1) {
-          formData.append('file1', file1);
-          formData.append('file_name1', fileName1 || file1.name);
-        }
-        formData.append('all_mode', document.getElementById('t_all_mode').checked);
-        formData.append('export_inspection', document.getElementById('t_export_inspection').checked);
-        
-      } else if (panelId === 'separate') {
-        fileInput = document.getElementById('s_file0');
-        fileNameInput = document.getElementById('s_file0_name');
-        endpoint = '/separatelangupdate/submit';
-        
-        if (!fileInput.files[0]) return showStatus('separate', 'error', '❌ 请选择源文件');
-        
-        formData = new FormData();
-        formData.append('file0', fileInput.files[0]);
-        formData.append('file_name0', fileNameInput.value || fileInput.files[0].name);
-        
-        const file1 = document.getElementById('s_file1').files[0];
-        const fileName1 = document.getElementById('s_file1_name').value;
-        if (file1) {
-          formData.append('file1', file1);
-          formData.append('file_name1', fileName1 || file1.name);
-        }
-        formData.append('Mode', document.getElementById('s_mode').value);
-        
-      } else if (panelId === 'merge') {
-        fileInput = document.getElementById('m_file0');
-        fileNameInput = document.getElementById('m_file0_name');
-        endpoint = '/mergelangupdate/submit';
-        
-        const notlangFile = document.getElementById('m_notlang').files[0];
-        const notlangName = document.getElementById('m_notlang_name').value;
-        
-        if (!fileInput.files[0] || !notlangFile) {
-          return showStatus('merge', 'error', '❌ 请选择源文件和待合并文件');
+                notification.classList.remove('show');
+            }, 4000);
         }
         
-        formData = new FormData();
-        formData.append('file0', fileInput.files[0]);
-        formData.append('file_name0', fileNameInput.value || fileInput.files[0].name);
-        formData.append('notlang_file', notlangFile);
-        formData.append('nolang_file_name', notlangName || notlangFile.name);
-        
-        const file1 = document.getElementById('m_file1').files[0];
-        const fileName1 = document.getElementById('m_file1_name').value;
-        if (file1) {
-          formData.append('file1', file1);
-          formData.append('file_name1', fileName1 || file1.name);
+        // 复制文本到剪贴板
+        function copyToClipboard(text, hintElement) {
+            navigator.clipboard.writeText(text).then(() => {
+                if (hintElement) {
+                    hintElement.classList.add('show');
+                    setTimeout(() => {
+                        hintElement.classList.remove('show');
+                    }, 1500);
+                }
+            }).catch(err => {
+                console.warn('复制失败:', err);
+                showNotification('复制到剪贴板失败，请手动复制', 'info');
+            });
         }
-      }
-      
-      state.loading = true;
-      setLoading(`btn${panelId.charAt(0).toUpperCase() + panelId.slice(1)}`, true);
-      showStatus(panelId, 'loading', '📤 正在提交任务...');
-      
-      try {
-        const res = await fetch(buildUrl(endpoint), {
-          method: 'POST',
-          headers: buildAuthHeader(),
-          body: formData
+        
+        // API 请求封装
+        async function apiRequest(endpoint, formData = null, method = 'POST') {
+            if (!apiConfig.url || !apiConfig.key) {
+                throw new Error('请先配置 API 地址和密钥');
+            }
+            
+            const url = `${apiConfig.url}${endpoint}`;
+            const headers = {
+                'Authorization': `Bearer ${apiConfig.key}`
+            };
+            
+            try {
+                const options = {
+                    method,
+                    headers
+                };
+                
+                if (formData) {
+                    options.body = formData;
+                }
+                
+                const response = await fetch(url, options);
+                
+                // 处理速率限制
+                if (response.status === 429) {
+                    const retryAfter = response.headers.get('Retry-After') || 5;
+                    throw new Error(`请求过于频繁，请 ${retryAfter} 秒后重试`);
+                }
+                
+                // 处理认证错误
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error('API 密钥无效或未授权，请检查配置');
+                }
+                
+                // 处理其他错误
+                if (!response.ok) {
+                    let errorDetail = '服务器返回错误';
+                    try {
+                        const errorData = await response.json();
+                        errorDetail = errorData.detail || errorDetail;
+                    } catch (e) {
+                        // 尝试获取文本错误
+                        try {
+                            errorDetail = await response.text();
+                        } catch (e) {}
+                    }
+                    throw new Error(`请求失败 (${response.status}): ${errorDetail}`);
+                }
+                
+                // 对于任务提交，返回 JSON
+                if (method === 'POST') {
+                    return await response.json();
+                } 
+                // 对于任务状态查询，如果是文件则返回 blob，否则返回 JSON
+                else if (endpoint.includes('/task/')) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return await response.json();
+                    } else {
+                        // 返回文件下载信息
+                        return {
+                            isFile: true,
+                            blob: await response.blob(),
+                            filename: getFileNameFromResponse(response)
+                        };
+                    }
+                }
+                
+                return await response.json();
+            } catch (error) {
+                if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+                    throw new Error('无法连接到 API 服务器，请检查地址是否正确');
+                }
+                throw error;
+            }
+        }
+        
+        function getFileNameFromResponse(response) {
+            const contentDisposition = response.headers.get('Content-Disposition');
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?/i);
+                if (filenameMatch && filenameMatch[1]) {
+                    return decodeURIComponent(filenameMatch[1]);
+                }
+            }
+            return 'translation_result.zip';
+        }
+        
+        // 提交翻译任务 - 修复关键：添加 preventDefault
+        document.getElementById('submit-translate').addEventListener('click', async (e) => {
+            e.preventDefault(); // 防止默认提交行为
+            
+            const file0Input = document.getElementById('file0');
+            const file1Input = document.getElementById('file1');
+            const allMode = document.getElementById('all-mode').checked;
+            const exportInspection = document.getElementById('export-inspection').checked;
+            
+            if (!file0Input.files || file0Input.files.length === 0) {
+                showNotification('请先选择源文件', 'error');
+                return;
+            }
+            
+            if (!apiConfig.key) {
+                showNotification('请先配置 API 密钥', 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            const submitBtn = document.getElementById('submit-translate');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span class="spinner"></span> 处理中...`;
+            
+            try {
+                const formData = new FormData();
+                formData.append('file0', file0Input.files[0]);
+                formData.append('file_name0', file0Input.files[0].name);
+                
+                if (file1Input.files && file1Input.files.length > 0) {
+                    formData.append('file1', file1Input.files[0]);
+                    formData.append('file_name1', file1Input.files[0].name);
+                }
+                
+                formData.append('all_mode', allMode.toString());
+                formData.append('export_inspection', exportInspection.toString());
+                
+                const result = await apiRequest('/translate', formData);
+                
+                if (result.task_id) {
+                    const taskIdElement = document.getElementById('translate-task-id');
+                    taskIdElement.textContent = result.task_id;
+                    taskIdElement.setAttribute('data-clipboard-text', result.task_id);
+                    
+                    // 自动复制到剪贴板
+                    copyToClipboard(result.task_id, document.getElementById('translate-copy-hint'));
+                    
+                    document.getElementById('translate-result').style.display = 'block';
+                    
+                    // 滚动到结果区域
+                    document.getElementById('translate-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    
+                    showNotification(`✅ 任务已提交! ID: ${result.task_id.substring(0, 8)}... (已自动复制)`, 'success');
+                } else {
+                    throw new Error('服务器未返回任务ID');
+                }
+            } catch (error) {
+                showNotification(error.message || '提交翻译任务时出错', 'error');
+                console.error('翻译任务错误:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
         });
         
-        if (!res.ok) {
-          if (res.status === 429) {
-            throw new Error('⛔ 触发限流：请求过于频繁，请稍后再试');
-          }
-          throw new Error(`HTTP ${res.status}: ${await res.text().catch(()=>res.statusText)}`);
-        }
-        
-        const data = await res.json();
-        const taskId = data.task_id;
-        
-        console.log(`[任务提交] 任务ID: ${taskId}`);
-        setTaskActive(panelId, true, taskId);
-        showStatus(panelId, 'loading', `✅ 任务已提交 (ID: ${taskId})，正在连接 WebSocket...`);
-        
-        // 连接 WebSocket
-        connectWebSocket(panelId, taskId);
-        
-      } catch (err) {
-        showStatus(panelId, 'error', '❌ 提交失败', err.message);
-      } finally {
-        state.loading = false;
-        setLoading(`btn${panelId.charAt(0).toUpperCase() + panelId.slice(1)}`, false);
-      }
-    }
-
-    // ========== 取消任务 ==========
-    async function cancelTask(panelId) {
-      if (!state.activeTaskId) return;
-      
-      if (!confirm('确定要取消当前任务吗？')) return;
-      
-      try {
-        const res = await fetch(buildUrl(`/translate/cancel/${state.activeTaskId}`), {
-          method: 'DELETE',
-          headers: buildAuthHeader()
+        // 提交分离任务
+        document.getElementById('submit-separate').addEventListener('click', async (e) => {
+            e.preventDefault(); // 防止默认提交行为
+            
+            const file0Input = document.getElementById('sep-file0');
+            const file1Input = document.getElementById('sep-file1');
+            const mode = document.getElementById('sep-mode').value;
+            
+            if (!file0Input.files || file0Input.files.length === 0) {
+                showNotification('请先选择源文件', 'error');
+                return;
+            }
+            
+            if (!apiConfig.key) {
+                showNotification('请先配置 API 密钥', 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            const submitBtn = document.getElementById('submit-separate');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span class="spinner"></span> 处理中...`;
+            
+            try {
+                const formData = new FormData();
+                formData.append('file0', file0Input.files[0]);
+                formData.append('file_name0', file0Input.files[0].name);
+                
+                if (file1Input.files && file1Input.files.length > 0) {
+                    formData.append('file1', file1Input.files[0]);
+                    formData.append('file_name1', file1Input.files[0].name);
+                }
+                
+                formData.append('Mode', mode);
+                
+                const result = await apiRequest('/separatelangupdate', formData);
+                
+                if (result.task_id) {
+                    const taskIdElement = document.getElementById('separate-task-id');
+                    taskIdElement.textContent = result.task_id;
+                    taskIdElement.setAttribute('data-clipboard-text', result.task_id);
+                    
+                    copyToClipboard(result.task_id, document.getElementById('separate-copy-hint'));
+                    
+                    document.getElementById('separate-result').style.display = 'block';
+                    document.getElementById('separate-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    showNotification(`✅ 分离任务已提交! ID: ${result.task_id.substring(0, 8)}... (已自动复制)`, 'success');
+                } else {
+                    throw new Error('服务器未返回任务ID');
+                }
+            } catch (error) {
+                showNotification(error.message || '提交分离任务时出错', 'error');
+                console.error('分离任务错误:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
         });
         
-        if (res.ok) {
-          showStatus(panelId, 'loading', '⏹️ 取消请求已发送，等待任务停止...');
-          // 关闭 WebSocket
-          if (state.ws) {
-            state.ws.close();
-            state.ws = null;
-          }
-          setTaskActive(panelId, false);
+        // 提交合并任务
+        document.getElementById('submit-merge').addEventListener('click', async (e) => {
+            e.preventDefault(); // 防止默认提交行为
+            
+            const file0Input = document.getElementById('merge-file0');
+            const notlangInput = document.getElementById('merge-notlang');
+            const file1Input = document.getElementById('merge-file1');
+            
+            if (!file0Input.files || file0Input.files.length === 0) {
+                showNotification('请先选择原始文件', 'error');
+                return;
+            }
+            
+            if (!notlangInput.files || notlangInput.files.length === 0) {
+                showNotification('请先选择翻译更新文件', 'error');
+                return;
+            }
+            
+            if (!apiConfig.key) {
+                showNotification('请先配置 API 密钥', 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            const submitBtn = document.getElementById('submit-merge');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span class="spinner"></span> 处理中...`;
+            
+            try {
+                const formData = new FormData();
+                formData.append('file0', file0Input.files[0]);
+                formData.append('file_name0', file0Input.files[0].name);
+                formData.append('notlang_file', notlangInput.files[0]);
+                formData.append('nolang_file_name', notlangInput.files[0].name);
+                
+                if (file1Input.files && file1Input.files.length > 0) {
+                    formData.append('file1', file1Input.files[0]);
+                    formData.append('file_name1', file1Input.files[0].name);
+                }
+                
+                const result = await apiRequest('/mergelangupdate', formData);
+                
+                if (result.task_id) {
+                    const taskIdElement = document.getElementById('merge-task-id');
+                    taskIdElement.textContent = result.task_id;
+                    taskIdElement.setAttribute('data-clipboard-text', result.task_id);
+                    
+                    copyToClipboard(result.task_id, document.getElementById('merge-copy-hint'));
+                    
+                    document.getElementById('merge-result').style.display = 'block';
+                    document.getElementById('merge-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    showNotification(`✅ 合并任务已提交! ID: ${result.task_id.substring(0, 8)}... (已自动复制)`, 'success');
+                } else {
+                    throw new Error('服务器未返回任务ID');
+                }
+            } catch (error) {
+                showNotification(error.message || '提交合并任务时出错', 'error');
+                console.error('合并任务错误:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+        
+        // 查询任务状态
+        document.getElementById('check-status').addEventListener('click', async (e) => {
+            e.preventDefault(); // 防止默认提交行为
+            
+            const taskId = document.getElementById('task-id-input').value.trim();
+            
+            if (!taskId) {
+                showNotification('请输入任务 ID', 'error');
+                return;
+            }
+            
+            if (!apiConfig.key) {
+                showNotification('请先配置 API 密钥', 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            const checkBtn = document.getElementById('check-status');
+            const originalText = checkBtn.innerHTML;
+            checkBtn.disabled = true;
+            checkBtn.innerHTML = `<span class="spinner"></span> 查询中...`;
+            
+            // 显示结果区域
+            const resultContainer = document.getElementById('status-result');
+            resultContainer.style.display = 'block';
+            document.getElementById('status-task-id').textContent = taskId;
+            document.getElementById('status-badge').textContent = '查询中...';
+            document.getElementById('status-badge').className = 'status-badge status-processing';
+            document.getElementById('status-details').style.display = 'none';
+            document.getElementById('status-error').style.display = 'none';
+            document.getElementById('download-section').style.display = 'none';
+            
+            try {
+                // 首先尝试获取任务状态
+                let result;
+                try {
+                    result = await apiRequest(`/task/${taskId}`, null, 'GET');
+                } catch (error) {
+                    // 如果返回404，可能是任务不存在
+                    if (error.message.includes('404')) {
+                        throw new Error('任务不存在或已过期');
+                    }
+                    throw error;
+                }
+                
+                // 处理不同状态
+                const statusBadge = document.getElementById('status-badge');
+                const statusDetails = document.getElementById('status-details');
+                const statusError = document.getElementById('status-error');
+                const errorMessage = document.getElementById('error-message');
+                const downloadSection = document.getElementById('download-section');
+                
+                if (result.status === 'completed' && result.isFile) {
+                    // 任务完成且返回文件
+                    statusBadge.textContent = '已完成 ✓';
+                    statusBadge.className = 'status-badge status-completed';
+                    
+                    // 显示下载按钮
+                    downloadSection.style.display = 'block';
+                    document.getElementById('download-btn').onclick = (e) => {
+                        e.preventDefault();
+                        const url = window.URL.createObjectURL(result.blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = result.filename || 'translation_result.zip';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        showNotification('文件下载开始', 'success');
+                    };
+                    
+                    // 显示详情
+                    statusDetails.style.display = 'block';
+                    document.getElementById('status-created').textContent = new Date().toLocaleString();
+                    document.getElementById('status-progress').textContent = '100% - 处理完成 ✓';
+                    
+                } else if (result.status === 'completed') {
+                    // 任务完成但返回JSON（可能包含文件路径）
+                    statusBadge.textContent = '已完成 ✓';
+                    statusBadge.className = 'status-badge status-completed';
+                    
+                    statusDetails.style.display = 'block';
+                    document.getElementById('status-created').textContent = new Date().toLocaleString();
+                    document.getElementById('status-progress').textContent = '100% - 处理完成 ✓';
+                    
+                    // 如果有结果路径，提供下载（简化处理）
+                    if (result.result_path) {
+                        downloadSection.style.display = 'block';
+                        document.getElementById('download-btn').onclick = (e) => {
+                            e.preventDefault();
+                            showNotification('结果文件路径: ' + result.result_path, 'info');
+                        };
+                    }
+                    
+                } else if (result.status === 'failed') {
+                    // 任务失败
+                    statusBadge.textContent = '失败 ✗';
+                    statusBadge.className = 'status-badge status-failed';
+                    
+                    statusError.style.display = 'block';
+                    errorMessage.textContent = result.error || '未知错误';
+                    
+                } else if (result.status === 'processing' || result.status === 'pending') {
+                    // 任务进行中
+                    statusBadge.textContent = result.status === 'processing' ? '处理中...' : '排队中...';
+                    statusBadge.className = result.status === 'processing' 
+                        ? 'status-badge status-processing' 
+                        : 'status-badge status-pending';
+                    
+                    statusDetails.style.display = 'block';
+                    document.getElementById('status-created').textContent = new Date().toLocaleString();
+                    document.getElementById('status-progress').textContent = result.status === 'processing' 
+                        ? '处理中，请稍候...' 
+                        : '等待资源分配...';
+                } else {
+                    // 未知状态
+                    statusBadge.textContent = result.status || '未知状态';
+                    statusBadge.className = 'status-badge status-pending';
+                }
+                
+            } catch (error) {
+                document.getElementById('status-badge').textContent = '查询失败 ✗';
+                document.getElementById('status-badge').className = 'status-badge status-failed';
+                
+                document.getElementById('status-error').style.display = 'block';
+                document.getElementById('error-message').textContent = error.message || '未知错误';
+                console.error('状态查询错误:', error);
+            } finally {
+                checkBtn.disabled = false;
+                checkBtn.innerHTML = originalText;
+            }
+        });
+        
+        // 点击任务ID复制
+        document.querySelectorAll('.task-id').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                const text = el.getAttribute('data-clipboard-text');
+                if (text && text !== '-') {
+                    copyToClipboard(text, el.nextElementSibling);
+                    el.classList.add('copied');
+                    setTimeout(() => {
+                        el.classList.remove('copied');
+                    }, 1000);
+                }
+            });
+        });
+        
+        // 初始化时检查本地存储的配置
+        if (apiConfig.key) {
+            showNotification('✅ 已加载保存的 API 配置', 'info');
         } else {
-          const data = await res.json().catch(() => ({}));
-          showStatus(panelId, 'error', '❌ 取消失败', data.detail || res.statusText);
+            showNotification('ℹ️ 请先在顶部配置 API 地址和密钥', 'info');
         }
-      } catch (err) {
-        showStatus(panelId, 'error', '❌ 取消请求失败', err.message);
-      }
-    }
-
-    // ========== 测试连接 ==========
-    async function testConnection() {
-      const btn = document.getElementById('testConnection');
-      const original = btn.textContent;
-      btn.disabled = true; 
-      btn.textContent = '🔍 测试中...';
-      
-      try {
-        const res = await fetch(buildUrl('/translate/status/test'), { 
-          method: 'GET',
-          headers: buildAuthHeader()
-        });
         
-        // 404 表示服务正常（任务不存在），401/403 表示认证正常但密钥无效
-        if (res.status === 404 || res.status === 401 || res.status === 403) {
-          showStatus('translate', 'success', '✅ API 服务可达！');
-        } else if (res.ok) {
-          showStatus('translate', 'success', '✅ API 服务正常！');
-        } else {
-          throw new Error(`状态码: ${res.status}`);
-        }
-      } catch (err) {
-        showStatus('translate', 'error', '❌ 连接失败', err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = original;
-      }
-    }
-  </script>
+        // 防止整个页面的意外表单提交
+        document.addEventListener('submit', (e) => {
+            e.preventDefault();
+            return false;
+        });
+    </script>
 </body>
 </html>
