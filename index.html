@@ -461,6 +461,41 @@
             background: #ffebee;
         }
         
+        .log-section {
+            margin-top: 20px;
+            border: 1px solid #e0e6ef;
+            border-radius: 10px;
+            padding: 15px;
+            background: #f8fafc;
+        }
+        .log-container {
+            background: #1e1f29;
+            color: #abb2bf;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #3b4048;
+            max-height: 250px;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        .log-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .log-container::-webkit-scrollbar-track {
+            background: #2d2e39;
+            border-radius: 4px;
+        }
+        .log-container::-webkit-scrollbar-thumb {
+            background: #5a5f7d;
+            border-radius: 4px;
+        }
+        .log-container::-webkit-scrollbar-thumb:hover {
+            background: #747b99;
+        }
+
         .download-section {
             margin-top: 25px;
             text-align: center;
@@ -733,8 +768,24 @@
                 <span>预计剩余: <strong id="eta-text">-</strong></span>
             </div>
             
-            <div class="log-container" id="log-container">
-                <div class="log-entry log-info">任务已提交，等待处理...</div>
+            <div class="log-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0;">
+                    <strong>实时日志</strong>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" id="refresh-logs" style="padding: 6px 12px; font-size: 0.9rem; width: auto;">
+                            <i class="fas fa-sync"></i> 刷新
+                        </button>
+                        <button class="btn btn-secondary" id="clear-logs" style="padding: 6px 12px; font-size: 0.9rem; width: auto;">
+                            <i class="fas fa-trash"></i> 清空
+                        </button>
+                        <button class="btn btn-secondary" id="auto-refresh-toggle" style="padding: 6px 12px; font-size: 0.9rem; width: auto;">
+                            <i class="fas fa-play"></i> <span>自动刷新</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="log-container" id="log-container" style="background: #1e1f29; color: #abb2bf; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9rem; border: 1px solid #3b4048; max-height: 250px; padding: 12px; border-radius: 8px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;">
+                    [INFO] 任务已提交，等待处理...
+                </div>
             </div>
             
             <div class="download-section" id="download-section" style="display: none;">
@@ -768,6 +819,10 @@
         let currentTaskId = null;
         let pollingInterval = null;
         let taskStartTime = null;
+        // 新增：日志管理
+        let autoRefreshInterval = null;
+        let lastLogLineCount = 0;
+
 
         // 配置持久化
         const CONFIG_KEY = 'minecraft_translator_config';
@@ -1190,6 +1245,146 @@
                 }
                 
                 await submitTask('/mergelangupdate', formData, config, '合并语言更新');
+            });
+                // 刷新日志
+            async function refreshLogs(task_id, config) {
+                if (!task_id || !config) return;
+                
+                try {
+                    const response = await fetch(`${config.apiUrl}/task/logs/${task_id}?last_lines=200`, {
+                        headers: {
+                            'Authorization': `Bearer ${config.apiKey}`
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`日志获取失败: ${response.status}`);
+                    }
+                    
+                    const logsText = await response.text();
+                    const logContainer = document.getElementById('log-container');
+                    
+                    // 智能更新：仅当内容变化时才重绘
+                    if (logContainer.textContent !== logsText) {
+                        logContainer.textContent = logsText;
+                        logContainer.scrollTop = logContainer.scrollHeight; // 滚动到底部
+                        
+                        // 检测新日志行数变化
+                        const newLineCount = logsText.split('\n').length;
+                        if (newLineCount > lastLogLineCount) {
+                            // 有新日志，播放微妙提示音（可选）
+                            // new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=').play();
+                        }
+                        lastLogLineCount = newLineCount;
+                    }
+                } catch (error) {
+                    console.warn('日志刷新失败:', error);
+                    // 不中断主流程，仅控制台警告
+                }
+            }
+
+            // 自动刷新切换
+            document.getElementById('auto-refresh-toggle').addEventListener('click', function() {
+                const btn = this;
+                const icon = btn.querySelector('i');
+                const text = btn.querySelector('span');
+                
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                    icon.className = 'fas fa-play';
+                    text.textContent = '自动刷新';
+                    btn.style.background = 'linear-gradient(45deg, #6c757d, #495057)';
+                } else {
+                    const config = {
+                        apiUrl: document.getElementById('api-url').value.trim(),
+                        apiKey: document.getElementById('api-key').value.trim()
+                    };
+                    
+                    if (!config.apiUrl || !config.apiKey || !currentTaskId) {
+                        alert('请先提交任务并配置API');
+                        return;
+                    }
+                    
+                    autoRefreshInterval = setInterval(() => {
+                        refreshLogs(currentTaskId, config);
+                    }, 3000);
+                    
+                    icon.className = 'fas fa-pause';
+                    text.textContent = '暂停刷新';
+                    btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                    
+                    // 立即刷新一次
+                    refreshLogs(currentTaskId, config);
+                }
+            });
+
+            // 手动刷新
+            document.getElementById('refresh-logs').addEventListener('click', async function() {
+                const config = {
+                    apiUrl: document.getElementById('api-url').value.trim(),
+                    apiKey: document.getElementById('api-key').value.trim()
+                };
+                
+                if (!config.apiUrl || !config.apiKey || !currentTaskId) {
+                    alert('请先提交任务并配置API');
+                    return;
+                }
+                
+                await refreshLogs(currentTaskId, config);
+                addLog('日志已手动刷新', 'info');
+            });
+
+            // 清空日志显示
+            document.getElementById('clear-logs').addEventListener('click', function() {
+                document.getElementById('log-container').textContent = '[已清空显示]';
+            });
+
+            // 在任务提交成功后自动启动日志刷新
+            function startAutoLogRefresh(task_id, config) {
+                // 停止可能存在的旧定时器
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                }
+                
+                // 启动自动刷新
+                autoRefreshInterval = setInterval(() => {
+                    refreshLogs(task_id, config);
+                }, 3000);
+                
+                // 更新UI按钮状态
+                const btn = document.getElementById('auto-refresh-toggle');
+                const icon = btn.querySelector('i');
+                const text = btn.querySelector('span');
+                icon.className = 'fas fa-pause';
+                text.textContent = '暂停刷新';
+                btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                
+                // 首次刷新
+                setTimeout(() => refreshLogs(task_id, config), 1000);
+            }
+
+            // 修改原有的 submitTask 函数，在任务提交成功后调用 startAutoLogRefresh
+            // 找到 submitTask 函数中任务提交成功后的代码块，添加：
+            // startAutoLogRefresh(data.task_id, config);
+
+            // 取消任务时清理日志定时器
+            document.getElementById('cancel-task').addEventListener('click', () => {
+                if (pollingInterval) clearInterval(pollingInterval);
+                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                currentTaskId = null;
+                taskStartTime = null;
+                document.getElementById('task-progress').classList.remove('show');
+                addLog('任务已取消，日志刷新已停止', 'info');
+                
+                // 重置自动刷新按钮状态
+                const btn = document.getElementById('auto-refresh-toggle');
+                const icon = btn.querySelector('i');
+                const text = btn.querySelector('span');
+                icon.className = 'fas fa-play';
+                text.textContent = '自动刷新';
+                btn.style.background = 'linear-gradient(45deg, #6c757d, #495057)';
             });
         });
     </script>
