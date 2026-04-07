@@ -125,9 +125,7 @@
             justify-content: center;
             gap: 8px;
             box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
-            /* 修复关键：防止按钮触发表单提交 */
-            appearance: none;
-            -webkit-appearance: none;
+            type: button !important;
         }
         
         .btn:hover {
@@ -518,25 +516,29 @@
             }
         }
         
-        /* 新增：复制成功提示 */
-        .copy-hint {
-            position: absolute;
-            top: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(6, 214, 160, 0.9);
-            color: white;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            white-space: nowrap;
-            pointer-events: none;
+        /* 新增：CORS 错误提示 */
+        .cors-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
         }
         
-        .copy-hint.show {
-            opacity: 1;
+        .cors-warning p {
+            color: #856404;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .cors-warning ul {
+            padding-left: 20px;
+            color: #856404;
+        }
+        
+        .cors-warning li {
+            margin-bottom: 8px;
         }
     </style>
 </head>
@@ -547,16 +549,27 @@
             <p class="subtitle">专为 Minecraft 模组、资源包、整合包设计的智能翻译工具，支持多格式文件与增量汉化</p>
         </header>
         
+        <!-- CORS 错误提示 -->
+        <div class="cors-warning" id="cors-warning">
+            <p><i class="fas fa-exclamation-triangle"></i> 检测到跨域请求问题 (CORS)</p>
+            <ul>
+                <li>GitHub Pages 使用 HTTPS 协议，但您的 API 服务器可能使用 HTTP 协议</li>
+                <li>请确保您的 API 服务器已正确配置 CORS 支持</li>
+                <li>推荐解决方案: 为 API 服务器添加 CORS 中间件</li>
+            </ul>
+            <p>请检查浏览器控制台获取详细错误信息</p>
+        </div>
+        
         <div class="api-config">
             <div class="config-group">
                 <label for="api-url"><i class="fas fa-globe"></i> API 服务器地址</label>
-                <input type="text" id="api-url" class="config-input" placeholder="例如: http://localhost:8000" value="http://localhost:8000">
+                <input type="text" id="api-url" class="config-input" placeholder="例如: https://your-api-server.com" value="http://localhost:8000">
             </div>
             <div class="config-group">
                 <label for="api-key"><i class="fas fa-key"></i> API 密钥</label>
                 <input type="password" id="api-key" class="config-input" placeholder="输入您的 API 密钥">
             </div>
-            <div class="config-group" style="min-width: auto; flex-basis: 180px;">
+            <div class="config-group" style="min-width: auto; flex-basis: px;">
                 <button id="save-config" class="btn btn-save" type="button">
                     <i class="fas fa-save"></i> 保存配置
                 </button>
@@ -627,7 +640,6 @@
                 </div>
             </div>
             
-            <!-- 修复关键：添加 type="button" -->
             <button id="submit-translate" class="btn" type="button">
                 <i class="fas fa-play"></i> 开始翻译
             </button>
@@ -815,9 +827,23 @@
         document.getElementById('api-url').value = apiConfig.url;
         document.getElementById('api-key').value = apiConfig.key;
         
+        // 检测 CORS 问题
+        function checkCORSCompatibility() {
+            // 检查是否在 GitHub Pages 上运行
+            const isGitHubPages = window.location.hostname.endsWith('github.io');
+            const isHTTP = apiConfig.url.startsWith('http://');
+            
+            if (isGitHubPages && isHTTP) {
+                document.getElementById('cors-warning').style.display = 'block';
+                showNotification('⚠️ 检测到可能的 CORS 问题: GitHub Pages 使用 HTTPS，但 API 服务器使用 HTTP', 'warning');
+            } else {
+                document.getElementById('cors-warning').style.display = 'none';
+            }
+        }
+        
         // 保存配置
         document.getElementById('save-config').addEventListener('click', (e) => {
-            e.preventDefault(); // 防止默认行为
+            e.preventDefault();
             const url = document.getElementById('api-url').value.trim();
             const key = document.getElementById('api-key').value.trim();
             
@@ -835,6 +861,7 @@
             localStorage.setItem('mcTranslatorApiUrl', url);
             localStorage.setItem('mcTranslatorApiKey', key);
             showNotification('API 配置已保存!', 'success');
+            checkCORSCompatibility();
         });
         
         // 标签页切换
@@ -930,6 +957,7 @@
             
             if (type === 'success') icon.className = 'fas fa-check-circle';
             else if (type === 'error') icon.className = 'fas fa-exclamation-triangle';
+            else if (type === 'warning') icon.className = 'fas fa-exclamation-triangle';
             else icon.className = 'fas fa-info-circle';
             
             setTimeout(() => {
@@ -960,10 +988,22 @@
             
             const url = `${apiConfig.url}${endpoint}`;
             const headers = {
-                'Authorization': `Bearer ${apiConfig.key}`
+                'Authorization': `Bearer ${apiConfig.key}`,
+                'Accept': 'application/json'
             };
             
             try {
+                // 检查是否为 GitHub Pages
+                const isGitHubPages = window.location.hostname.endsWith('github.io');
+                
+                // 如果是 GitHub Pages，强制使用 HTTPS
+                if (isGitHubPages && url.startsWith('http://')) {
+                    showNotification('⚠️ 检测到 GitHub Pages 部署，已自动将 API 地址转换为 HTTPS', 'warning');
+                    // 尝试将 http 转换为 https
+                    const httpsUrl = url.replace('http://', 'https://');
+                    return await apiRequest(httpsUrl, formData, method);
+                }
+                
                 const options = {
                     method,
                     headers
@@ -1023,7 +1063,14 @@
                 return await response.json();
             } catch (error) {
                 if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-                    throw new Error('无法连接到 API 服务器，请检查地址是否正确');
+                    // 检测是否是 CORS 错误
+                    if (apiConfig.url.startsWith('http://') && window.location.protocol === 'https:') {
+                        showNotification('⚠️ 检测到 CORS 错误: GitHub Pages (HTTPS) 无法访问 HTTP API 服务器', 'error');
+                        document.getElementById('cors-warning').style.display = 'block';
+                    } else {
+                        showNotification('无法连接到 API 服务器，请检查地址是否正确', 'error');
+                    }
+                    throw error;
                 }
                 throw error;
             }
@@ -1040,9 +1087,9 @@
             return 'translation_result.zip';
         }
         
-        // 提交翻译任务 - 修复关键：添加 preventDefault
+        // 提交翻译任务
         document.getElementById('submit-translate').addEventListener('click', async (e) => {
-            e.preventDefault(); // 防止默认提交行为
+            e.preventDefault();
             
             const file0Input = document.getElementById('file0');
             const file1Input = document.getElementById('file1');
@@ -1058,6 +1105,9 @@
                 showNotification('请先配置 API 密钥', 'error');
                 return;
             }
+            
+            // 检查 CORS 兼容性
+            checkCORSCompatibility();
             
             // 显示加载状态
             const submitBtn = document.getElementById('submit-translate');
@@ -1093,7 +1143,7 @@
                     // 滚动到结果区域
                     document.getElementById('translate-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     
-                    showNotification(`✅ 任务已提交! ID: ${result.task_id.substring(0, 8)}... (已自动复制)`, 'success');
+                    showNotification(`✅ 任务已提交! ID: ${result.task_id.substring(08)}... (已自动复制)`, 'success');
                 } else {
                     throw new Error('服务器未返回任务ID');
                 }
@@ -1108,7 +1158,7 @@
         
         // 提交分离任务
         document.getElementById('submit-separate').addEventListener('click', async (e) => {
-            e.preventDefault(); // 防止默认提交行为
+            e.preventDefault();
             
             const file0Input = document.getElementById('sep-file0');
             const file1Input = document.getElementById('sep-file1');
@@ -1123,6 +1173,9 @@
                 showNotification('请先配置 API 密钥', 'error');
                 return;
             }
+            
+            // 检查 CORS 兼容性
+            checkCORSCompatibility();
             
             // 显示加载状态
             const submitBtn = document.getElementById('submit-separate');
@@ -1168,7 +1221,7 @@
         
         // 提交合并任务
         document.getElementById('submit-merge').addEventListener('click', async (e) => {
-            e.preventDefault(); // 防止默认提交行为
+            e.preventDefault();
             
             const file0Input = document.getElementById('merge-file0');
             const notlangInput = document.getElementById('merge-notlang');
@@ -1188,6 +1241,9 @@
                 showNotification('请先配置 API 密钥', 'error');
                 return;
             }
+            
+            // 检查 CORS 兼容性
+            checkCORSCompatibility();
             
             // 显示加载状态
             const submitBtn = document.getElementById('submit-merge');
@@ -1233,7 +1289,7 @@
         
         // 查询任务状态
         document.getElementById('check-status').addEventListener('click', async (e) => {
-            e.preventDefault(); // 防止默认提交行为
+            e.preventDefault();
             
             const taskId = document.getElementById('task-id-input').value.trim();
             
@@ -1246,6 +1302,9 @@
                 showNotification('请先配置 API 密钥', 'error');
                 return;
             }
+            
+            // 检查 CORS 兼容性
+            checkCORSCompatibility();
             
             // 显示加载状态
             const checkBtn = document.getElementById('check-status');
@@ -1306,7 +1365,7 @@
                     // 显示详情
                     statusDetails.style.display = 'block';
                     document.getElementById('status-created').textContent = new Date().toLocaleString();
-                    document.getElementById('status-progress').textContent = '100% - 处理完成 ✓';
+                    document.getElementById('status-progress').textContent = '100% - 处理完成';
                     
                 } else if (result.status === 'completed') {
                     // 任务完成但返回JSON（可能包含文件路径）
@@ -1383,6 +1442,7 @@
         // 初始化时检查本地存储的配置
         if (apiConfig.key) {
             showNotification('✅ 已加载保存的 API 配置', 'info');
+            checkCORSCompatibility();
         } else {
             showNotification('ℹ️ 请先在顶部配置 API 地址和密钥', 'info');
         }
