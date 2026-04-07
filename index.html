@@ -500,7 +500,7 @@
             display: none;
         }
         
-        .ipv6-tip {
+        .config-tip {
             background: #e3f2fd;
             border-left: 4px solid var(--primary);
             padding: 12px 15px;
@@ -554,15 +554,15 @@
             <div class="config-grid">
                 <div class="form-group">
                     <label for="api-url"><i class="fas fa-globe"></i> API 地址</label>
-                    <input type="text" id="api-url" class="form-control" placeholder="https://api.example.com 或 http://[IPv6]:8000" value="http://localhost:8000">
-                    <div class="ipv6-tip">
-                        <i class="fas fa-info-circle"></i> 支持 IPv6 地址，格式示例: <code>http://[2001:db8::1]:8000</code>
-                    </div>
+                    <input type="text" id="api-url" class="form-control" placeholder="例如: http://localhost:8000">
                 </div>
                 <div class="form-group">
                     <label for="api-key"><i class="fas fa-key"></i> API 密钥</label>
                     <input type="password" id="api-key" class="form-control" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx">
                 </div>
+            </div>
+            <div class="config-tip">
+                <i class="fas fa-save"></i> 配置将自动保存，下次访问时自动加载
             </div>
         </section>
         
@@ -607,10 +607,10 @@
                 <div class="form-group">
                     <label><i class="fas fa-brain"></i> 翻译模式</label>
                     <div class="checkbox-group">
-                        <input type="checkbox" id="all-mode" checked>
+                        <input type="checkbox" id="all-mode">
                         <label for="all-mode">全量翻译模式（跳过 I18nUpdateMod 已有汉化）</label>
                     </div>
-                    <small style="color: var(--gray); display: block; margin-top: 5px;">取消勾选将自动跳过 CFPA 已汉化内容，需先安装 I18nUpdateMod 模组</small>
+                    <small style="color: var(--gray); display: block; margin-top: 5px;">勾选将翻译所有内容；取消勾选将自动跳过 CFPA 已汉化内容（需先安装 I18nUpdateMod 模组）</small>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-search"></i> 输出模式</label>
@@ -725,12 +725,12 @@
             </div>
             
             <div class="progress-container">
-                <div class="progress-bar" id="progress-bar">0%</div>
+                <div class="progress-bar" id="progress-bar">99%</div>
             </div>
             
             <div class="status-info">
-                <span>进度: <strong id="progress-text">0%</strong></span>
-                <span>预计剩余: <strong id="eta-text">-</strong></span>
+                <span>进度: <strong id="progress-text">99%</strong></span>
+                <span>预计剩余: <strong id="eta-text">小于1世纪</strong></span>
             </div>
             
             <div class="log-container" id="log-container">
@@ -755,7 +755,7 @@
             <p>© 2026 Minecraft 翻译工具 | 与 <a href="https://www.mcmod.cn/class/1188.html" target="_blank">I18nUpdateMod</a> 深度集成 | 
             <a href="https://github.com/CFPATools/i18n-dict" target="_blank">DictMini 词典</a> 支持</p>
             <p style="margin-top: 8px; font-size: 0.9rem; color: var(--gray);">
-                <i class="fas fa-lightbulb"></i> 提示：首次使用前请安装 <a href="https://www.mcmod.cn/class/1188.html" target="_blank">I18nUpdateMod</a> 模组以获取基础汉化，可减少70%+翻译量
+                <i class="fas fa-lightbulb"></i> 首次使用前请安装 <a href="https://www.mcmod.cn/class/1188.html" target="_blank">I18nUpdateMod</a> 模组以获取基础汉化，可减少70%+翻译量
             </p>
             <p style="margin-top: 5px; font-size: 0.85rem; color: #6c757d;">
                 <i class="fas fa-shield-alt"></i> 本工具采用异步任务架构，支持长时间翻译无超时限制
@@ -769,7 +769,53 @@
         let pollingInterval = null;
         let taskStartTime = null;
 
+        // 配置持久化
+        const CONFIG_KEY = 'minecraft_translator_config';
+        
+        // 从 localStorage 加载配置
+        function loadConfig() {
+            try {
+                const saved = localStorage.getItem(CONFIG_KEY);
+                if (saved) {
+                    const config = JSON.parse(saved);
+                    document.getElementById('api-url').value = config.apiUrl || '';
+                    document.getElementById('api-key').value = config.apiKey || '';
+                }
+            } catch (e) {
+                console.warn('加载配置失败:', e);
+            }
+        }
+        
+        // 保存配置到 localStorage
+        function saveConfig() {
+            try {
+                const apiUrl = document.getElementById('api-url').value.trim();
+                const apiKey = document.getElementById('api-key').value.trim();
+                
+                if (apiUrl || apiKey) {
+                    localStorage.setItem(CONFIG_KEY, JSON.stringify({
+                        apiUrl,
+                        apiKey,
+                        savedAt: new Date().toISOString()
+                    }));
+                }
+            } catch (e) {
+                console.warn('保存配置);
+            }
+        }
+        
+        // 监听输入变化自动保存
         document.addEventListener('DOMContentLoaded', () => {
+            // 加载已有配置
+            loadConfig();
+            
+            // 设置自动保存监听
+            const apiUrlInput = document.getElementById('api-url');
+            const apiKeyInput = document.getElementById('api-key');
+            
+            apiUrlInput.addEventListener('blur', saveConfig);
+            apiKeyInput.addEventListener('blur', saveConfig);
+            
             // 标签页切换
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -867,12 +913,18 @@
             // 更新进度
             const updateProgress = (progress, statusText) => {
                 const progressBar = document.getElementById('progress-bar');
-                const progressText = document.getElementById('progress-text');
+                const progressText = document.getElementByIdprogress-text');
                 const statusBadge = document.getElementById('status-badge');
                 
-                progressBar.style.width = `${progress}%`;
-                progressBar.textContent = `${progress}%`;
-                progressText.textContent = `${progress}%`;
+                // 特殊处理：任务开始时显示为99%，完成时显示为100%
+                let displayProgress = progress;
+                if (progress < 100) {
+                    displayProgress = 99;
+                }
+                
+                progressBar.style.width = `${displayProgress}%`;
+                progressBar.textContent = `${displayProgress}%`;
+                progressText.textContent = `${displayProgress}%`;
                 
                 // 更新状态徽章
                 statusBadge.className = 'status-badge';
@@ -906,20 +958,8 @@
                     // 更新进度
                     updateProgress(data.progress || 0, data.status);
                     
-                    // 更新ETA（简单估算）
-                    if (data.progress && data.progress > 0 && taskStartTime) {
-                        const elapsed = (Date.now() - taskStartTime) / 1000; // 秒
-                        const etaSeconds = Math.round((elapsed / data.progress) * (100 - data.progress));
-                        const etaText = document.getElementById('eta-text');
-                        
-                        if (etaSeconds < 60) {
-                            etaText.textContent = `${etaSeconds}秒`;
-                        } else {
-                            const minutes = Math.floor(etaSeconds / 60);
-                            const seconds = etaSeconds % 60;
-                            etaText.textContent = `${minutes}分${seconds}秒`;
-                        }
-                    }
+                    // 更新ETA
+                    document.getElementById('eta-text').textContent = '小于1世纪';
                     
                     // 添加状态日志
                     if (data.error) {
@@ -1024,7 +1064,7 @@
                     
                     // 重置进度
                     updateProgress(0);
-                    document.getElementById('eta-text').textContent = '-';
+                    document.getElementById('eta-text').textContent = '小于1世纪';
                     document.getElementById('log-container').innerHTML = '';
                     document.getElementById('download-section').style.display = 'none';
                     
