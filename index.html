@@ -543,6 +543,26 @@
             margin: 15px 0;
             font-size: 0.95rem;
         }
+
+        .close-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            font-size: 18px;
+            color: #ff4d4d; /* 红色 */
+            cursor: pointer;
+            margin-left: 10px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .close-icon:hover {
+            background-color: #ffe6e6;
+            color: #ff0000;
+            transform: scale(1.1);
+        }
         
         @media (max-width: 768px) {
             .config-grid {
@@ -624,7 +644,11 @@
                 <small>支持 .jar, .zip, .lang, .json 等格式</small>
                 <input type="file" id="file0" class="hidden" accept=".jar,.zip,.lang,.json,.mrpack">
                 <div class="file-info" id="file0-info">
-                    <div class="file-name"><i class="fas fa-file"></i> <span id="file0-name">未选择文件</span></div>
+                    <div class="file-name">
+                        <i class="fas fa-file"></i> 
+                        <span id="file0-name">未选择文件</span>
+                        <span class="close-icon" onclick="clearFile('file0')">&times;</span>
+                    </div>
                 </div>
             </div>
             
@@ -634,7 +658,12 @@
                 <small>已有目标语言文件，用于差异对比</small>
                 <input type="file" id="file1" class="hidden" accept=".jar,.zip,.lang,.json">
                 <div class="file-info" id="file1-info">
-                    <div class="file-name"><i class="fas fa-file"></i> <span id="file1-name">未选择文件</span></div>
+                    <div class="file-name">
+                        <i class="fas fa-file"></i> 
+                        <span id="file1-name">未选择文件</span>
+
+                        <span class="close-icon" onclick="clearFile('file1')">&times;</span>
+                    </div>
                 </div>
             </div>
             
@@ -673,7 +702,11 @@
                 <small>待提取新键值的文件</small>
                 <input type="file" id="sep-file0" class="hidden" accept=".jar,.zip,.lang,.json">
                 <div class="file-info" id="sep-file0-info">
-                    <div class="file-name"><i class="fas fa-file"></i> <span id="sep-file0-name">未选择文件</span></div>
+                    <div class="file-name">
+                        <i class="fas fa-file"></i> 
+                        <span id="sep-file0-name">未选择文件</span>
+                        <span class="close-icon" onclick="clearFile('sep-file0')">&times;</span>
+                    </div>
                 </div>
             </div>
             
@@ -683,7 +716,11 @@
                 <small>已有翻译的基准文件</small>
                 <input type="file" id="sep-file1" class="hidden" accept=".jar,.zip,.lang,.json">
                 <div class="file-info" id="sep-file1-info">
-                    <div class="file-name"><i class="fas fa-file"></i> <span id="sep-file1-name">未选择文件</span></div>
+                    <div class="file-name">
+                        <i class="fas fa-file"></i> 
+                        <span id="sep-file1-name">未选择文件</span>
+                        <span class="close-icon" onclick="clearFile('sep-file1')">&times;</span>
+                    </div>
                 </div>
             </div>
             
@@ -711,7 +748,11 @@
                 <small>待合并的原始语言文件/资源包</small>
                 <input type="file" id="merge-file0" class="hidden" accept=".jar,.zip,.lang,.json">
                 <div class="file-info" id="merge-file0-info">
-                    <div class="file-name"><i class="fas fa-file"></i> <span id="merge-file0-name">未选择文件</span></div>
+                    <div class="file-name">
+                        <i class="fas fa-file"></i> 
+                        <span id="merge-file0-name">未选择文件</span>
+                        <span class="close-icon" onclick="clearFile('merge-file0')">&times;</span>
+                    </div>
                 </div>
             </div>
             
@@ -721,7 +762,11 @@
                 <small>人工翻译完成的 .lang/.json/.translatorlang 文件</small>
                 <input type="file" id="merge-notlang" class="hidden" accept=".lang,.json,.translatorlang">
                 <div class="file-info" id="merge-notlang-info">
-                    <div class="file-name"><i class="fas fa-file"></i> <span id="merge-notlang-name">未选择文件</span></div>
+                    <div class="file-name">
+                        <i class="fas fa-file"></i> 
+                        <span id="merge-notlang-name">未选择文件</span>
+                        <span class="close-icon" onclick="clearFile('merge-notlang')">&times;</span>
+                    </div>
                 </div>
             </div>
             
@@ -731,7 +776,11 @@
                 <small>额外参考语言文件</small>
                 <input type="file" id="merge-file1" class="hidden" accept=".jar,.zip,.lang,.json">
                 <div class="file-info" id="merge-file1-info">
-                    <div class="file-name"><i class="fas fa-file"></i> <span id="merge-file1-name">未选择文件</span></div>
+                    <div class="file-name">
+                        <i class="fas fa-file"></i> 
+                        <span id="merge-file1-name">未选择文件</span>
+                        <span class="close-icon" onclick="clearFile('merge-file1')">&times;</span>
+                    </div>
                 </div>
             </div>
             
@@ -803,7 +852,7 @@
         </div>
         
         <div class="footer">
-            <p>© 2026 <a href="https://github.com/lingxingmiao/Translator-Minecraft/">Translator Minecraft</a></p>
+            <p>Copyright © 2026-2026 <a href="https://github.com/lingxingmiao/Translator-Minecraft/">Translator Minecraft</a>. GNU General Public License v3.0.</p>
             <p style="margin-top: 8px; font-size: 0.9rem; color: var(--gray);">
                 <i class="fas fa-lightbulb"></i> 翻译整合包使用建议安装 <a href="https://www.mcmod.cn/class/1188.html" target="_blank">I18nUpdateMod</a> 模组启动游戏一次以获取基础汉化，可减少 80%+ 翻译量
             </p>
@@ -1386,6 +1435,25 @@
                 btn.style.background = 'linear-gradient(45deg, #6c757d, #495057)';
             });
         });
+        function clearFile(fileId) {
+            const fileInput = document.getElementById(fileId);
+            if (!fileInput) return;
+            
+            // 清空 input 的文件值
+            fileInput.value = '';
+            
+            // 隐藏对应的文件信息区域
+            const fileInfo = document.getElementById(`${fileId}-info`);
+            if (fileInfo) {
+                fileInfo.classList.remove('show');
+            }
+            
+            // 重置文件名显示
+            const fileNameSpan = document.getElementById(`${fileId}-name`);
+            if (fileNameSpan) {
+                fileNameSpan.textContent = '未选择文件';
+            }
+        }
     </script>
 </body>
 </html>
