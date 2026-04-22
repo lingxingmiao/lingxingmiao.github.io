@@ -616,9 +616,6 @@
                     <input type="password" id="api-key" class="form-control" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx">
                 </div>
             </div>
-            <div class="config-tip">
-                <i class="fas fa-save"></i> 配置将自动保存，下次访问时自动加载
-            </div>
         </section>
         
         <div class="tabs">
@@ -680,7 +677,7 @@
                     <label><i class="fas fa-search"></i> 输出模式</label>
                     <div class="checkbox-group">
                         <input type="checkbox" id="export-inspection">
-                        <label for="export-inspection">导出审核文件 (.translatorlang)</label>
+                        <label for="export-inspection">导出审核文件 (.translang)</label>
                     </div>
                     <small style="color: var(--gray); display: block; margin-top: 5px;">用于人工校对，仅支持语言文件/资源包/光影包</small>
                 </div>
@@ -724,14 +721,6 @@
                 </div>
             </div>
             
-            <div class="form-group">
-                <label for="mode-select"><i class="fas fa-sliders-h"></i> 处理模式</label>
-                <select id="mode-select" class="mode-select">
-                    <option value="none">标准模式 - 输出标准语言文件</option>
-                    <option value="extra">附加模式 - 输出 .translatorlang 格式（含翻译提示）</option>
-                </select>
-            </div>
-            
             <button class="btn" id="separate-btn">
                 <i class="fas fa-code-branch"></i> <span>分离语言更新</span>
             </button>
@@ -759,8 +748,8 @@
             <div class="file-upload" id="merge-notlang-drop">
                 <i class="fas fa-file-word"></i>
                 <p>拖放待合并文件</p>
-                <small>人工翻译完成的 .lang/.json/.translatorlang 文件</small>
-                <input type="file" id="merge-notlang" class="hidden" accept=".lang,.json,.translatorlang">
+                <small>人工翻译完成的 .lang/.json/.translang 文件</small>
+                <input type="file" id="merge-notlang" class="hidden" accept=".lang,.json,.translang">
                 <div class="file-info" id="merge-notlang-info">
                     <div class="file-name">
                         <i class="fas fa-file"></i> 
@@ -856,9 +845,7 @@
             <p style="margin-top: 8px; font-size: 0.9rem; color: var(--gray);">
                 <i class="fas fa-lightbulb"></i> 翻译整合包使用建议安装 <a href="https://www.mcmod.cn/class/1188.html" target="_blank">I18nUpdateMod</a> 模组启动游戏一次以获取基础汉化，可减少 80%+ 翻译量
             </p>
-            <p style="margin-top: 5px; font-size: 0.85rem; color: #6c757d;">
-                <i class="fas fa-shield-alt"></i> 本工具采用异步任务架构，支持长时间翻译无超时限制
-            </p>
+            <P>公益API服务仅使用一张P100作为计算卡，所有可能会很慢，请勿用于商业用途。
         </div>
     </div>
 
@@ -1257,8 +1244,7 @@
                     formData.append('file1', file1Input.files[0]);
                     formData.append('file_name1', file1Input.files[0].name);
                 }
-                
-                formData.append('Mode', document.getElementById('mode-select').value);
+            
                 
                 await submitTask('/separatelangupdate', formData, config, '分离语言更新');
             });
