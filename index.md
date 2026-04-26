@@ -16,6 +16,6 @@ hero:
 features:
   - title: 公益MC翻译网站
     details: 支持整合包|光影包|资源包|模组|语言文件翻译<br>锁定输出中文|翻译对照|Qwen3 30B A3B
-    link: /TranslatorMinecraft.html
+    link: https://lingxingmiao.github.io/TranslatorMinecraft.html
 ---
 
