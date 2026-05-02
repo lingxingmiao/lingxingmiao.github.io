@@ -564,20 +564,14 @@
             transform: scale(1.1);
         }
 
-        .status.running-task {
-            background: #fff8e1;
-            color: #9a6e00;
+        .status.notice {
+            background: white;
+            color: var(--gray);
             padding: 15px;
             border-radius: 10px;
             margin: 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
             font-weight: 500;
-        }
-
-        .status.running-task i {
-            font-size: 1.8rem;
+            border: 1px solid #e0e6ef;
         }
 
         .hidden {
@@ -621,7 +615,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-language"></i> Minecraft翻译工具</h1>
-            <p class="subtitle">基于大语言模型的 Minecraft 翻译程序, 支持整合包/任务/模组/光影包/资源包/语言文件</p>
+            <p class="subtitle">基于大语言模型的 Minecraft 翻译程序<br>支持整合包/任务/模组/光影包/资源包/语言文件</p>
         </header>
         
         <section class="api-config">
@@ -638,9 +632,8 @@
             </div>
         </section>
 
-        <div class="status running-task hidden" id="running-task-alert">
-            <i class="fas fa-exclamation-circle"></i>
-            <span>有任务正在运行，请先取消当前任务才能提交新任务</span>
+        <div class="status notice" id="maintenance-notice">
+            <span>有时候可能在更新或者实时修复BUG用不了，BUG/有所问题 反馈至GitHub或QQ群：606269975 / 开发者：3254693390</span>
         </div>
         
         <div class="tabs">
@@ -660,7 +653,6 @@
             <h2><i class="fas fa-file-import"></i> 上传待翻译文件</h2>
             <p style="margin: 15px 0 25px; color: red; font-style: italic;">警告：请不要翻译 机械动力:航空学，翻译光影建议先查看<a href="https://github.com/NakiriRuri/Minecraft-Shaders-zh_CN-Lang-Files" target="_blank">光影语言文件仓库</a></p>
             <p style="margin: 15px 0 25px; color: var(--gray);">支持 .jar模组、.zip整合包/资源包/光影包/任务、.mrpack整合包、.lang/.json语言文件 翻译输出:"翻译值(原文值)"</p>
-            <p style="margin: 15px 0 25px; color: var(--gray);">有时候可能在更新或者实时修复BUG用不了 BUG反馈至GitHub或QQ606269975群或3254693390, 取消任务并不会在后端取消</p>
             <div class="file-upload" id="file0-drop">
                 <i class="fas fa-cloud-upload-alt"></i>
                 <p>拖放文件或点击上传主文件</p>
@@ -1093,7 +1085,7 @@
                         document.getElementById('status-badge').className = 'status-badge status-failed';
                         document.getElementById('status-badge').textContent = '失败';
                         isTaskRunning = false;
-                        document.getElementById('running-task-alert').classList.add('hidden');
+                        
                         return;
                     }
                     
@@ -1148,21 +1140,20 @@
                             }
                         };
                         isTaskRunning = false;
-                        document.getElementById('running-task-alert').classList.add('hidden');
+                        
                     }
                     
                 } catch (error) {
                     addLog(`轮询错误: ${error.message}`, 'error');
                     clearInterval(pollingInterval);
                     isTaskRunning = false;
-                    document.getElementById('running-task-alert').classList.add('hidden');
+                    
                 }
             };
             
             // 提交任务
             const submitTask = async (endpoint, formData, config, operationName) => {
                 isTaskRunning = true;
-                document.getElementById('running-task-alert').classList.remove('hidden');
 
                 const translateBtn = document.querySelector('#translate-btn, #separate-btn, #merge-btn');
                 const originalText = translateBtn.querySelector('span').textContent;
@@ -1247,7 +1238,7 @@
                     
                     // 关键：重置任务运行状态
                     isTaskRunning = false;
-                    document.getElementById('running-task-alert').classList.add('hidden');
+                    
                 }
             });
             
@@ -1255,7 +1246,6 @@
             document.getElementById('translate-btn').addEventListener('click', async () => {
                 if (isTaskRunning) {
                     alert('有任务正在运行，请先取消当前任务才能提交新任务');
-                    document.getElementById('running-task-alert').classList.remove('hidden');
                     return;
                 }
 
@@ -1288,7 +1278,6 @@
             document.getElementById('separate-btn').addEventListener('click', async () => {
                 if (isTaskRunning) {
                     alert('有任务正在运行，请先取消当前任务才能提交新任务');
-                    document.getElementById('running-task-alert').classList.remove('hidden');
                     return;
                 }
 
@@ -1319,7 +1308,6 @@
             document.getElementById('merge-btn').addEventListener('click', async () => {
                 if (isTaskRunning) {
                     alert('有任务正在运行，请先取消当前任务才能提交新任务');
-                    document.getElementById('running-task-alert').classList.remove('hidden');
                     return;
                 }
 
