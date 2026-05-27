@@ -633,10 +633,10 @@
         </section>
 
         <div class="status notice" id="maintenance-notice">
-            <span>有时候可能在更新或者实时修复BUG用不了，BUG/有所问题 反馈至GitHub或QQ群：606269975 / 开发者：3254693390</span>
-            <span>如果你需要翻译3000条以上的内容，可以先请求，随后关闭网页，等3-12小时再过来翻译，若无法请求，那么就是还没翻译完成</span>
-            <span>5000条以上也可以直接加QQ群：606269975/开发者：3254693390 直接使用 DeepSeek V4 Flash 翻译(不要钱)</span>
-            <span>当前运行模型：Gamma4 26B A4B 与 DeepSeek V4 Flash 大于2500条混合</span>
+            <p>有时候可能在更新或者实时修复BUG用不了，BUG/有所问题 反馈至GitHub或QQ群：606269975 / 开发者：3254693390</p>
+            <p>如果你需要翻译3000条以上的内容，可以先请求，随后关闭网页，等3-12小时再过来翻译，若无法请求，那么就是还没翻译完成</p>
+            <p>5000条以上也可以直接加QQ群：606269975/开发者：3254693390 直接使用 DeepSeek V4 Flash 翻译(不要钱)</p>
+            <p>当前运行模型：Gamma4 26B A4B 与 DeepSeek V4 Flash 大于2500条混合</p>
         </div>
         
         <div class="tabs">
@@ -655,12 +655,13 @@
         <div id="translate" class="tab-content active">
             <h2><i class="fas fa-file-import"></i> 上传待翻译文件</h2>
             <p style="margin: 15px 0 25px; color: red; font-style: italic;">警告：请不要翻译 机械动力:航空学，翻译光影建议先查看<a href="https://github.com/NakiriRuri/Minecraft-Shaders-zh_CN-Lang-Files" target="_blank">光影语言文件仓库</a></p>
-            <p style="margin: 15px 0 25px; color: var(--gray);">支持 .jar模组、.zip整合包/资源包/光影包/任务、.mrpack整合包、.lang/.json语言文件 翻译输出:"翻译值(原文值)"</p>
+            <p style="margin: 15px 0 25px; color: var(--gray);">支持 .jar模组、.zip整合包/资源包/光影包/HQM BQ FTBQ任务/NCO附属、.zs CraftTweaker脚本 翻译输出:"翻译值(原文值)"</p>
+            <p style="margin: 15px 0 25px; color: var(--gray);">支持 .mrpack整合包、.lang/.json语言文件(含未知伤亡)、.dll未知伤亡模组</p>
             <div class="file-upload" id="file0-drop">
                 <i class="fas fa-cloud-upload-alt"></i>
                 <p>拖放文件或点击上传主文件</p>
-                <small>支持 .jar, .zip, .lang, .json 等格式</small>
-                <input type="file" id="file0" class="hidden" accept=".jar,.zip,.lang,.json,.mrpack">
+                <small>支持 .jar, .zip, .mrpack .lang, .json .zs .dll等格式</small>
+                <input type="file" id="file0" class="hidden" accept=".jar,.zip,.lang,.json,.mrpack,.dll,.zs">
                 <div class="file-info" id="file0-info">
                     <div class="file-name">
                         <i class="fas fa-file"></i> 
