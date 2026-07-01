@@ -61,6 +61,65 @@
             max-width: 700px;
             margin: 0 auto 25px;
         }
+
+        /* ================= 新增：桌面客户端下载横幅样式 ================= */
+        .download-client-banner {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            border-radius: var(--border-radius);
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .banner-text h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.35rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+        
+        .banner-text p {
+            margin: 0;
+            opacity: 0.95;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .banner-text p strong {
+            color: #ffd166;
+        }
+        
+        .btn-download {
+            background: white;
+            color: var(--secondary);
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            white-space: nowrap;
+            font-size: 1.05rem;
+        }
+        
+        .btn-download:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            background: #f8f9fa;
+        }
+        /* ================================================================ */
         
         .api-config {
             background: white;
@@ -430,37 +489,6 @@
             color: #721c24;
         }
         
-        .log-container {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            border: 1px solid #dee2e6;
-        }
-        
-        .log-entry {
-            margin: 5px 0;
-            padding: 5px 10px;
-            border-radius: 4px;
-        }
-        
-        .log-info {
-            color: var(--gray);
-        }
-        
-        .log-success {
-            color: #28a745;
-        }
-        
-        .log-error {
-            color: #dc3545;
-            background: #ffebee;
-        }
-        
         .log-section {
             margin-top: 20px;
             border: 1px solid #e0e6ef;
@@ -551,7 +579,7 @@
             line-height: 20px;
             text-align: center;
             font-size: 18px;
-            color: #ff4d4d; /* 红色 */
+            color: #ff4d4d;
             cursor: pointer;
             margin-left: 10px;
             border-radius: 50%;
@@ -572,10 +600,6 @@
             margin: 20px 0;
             font-weight: 500;
             border: 1px solid #e0e6ef;
-        }
-
-        .hidden {
-            display: none;
         }
         
         @media (max-width: 768px) {
@@ -607,6 +631,14 @@
             .progress-bar {
                 font-size: 0.9rem;
             }
+
+            .download-client-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+            .banner-text h3 {
+                justify-content: center;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -617,6 +649,18 @@
             <h1><i class="fas fa-language"></i> Minecraft翻译工具</h1>
             <p class="subtitle">基于大语言模型的 Minecraft 翻译程序<br>支持整合包/任务/模组/光影包/资源包/语言文件</p>
         </header>
+
+        <!-- ================= 新增：桌面客户端下载横幅 ================= -->
+        <div class="download-client-banner">
+            <div class="banner-text">
+                <h3><i class="fas fa-desktop"></i> 获取桌面客户端 (Windows x64)</h3>
+                <p>✨ <strong>核心优势：</strong>支持使用国内路径加速请求 | 可自由修改翻译目标语言</p>
+            </div>
+            <a href="https://github.com/lingxingmiao/TranslatorMinecraftApp/releases/download/v1.6.0/TranslatorMinecraftApp_v1.0.0_win64.zip" class="btn-download" target="_blank" download>
+                <i class="fas fa-download"></i> 下载客户端 R1.6
+            </a>
+        </div>
+        <!-- ======================================================== -->
         
         <section class="api-config">
             <h2><i class="fas fa-cog"></i> API 配置</h2>
@@ -633,9 +677,10 @@
         </section>
 
         <div class="status notice" id="maintenance-notice">
+            <p>网页API走的国外的 走国内麻烦下载客户端 成本与法律因素限制原因限制因此无法使用网页端</p>
             <p>有时候可能在更新或者实时修复BUG用不了，BUG/有所问题 反馈至GitHub或QQ群：606269975 / 开发者：3254693390</p>
             <p>100,000条以上也可以直接加QQ群：606269975/开发者：3254693390 直接使用 DeepSeek V4 Flash 翻译(不要钱)</p>
-            <p>当前使用模型：DeepSeek V4 Flash 每秒最大翻译速度：157条/秒</p>
+            <p>当前使用模型：DeepSeek V4 Flash 每秒最大翻译速度：286条/秒</p>
         </div>
         
         <div class="tabs">
@@ -842,7 +887,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="log-container" id="log-container" style="background: #1e1f29; color: #abb2bf; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9rem; border: 1px solid #3b4048; max-height: 250px; padding: 12px; border-radius: 8px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;">
+                <div class="log-container" id="log-container">
                     [INFO] 任务已提交，等待处理...
                 </div>
             </div>
@@ -867,7 +912,7 @@
                 <i class="fas fa-lightbulb"></i> 翻译整合包使用建议安装 <a href="https://www.mcmod.cn/class/1188.html" target="_blank">I18nUpdateMod</a> 模组启动游戏一次以获取基础汉化，可减少 80%+ 翻译量
             </p>
             <p>公益API服务仅使用一张P100作为计算卡，所有可能会很慢，禁止将该公益API商用/转发。</p>
-            <p>当前 TranslatorMinecraftCore 版本: Release.1.6 (内部版)
+            <p>当前 TranslatorMinecraftCore 版本: Release.1.6 (内部版)</p>
         </div>
     </div>
 
@@ -876,16 +921,13 @@
         let currentTaskId = null;
         let pollingInterval = null;
         let taskStartTime = null;
-        // 新增：日志管理
         let autoRefreshInterval = null;
         let lastLogLineCount = 0;
         let isTaskRunning = false;
 
-
         // 配置持久化
         const CONFIG_KEY = 'minecraft_translator_config';
         
-        // 从 localStorage 加载配置
         function loadConfig() {
             try {
                 const saved = localStorage.getItem(CONFIG_KEY);
@@ -899,7 +941,6 @@
             }
         }
         
-        // 保存配置到 localStorage
         function saveConfig() {
             try {
                 const apiUrl = document.getElementById('api-url').value.trim();
@@ -917,19 +958,15 @@
             }
         }
         
-        // 监听输入变化自动保存
         document.addEventListener('DOMContentLoaded', () => {
-            // 加载已有配置
             loadConfig();
             
-            // 设置自动保存监听
             const apiUrlInput = document.getElementById('api-url');
             const apiKeyInput = document.getElementById('api-key');
             
             apiUrlInput.addEventListener('blur', saveConfig);
             apiKeyInput.addEventListener('blur', saveConfig);
             
-            // 标签页切换
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -939,12 +976,10 @@
                     const tabId = tab.getAttribute('data-tab');
                     document.getElementById(tabId).classList.add('active');
                     
-                    // 切换标签页时隐藏任务进度
                     document.getElementById('task-progress').classList.remove('show');
                 });
             });
             
-            // 文件上传处理
             const setupFileUpload = (dropZoneId, fileId, fileNameId, fileInfoId) => {
                 const dropZone = document.getElementById(dropZoneId);
                 const fileInput = document.getElementById(fileId);
@@ -991,7 +1026,6 @@
                 });
             };
             
-            // 初始化所有文件上传区域
             setupFileUpload('file0-drop', 'file0', 'file0-name', 'file0-info');
             setupFileUpload('file1-drop', 'file1', 'file1-name', 'file1-info');
             setupFileUpload('sep-file0-drop', 'sep-file0', 'sep-file0-name', 'sep-file0-info');
@@ -1000,7 +1034,6 @@
             setupFileUpload('merge-notlang-drop', 'merge-notlang', 'merge-notlang-name', 'merge-notlang-info');
             setupFileUpload('merge-file1-drop', 'merge-file1', 'merge-file1-name', 'merge-file1-info');
             
-            // API 配置验证
             const validateConfig = () => {
                 const apiUrl = document.getElementById('api-url').value.trim();
                 const apiKey = document.getElementById('api-key').value.trim();
@@ -1013,7 +1046,6 @@
                 return { apiUrl, apiKey };
             };
             
-            // 添加日志
             const addLog = (message, type = 'info') => {
                 const logContainer = document.getElementById('log-container');
                 const logEntry = document.createElement('div');
@@ -1023,7 +1055,6 @@
                 logContainer.scrollTop = logContainer.scrollHeight;
             };
             
-            // 更新进度
             const updateProgress = (progress, statusText) => {
                 const progressBar = document.getElementById('progress-bar');
                 const progressText = document.getElementById('progress-text');
@@ -1033,7 +1064,6 @@
                 progressBar.textContent = `${progress}%`;
                 progressText.textContent = `${progress}%`;
                 
-                // 更新状态徽章
                 statusBadge.className = 'status-badge';
                 if (progress === 0) {
                     statusBadge.classList.add('status-queued');
@@ -1047,7 +1077,6 @@
                 }
             };
             
-            // 轮询任务状态
             const pollTaskStatus = async (task_id, config) => {
                 try {
                     const response = await fetch(`${config.apiUrl}/task/status/${task_id}`, {
@@ -1062,12 +1091,10 @@
                     
                     const data = await response.json();
                     
-                    // 更新进度
                     updateProgress(data.progress || 0, data.status);
                     
-                    // 更新ETA（简单估算）
                     if (data.progress && data.progress > 0 && taskStartTime) {
-                        const elapsed = (Date.now() - taskStartTime) / 1000; // 秒
+                        const elapsed = (Date.now() - taskStartTime) / 1000;
                         const etaSeconds = Math.round((elapsed / data.progress) * (100 - data.progress));
                         const etaText = document.getElementById('eta-text');
                         
@@ -1080,7 +1107,6 @@
                         }
                     }
                     
-                    // 添加状态日志
                     if (data.error) {
                         addLog(`错误: ${data.error}`, 'error');
                         updateProgress(100);
@@ -1088,7 +1114,6 @@
                         document.getElementById('status-badge').className = 'status-badge status-failed';
                         document.getElementById('status-badge').textContent = '失败';
                         isTaskRunning = false;
-                        
                         return;
                     }
                     
@@ -1096,10 +1121,8 @@
                         addLog('任务完成！', 'success');
                         clearInterval(pollingInterval);
                         
-                        // 显示下载区域
                         document.getElementById('download-section').style.display = 'block';
                         
-                        // 设置下载按钮
                         const downloadBtn = document.getElementById('download-btn');
                         const downloadFilename = document.getElementById('download-filename');
                         
@@ -1131,7 +1154,6 @@
                                 
                                 addLog('文件下载成功', 'success');
                                 
-                                // 下载完成后清理
                                 setTimeout(() => {
                                     currentTaskId = null;
                                     document.getElementById('task-progress').classList.remove('show');
@@ -1143,18 +1165,15 @@
                             }
                         };
                         isTaskRunning = false;
-                        
                     }
                     
                 } catch (error) {
                     addLog(`轮询错误: ${error.message}`, 'error');
                     clearInterval(pollingInterval);
                     isTaskRunning = false;
-                    
                 }
             };
             
-            // 提交任务
             const submitTask = async (endpoint, formData, config, operationName) => {
                 isTaskRunning = true;
 
@@ -1184,28 +1203,23 @@
                         throw new Error('未返回任务ID');
                     }
                     
-                    // 显示任务进度卡片
                     currentTaskId = data.task_id;
                     document.getElementById('task-id-display').textContent = data.task_id;
                     document.getElementById('task-progress').classList.add('show');
                     
-                    // 重置进度
                     updateProgress(0);
                     document.getElementById('eta-text').textContent = '-';
                     document.getElementById('log-container').innerHTML = '';
                     document.getElementById('download-section').style.display = 'none';
                     
-                    // 记录开始时间
                     taskStartTime = Date.now();
                     
-                    // 添加日志
                     addLog(`任务已提交: ${data.task_id}`);
                     addLog(`${operationName} 开始处理...`);
                     
-                    // 开始轮询
                     pollingInterval = setInterval(() => {
                         pollTaskStatus(data.task_id, config);
-                    }, 3000); // 每3秒轮询一次
+                    }, 3000);
                     
                 } catch (error) {
                     isTaskRunning = false;
@@ -1218,7 +1232,6 @@
                 }
             };
             
-            // 取消任务
             document.getElementById('cancel-task').addEventListener('click', () => {
                 if (currentTaskId && pollingInterval) {
                     clearInterval(pollingInterval);
@@ -1227,7 +1240,6 @@
                     document.getElementById('task-progress').classList.remove('show');
                     addLog('任务已取消', 'info');
 
-                    // 重置自动刷新按钮状态
                     const btn = document.getElementById('auto-refresh-toggle');
                     if (btn) {
                         const icon = btn.querySelector('i');
@@ -1238,14 +1250,10 @@
                             btn.style.background = 'linear-gradient(45deg, #6c757d, #495057)';
                         }
                     }
-                    
-                    // 关键：重置任务运行状态
                     isTaskRunning = false;
-                    
                 }
             });
             
-            // 翻译按钮点击处理
             document.getElementById('translate-btn').addEventListener('click', async () => {
                 if (isTaskRunning) {
                     alert('有任务正在运行，请先取消当前任务才能提交新任务');
@@ -1277,7 +1285,6 @@
                 await submitTask('/translate', formData, config, '翻译任务');
             });
             
-            // 分离语言更新
             document.getElementById('separate-btn').addEventListener('click', async () => {
                 if (isTaskRunning) {
                     alert('有任务正在运行，请先取消当前任务才能提交新任务');
@@ -1302,12 +1309,10 @@
                     formData.append('file1', file1Input.files[0]);
                     formData.append('file_name1', file1Input.files[0].name);
                 }
-            
                 
                 await submitTask('/separatelangupdate', formData, config, '分离语言更新');
             });
             
-            // 合并语言更新
             document.getElementById('merge-btn').addEventListener('click', async () => {
                 if (isTaskRunning) {
                     alert('有任务正在运行，请先取消当前任务才能提交新任务');
@@ -1343,7 +1348,7 @@
                 
                 await submitTask('/mergelangupdate', formData, config, '合并语言更新');
             });
-                // 刷新日志
+
             async function refreshLogs(task_id, config) {
                 if (!task_id || !config) return;
                 
@@ -1361,26 +1366,18 @@
                     const logsText = await response.text();
                     const logContainer = document.getElementById('log-container');
                     
-                    // 智能更新：仅当内容变化时才重绘
                     if (logContainer.textContent !== logsText) {
                         logContainer.textContent = logsText;
-                        logContainer.scrollTop = logContainer.scrollHeight; // 滚动到底部
+                        logContainer.scrollTop = logContainer.scrollHeight;
                         
-                        // 检测新日志行数变化
                         const newLineCount = logsText.split('\n').length;
-                        if (newLineCount > lastLogLineCount) {
-                            // 有新日志，播放微妙提示音（可选）
-                            // new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=').play();
-                        }
                         lastLogLineCount = newLineCount;
                     }
                 } catch (error) {
                     console.warn('日志刷新失败:', error);
-                    // 不中断主流程，仅控制台警告
                 }
             }
 
-            // 自动刷新切换
             document.getElementById('auto-refresh-toggle').addEventListener('click', function() {
                 const btn = this;
                 const icon = btn.querySelector('i');
@@ -1411,12 +1408,10 @@
                     text.textContent = '暂停刷新';
                     btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
                     
-                    // 立即刷新一次
                     refreshLogs(currentTaskId, config);
                 }
             });
 
-            // 手动刷新
             document.getElementById('refresh-logs').addEventListener('click', async function() {
                 const config = {
                     apiUrl: document.getElementById('api-url').value.trim(),
@@ -1432,72 +1427,22 @@
                 addLog('日志已手动刷新', 'info');
             });
 
-            // 清空日志显示
             document.getElementById('clear-logs').addEventListener('click', function() {
                 document.getElementById('log-container').textContent = '[已清空显示]';
             });
-
-            // 在任务提交成功后自动启动日志刷新
-            function startAutoLogRefresh(task_id, config) {
-                // 停止可能存在的旧定时器
-                if (autoRefreshInterval) {
-                    clearInterval(autoRefreshInterval);
-                }
-                
-                // 启动自动刷新
-                autoRefreshInterval = setInterval(() => {
-                    refreshLogs(task_id, config);
-                }, 3000);
-                
-                // 更新UI按钮状态
-                const btn = document.getElementById('auto-refresh-toggle');
-                const icon = btn.querySelector('i');
-                const text = btn.querySelector('span');
-                icon.className = 'fas fa-pause';
-                text.textContent = '暂停刷新';
-                btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
-                
-                // 首次刷新
-                setTimeout(() => refreshLogs(task_id, config), 1000);
-            }
-
-            // 修改原有的 submitTask 函数，在任务提交成功后调用 startAutoLogRefresh
-            // 找到 submitTask 函数中任务提交成功后的代码块，添加：
-            // startAutoLogRefresh(data.task_id, config);
-
-            // 取消任务时清理日志定时器
-            document.getElementById('cancel-task').addEventListener('click', () => {
-                if (pollingInterval) clearInterval(pollingInterval);
-                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-                currentTaskId = null;
-                taskStartTime = null;
-                document.getElementById('task-progress').classList.remove('show');
-                addLog('任务已取消，日志刷新已停止', 'info');
-                
-                // 重置自动刷新按钮状态
-                const btn = document.getElementById('auto-refresh-toggle');
-                const icon = btn.querySelector('i');
-                const text = btn.querySelector('span');
-                icon.className = 'fas fa-play';
-                text.textContent = '自动刷新';
-                btn.style.background = 'linear-gradient(45deg, #6c757d, #495057)';
-            });
         });
+        
         function clearFile(fileId) {
             const fileInput = document.getElementById(fileId);
             if (!fileInput) return;
             
-            // 清空 input 的文件值
             fileInput.value = '';
             
-            // 隐藏对应的文件信息区域
             const fileInfo = document.getElementById(`${fileId}-info`);
             if (fileInfo) {
                 fileInfo.classList.remove('show');
             }
             
-            // 重置文件名显示
             const fileNameSpan = document.getElementById(`${fileId}-name`);
             if (fileNameSpan) {
                 fileNameSpan.textContent = '未选择文件';
