@@ -435,7 +435,7 @@
             border-radius: 8px;
             padding: 15px;
             margin-top: 20px;
-            max-height: 200px;
+            max-height: 500px; /* 增加日志框高度 */
             overflow-y: auto;
             font-family: 'Courier New', monospace;
             font-size: 0.9rem;
@@ -467,19 +467,6 @@
             border-radius: 10px;
             padding: 15px;
             background: #f8fafc;
-        }
-        .log-container {
-            background: #1e1f29;
-            color: #abb2bf;
-            font-family: 'Fira Code', 'Courier New', monospace;
-            font-size: 0.9rem;
-            border: 1px solid #3b4048;
-            max-height: 250px;
-            padding: 12px;
-            border-radius: 8px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            line-height: 1.5;
         }
         .log-container::-webkit-scrollbar {
             width: 8px;
@@ -563,20 +550,16 @@
             color: #ff0000;
             transform: scale(1.1);
         }
+.status.notice {
+    background: white;
+    color: var(--gray);
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    font-weight: 500;
+    border: 1px solid #e0e6ef;
+}
 
-        .status.notice {
-            background: white;
-            color: var(--gray);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            font-weight: 500;
-            border: 1px solid #e0e6ef;
-        }
-
-        .hidden {
-            display: none;
-        }
         
         @media (max-width: 768px) {
             .config-grid {
@@ -627,15 +610,15 @@
                 </div>
                 <div class="form-group">
                     <label for="api-key"><i class="fas fa-key"></i> API 密钥</label>
-                    <input type="password" id="api-key" class="form-control" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx" value="sk-123456">
+                    <input type="password" id="api-key" class="form-control" placeholder="例如: sk-123456" value="sk-123456">
                 </div>
             </div>
         </section>
 
         <div class="status notice" id="maintenance-notice">
-            <p>有时候可能在更新或者实时修复BUG用不了，BUG/有所问题 反馈至GitHub或QQ群：606269975 / 开发者：3254693390</p>
-            <p>当前使用翻译模型：DeepSeek V4 Flash 每秒最大翻译速度：286条 最大并发2500 单次请求10条内容</p>
-            <p>当前使用嵌入模型: BGE-Small-EN-v1.5 每秒最大处理速度：453条 最近换到SentenceTransformer应该翻译不会卡了</p>
+            <p>有时候可能在更新或修复BUG用不了, BUG/有问题 反馈至GitHub或QQ群: 606269975 / 开发者: 3254693390 (我很好说话的)</p>
+            <p>当前使用翻译模型: DeepSeek V4 Flash 每秒最大翻译速度: 286条 最大并发2500 单次请求10条内容</p>
+            <p>当前使用嵌入模型: BGE-Small-EN-v1.5 每秒最大处理速度: 453条 最近换到SentenceTransformer翻译应该不会卡了</p>
         </div>
         
         <div class="tabs">
@@ -653,9 +636,9 @@
         <!-- 翻译标签页 -->
         <div id="translate" class="tab-content active">
             <h2><i class="fas fa-file-import"></i> 上传待翻译文件</h2>
-            <p style="margin: 15px 0 25px; color: red; font-style: italic;">警告：翻译未知伤亡模组是请备份原dll，翻译器无法准确获取翻译条目。翻译KrokoshaCasualtiesMP.dll请使用维基中文语言文件</p>
-            <p style="margin: 15px 0 25px; color: var(--gray);">支持 .jar模组、.zip整合包/资源包/光影包/HQM BQ FTBQ任务/NCO附属、.zs CraftTweaker脚本"</p>
-            <p style="margin: 15px 0 25px; color: var(--gray);">支持 .mrpack整合包、.lang/.json语言文件(含未知伤亡, 模组翻译)、.dll未知伤亡模组</p>
+            <p style="margin: 5px 0; color: red; font-style: italic;">警告：翻译未知伤亡模组时请备份原dll，翻译器无法准确获取翻译条目。翻译KrokoshaCasualtiesMP.dll请使用维基中文语言文件</p>
+            <p style="margin: 5px 0; color: var(--gray);">支持 .jar模组、.zip整合包/资源包/光影包/HQM BQ FTBQ任务/NCO附属、.zs CraftTweaker脚本</p>
+            <p style="margin: 5px 0; color: var(--gray);">支持 .mrpack整合包、.lang/.json语言文件(含未知伤亡, 模组翻译)、.dll未知伤亡模组</p>
             <div class="file-upload" id="file0-drop">
                 <i class="fas fa-cloud-upload-alt"></i>
                 <p>拖放文件或点击上传主文件</p>
@@ -712,7 +695,7 @@
         <!-- 分离标签页 -->
         <div id="separate" class="tab-content">
             <h2><i class="fas fa-code-branch"></i> 分离语言更新</h2>
-            <p style="margin: 15px 0 25px; color: var(--gray);">提取新添加的键值对，生成待翻译文件</p>
+            <p style="margin: 15px 0 25px; color: var(--gray);">提取新添加的键值对，生成语言文件（可能有BUG）</p>
             
             <div class="file-upload" id="sep-file0-drop">
                 <i class="fas fa-file"></i>
@@ -750,7 +733,7 @@
         <!-- 合并标签页 -->
         <div id="merge" class="tab-content">
             <h2><i class="fas fa-code-merge"></i> 合并语言更新</h2>
-            <p style="margin: 15px 0 25px; color: var(--gray);">将人工翻译内容合并回原始文件</p>
+            <p style="margin: 15px 0 25px; color: var(--gray);">将人工翻译内容合并回原始文件（可能有BUG）</p>
             
             <div class="file-upload" id="merge-file0-drop">
                 <i class="fas fa-file"></i>
@@ -842,7 +825,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="log-container" id="log-container" style="background: #1e1f29; color: #abb2bf; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9rem; border: 1px solid #3b4048; max-height: 250px; padding: 12px; border-radius: 8px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;">
+                <div class="log-container" id="log-container" style="background: #1e1f29; color: #abb2bf; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9rem; border: 1px solid #3b4048; max-height: 500px; padding: 12px; border-radius: 8px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;">
                     [INFO] 任务已提交，等待处理...
                 </div>
             </div>
@@ -867,7 +850,7 @@
                 <i class="fas fa-lightbulb"></i> 翻译整合包使用建议安装 <a href="https://www.mcmod.cn/class/1188.html" target="_blank">I18nUpdateMod</a> 模组启动游戏一次以获取基础汉化，可减少 80%+ 翻译量
             </p>
             <p>公益API服务仅使用一张P100作为计算卡，所有可能会很慢，禁止将该公益API商用/转发。</p>
-            <p>当前 TranslatorMinecraftCore 版本: Release.1.6 (内部版)
+            <p>当前 TranslatorMinecraftCore 版本: Release.1.6 (内部版)</p>
         </div>
     </div>
 
@@ -880,7 +863,6 @@
         let autoRefreshInterval = null;
         let lastLogLineCount = 0;
         let isTaskRunning = false;
-
 
         // 配置持久化
         const CONFIG_KEY = 'minecraft_translator_config';
@@ -1046,6 +1028,20 @@
                     statusBadge.textContent = '已完成';
                 }
             };
+
+            // 重置自动刷新按钮状态辅助函数
+            const resetAutoRefreshBtn = () => {
+                const btn = document.getElementById('auto-refresh-toggle');
+                if (btn) {
+                    const icon = btn.querySelector('i');
+                    const text = btn.querySelector('span');
+                    if (icon && text) {
+                        icon.className = 'fas fa-play';
+                        text.textContent = '自动刷新';
+                        btn.style.background = 'linear-gradient(45deg, #6c757d, #495057)';
+                    }
+                }
+            };
             
             // 轮询任务状态
             const pollTaskStatus = async (task_id, config) => {
@@ -1085,6 +1081,14 @@
                         addLog(`错误: ${data.error}`, 'error');
                         updateProgress(100);
                         clearInterval(pollingInterval);
+                        
+                        // 停止日志自动刷新
+                        if (autoRefreshInterval) {
+                            clearInterval(autoRefreshInterval);
+                            autoRefreshInterval = null;
+                        }
+                        resetAutoRefreshBtn();
+
                         document.getElementById('status-badge').className = 'status-badge status-failed';
                         document.getElementById('status-badge').textContent = '失败';
                         isTaskRunning = false;
@@ -1095,6 +1099,13 @@
                     if (data.status === 'completed') {
                         addLog('任务完成！', 'success');
                         clearInterval(pollingInterval);
+                        
+                        // 停止日志自动刷新
+                        if (autoRefreshInterval) {
+                            clearInterval(autoRefreshInterval);
+                            autoRefreshInterval = null;
+                        }
+                        resetAutoRefreshBtn();
                         
                         // 显示下载区域
                         document.getElementById('download-section').style.display = 'block';
@@ -1143,14 +1154,12 @@
                             }
                         };
                         isTaskRunning = false;
-                        
                     }
                     
                 } catch (error) {
                     addLog(`轮询错误: ${error.message}`, 'error');
                     clearInterval(pollingInterval);
                     isTaskRunning = false;
-                    
                 }
             };
             
@@ -1202,10 +1211,13 @@
                     addLog(`任务已提交: ${data.task_id}`);
                     addLog(`${operationName} 开始处理...`);
                     
-                    // 开始轮询
+                    // 开始轮询状态 (3秒一次)
                     pollingInterval = setInterval(() => {
                         pollTaskStatus(data.task_id, config);
-                    }, 3000); // 每3秒轮询一次
+                    }, 3000); 
+                    
+                    // 自动启动日志刷新 (1秒一次)
+                    startAutoLogRefresh(data.task_id, config);
                     
                 } catch (error) {
                     isTaskRunning = false;
@@ -1218,31 +1230,22 @@
                 }
             };
             
-            // 取消任务
+            // 取消任务 (合并了原有的重复绑定)
             document.getElementById('cancel-task').addEventListener('click', () => {
-                if (currentTaskId && pollingInterval) {
-                    clearInterval(pollingInterval);
-                    currentTaskId = null;
-                    taskStartTime = null;
-                    document.getElementById('task-progress').classList.remove('show');
-                    addLog('任务已取消', 'info');
-
-                    // 重置自动刷新按钮状态
-                    const btn = document.getElementById('auto-refresh-toggle');
-                    if (btn) {
-                        const icon = btn.querySelector('i');
-                        const text = btn.querySelector('span');
-                        if (icon && text) {
-                            icon.className = 'fas fa-play';
-                            text.textContent = '自动刷新';
-                            btn.style.background = 'linear-gradient(45deg, #6c757d, #495057)';
-                        }
-                    }
-                    
-                    // 关键：重置任务运行状态
-                    isTaskRunning = false;
-                    
-                }
+                if (pollingInterval) clearInterval(pollingInterval);
+                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+                
+                pollingInterval = null;
+                autoRefreshInterval = null;
+                currentTaskId = null;
+                taskStartTime = null;
+                isTaskRunning = false;
+                
+                document.getElementById('task-progress').classList.remove('show');
+                addLog('任务已取消，日志刷新已停止', 'info');
+                
+                // 重置自动刷新按钮状态
+                resetAutoRefreshBtn();
             });
             
             // 翻译按钮点击处理
@@ -1303,7 +1306,6 @@
                     formData.append('file_name1', file1Input.files[0].name);
                 }
             
-                
                 await submitTask('/separatelangupdate', formData, config, '分离语言更新');
             });
             
@@ -1343,7 +1345,8 @@
                 
                 await submitTask('/mergelangupdate', formData, config, '合并语言更新');
             });
-                // 刷新日志
+            
+            // 刷新日志
             async function refreshLogs(task_id, config) {
                 if (!task_id || !config) return;
                 
@@ -1369,14 +1372,12 @@
                         // 检测新日志行数变化
                         const newLineCount = logsText.split('\n').length;
                         if (newLineCount > lastLogLineCount) {
-                            // 有新日志，播放微妙提示音（可选）
-                            // new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=').play();
+                            // 有新日志
                         }
                         lastLogLineCount = newLineCount;
                     }
                 } catch (error) {
                     console.warn('日志刷新失败:', error);
-                    // 不中断主流程，仅控制台警告
                 }
             }
 
@@ -1405,7 +1406,7 @@
                     
                     autoRefreshInterval = setInterval(() => {
                         refreshLogs(currentTaskId, config);
-                    }, 3000);
+                    }, 1000); // 改为 1秒 间隔
                     
                     icon.className = 'fas fa-pause';
                     text.textContent = '暂停刷新';
@@ -1444,46 +1445,28 @@
                     clearInterval(autoRefreshInterval);
                 }
                 
-                // 启动自动刷新
+                // 启动自动刷新 (1秒间隔)
                 autoRefreshInterval = setInterval(() => {
                     refreshLogs(task_id, config);
-                }, 3000);
+                }, 1000); 
                 
                 // 更新UI按钮状态
                 const btn = document.getElementById('auto-refresh-toggle');
-                const icon = btn.querySelector('i');
-                const text = btn.querySelector('span');
-                icon.className = 'fas fa-pause';
-                text.textContent = '暂停刷新';
-                btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                if (btn) {
+                    const icon = btn.querySelector('i');
+                    const text = btn.querySelector('span');
+                    if (icon && text) {
+                        icon.className = 'fas fa-pause';
+                        text.textContent = '暂停刷新';
+                        btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                    }
+                }
                 
                 // 首次刷新
-                setTimeout(() => refreshLogs(task_id, config), 1000);
+                setTimeout(() => refreshLogs(task_id, config), 500);
             }
-
-            // 修改原有的 submitTask 函数，在任务提交成功后调用 startAutoLogRefresh
-            // 找到 submitTask 函数中任务提交成功后的代码块，添加：
-            // startAutoLogRefresh(data.task_id, config);
-
-            // 取消任务时清理日志定时器
-            document.getElementById('cancel-task').addEventListener('click', () => {
-                if (pollingInterval) clearInterval(pollingInterval);
-                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-                currentTaskId = null;
-                taskStartTime = null;
-                document.getElementById('task-progress').classList.remove('show');
-                addLog('任务已取消，日志刷新已停止', 'info');
-                
-                // 重置自动刷新按钮状态
-                const btn = document.getElementById('auto-refresh-toggle');
-                const icon = btn.querySelector('i');
-                const text = btn.querySelector('span');
-                icon.className = 'fas fa-play';
-                text.textContent = '自动刷新';
-                btn.style.background = 'linear-gradient(45deg, #6c757d, #495057)';
-            });
         });
+
         function clearFile(fileId) {
             const fileInput = document.getElementById(fileId);
             if (!fileInput) return;
