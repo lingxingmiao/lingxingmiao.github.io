@@ -621,20 +621,8 @@
             <p>当前使用嵌入模型: BGE-Small-EN-v1.5 每秒最大处理速度: 453条 最近换到SentenceTransformer翻译应该不会卡了</p>
         </div>
         
-        <div class="tabs">
-            <div class="tab active" data-tab="translate">
-                <i class="fas fa-language"></i> 翻译文件
-            </div>
-            <div class="tab" data-tab="separate">
-                <i class="fas fa-code-branch"></i> 分离语言更新
-            </div>
-            <div class="tab" data-tab="merge">
-                <i class="fas fa-code-merge"></i> 合并语言更新
-            </div>
-        </div>
-        
-        <!-- 翻译标签页 -->
-        <div id="translate" class="tab-content active">
+        <!-- 翻译 -->
+        <div class="tab-content active" style="border-radius: 12px;">
             <h2><i class="fas fa-file-import"></i> 上传待翻译文件</h2>
             <p style="margin: 5px 0; color: red; font-style: italic;">警告：翻译未知伤亡模组时请备份原dll，翻译器无法准确获取翻译条目。翻译KrokoshaCasualtiesMP.dll请使用维基中文语言文件</p>
             <p style="margin: 5px 0; color: var(--gray);">支持 .jar模组、.zip整合包/资源包/光影包/HQM BQ FTBQ任务/NCO附属、.zs CraftTweaker脚本</p>
@@ -668,117 +656,8 @@
                 </div>
             </div>
             
-            <div class="options-grid">
-                <div class="form-group">
-                    <label><i class="fas fa-brain"></i> 翻译模式</label>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="all-mode">
-                        <label for="all-mode">全量翻译模式（跳过 I18nUpdateMod 已有汉化）</label>
-                    </div>
-                    <small style="color: var(--gray); display: block; margin-top: 5px;">勾选降翻译整合包内所有模组，未勾选需要资源包文件夹内有I18n资源包</small>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-search"></i> 输出模式</label>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="export-inspection">
-                        <label for="export-inspection">导出审核文件 (.translang)</label>
-                    </div>
-                    <small style="color: var(--gray); display: block; margin-top: 5px;">用于人工校对，仅支持语言文件/资源包/光影包/模组</small>
-                </div>
-            </div>
-            
             <button class="btn" id="translate-btn">
                 <i class="fas fa-language"></i> <span>开始翻译</span>
-            </button>
-        </div>
-        
-        <!-- 分离标签页 -->
-        <div id="separate" class="tab-content">
-            <h2><i class="fas fa-code-branch"></i> 分离语言更新</h2>
-            <p style="margin: 15px 0 25px; color: var(--gray);">提取新添加的键值对，生成语言文件（可能有BUG）</p>
-            
-            <div class="file-upload" id="sep-file0-drop">
-                <i class="fas fa-file"></i>
-                <p>拖放源文件（新版本）</p>
-                <small>待提取新键值的文件</small>
-                <input type="file" id="sep-file0" class="hidden" accept=".jar,.zip,.lang,.json">
-                <div class="file-info" id="sep-file0-info">
-                    <div class="file-name">
-                        <i class="fas fa-file"></i> 
-                        <span id="sep-file0-name">未选择文件</span>
-                        <span class="close-icon" onclick="clearFile('sep-file0')">&times;</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="file-upload" id="sep-file1-drop">
-                <i class="fas fa-file-alt"></i>
-                <p>（可选）拖放参考文件（旧版本）</p>
-                <small>已有翻译的基准文件</small>
-                <input type="file" id="sep-file1" class="hidden" accept=".jar,.zip,.lang,.json">
-                <div class="file-info" id="sep-file1-info">
-                    <div class="file-name">
-                        <i class="fas fa-file"></i> 
-                        <span id="sep-file1-name">未选择文件</span>
-                        <span class="close-icon" onclick="clearFile('sep-file1')">&times;</span>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="btn" id="separate-btn">
-                <i class="fas fa-code-branch"></i> <span>分离语言更新</span>
-            </button>
-        </div>
-        
-        <!-- 合并标签页 -->
-        <div id="merge" class="tab-content">
-            <h2><i class="fas fa-code-merge"></i> 合并语言更新</h2>
-            <p style="margin: 15px 0 25px; color: var(--gray);">将人工翻译内容合并回原始文件（可能有BUG）</p>
-            
-            <div class="file-upload" id="merge-file0-drop">
-                <i class="fas fa-file"></i>
-                <p>拖放源文件（原始文件）</p>
-                <small>待合并的原始语言文件/资源包</small>
-                <input type="file" id="merge-file0" class="hidden" accept=".jar,.zip,.lang,.json">
-                <div class="file-info" id="merge-file0-info">
-                    <div class="file-name">
-                        <i class="fas fa-file"></i> 
-                        <span id="merge-file0-name">未选择文件</span>
-                        <span class="close-icon" onclick="clearFile('merge-file0')">&times;</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="file-upload" id="merge-notlang-drop">
-                <i class="fas fa-file-word"></i>
-                <p>拖放待合并文件</p>
-                <small>人工翻译完成的 .lang/.json/.translang 文件</small>
-                <input type="file" id="merge-notlang" class="hidden" accept=".lang,.json,.translang">
-                <div class="file-info" id="merge-notlang-info">
-                    <div class="file-name">
-                        <i class="fas fa-file"></i> 
-                        <span id="merge-notlang-name">未选择文件</span>
-                        <span class="close-icon" onclick="clearFile('merge-notlang')">&times;</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="file-upload" id="merge-file1-drop">
-                <i class="fas fa-file-alt"></i>
-                <p>（可选）拖放参考文件</p>
-                <small>额外参考语言文件</small>
-                <input type="file" id="merge-file1" class="hidden" accept=".jar,.zip,.lang,.json">
-                <div class="file-info" id="merge-file1-info">
-                    <div class="file-name">
-                        <i class="fas fa-file"></i> 
-                        <span id="merge-file1-name">未选择文件</span>
-                        <span class="close-icon" onclick="clearFile('merge-file1')">&times;</span>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="btn" id="merge-btn">
-                <i class="fas fa-code-merge"></i> <span>合并语言更新</span>
             </button>
         </div>
         
@@ -846,10 +725,7 @@
         
         <div class="footer">
             <p>Copyright © 2026-2026 <a href="https://github.com/lingxingmiao/Translator-Minecraft/">Translator Minecraft</a>. GNU Affero General Public License v3.0.</p>
-            <p style="margin-top: 8px; font-size: 0.9rem; color: var(--gray);">
-                <i class="fas fa-lightbulb"></i> 翻译整合包使用建议安装 <a href="https://www.mcmod.cn/class/1188.html" target="_blank">I18nUpdateMod</a> 模组启动游戏一次以获取基础汉化，可减少 80%+ 翻译量
-            </p>
-            <p>公益API服务仅使用一张P100作为计算卡，所有可能会很慢，禁止将该公益API商用/转发。</p>
+            <p>公益API服务仅使用一张P100作为计算卡, 所有可能会很慢, 禁止将该公益API商用/转发。</p>
             <p>当前 TranslatorMinecraftCore 版本: Release.1.6 (内部版)</p>
         </div>
     </div>
@@ -976,11 +852,6 @@
             // 初始化所有文件上传区域
             setupFileUpload('file0-drop', 'file0', 'file0-name', 'file0-info');
             setupFileUpload('file1-drop', 'file1', 'file1-name', 'file1-info');
-            setupFileUpload('sep-file0-drop', 'sep-file0', 'sep-file0-name', 'sep-file0-info');
-            setupFileUpload('sep-file1-drop', 'sep-file1', 'sep-file1-name', 'sep-file1-info');
-            setupFileUpload('merge-file0-drop', 'merge-file0', 'merge-file0-name', 'merge-file0-info');
-            setupFileUpload('merge-notlang-drop', 'merge-notlang', 'merge-notlang-name', 'merge-notlang-info');
-            setupFileUpload('merge-file1-drop', 'merge-file1', 'merge-file1-name', 'merge-file1-info');
             
             // API 配置验证
             const validateConfig = () => {
@@ -1274,76 +1145,7 @@
                     formData.append('file_name1', file1Input.files[0].name);
                 }
                 
-                formData.append('all_mode', document.getElementById('all-mode').checked);
-                formData.append('export_inspection', document.getElementById('export-inspection').checked);
-                
                 await submitTask('/translate', formData, config, '翻译任务');
-            });
-            
-            // 分离语言更新
-            document.getElementById('separate-btn').addEventListener('click', async () => {
-                if (isTaskRunning) {
-                    alert('有任务正在运行，请先取消当前任务才能提交新任务');
-                    return;
-                }
-
-                const config = validateConfig();
-                if (!config) return;
-                
-                const file0Input = document.getElementById('sep-file0');
-                if (!file0Input.files.length) {
-                    alert('请先上传源文件');
-                    return;
-                }
-                
-                const formData = new FormData();
-                formData.append('file0', file0Input.files[0]);
-                formData.append('file_name0', file0Input.files[0].name);
-                
-                const file1Input = document.getElementById('sep-file1');
-                if (file1Input.files.length) {
-                    formData.append('file1', file1Input.files[0]);
-                    formData.append('file_name1', file1Input.files[0].name);
-                }
-            
-                await submitTask('/separatelangupdate', formData, config, '分离语言更新');
-            });
-            
-            // 合并语言更新
-            document.getElementById('merge-btn').addEventListener('click', async () => {
-                if (isTaskRunning) {
-                    alert('有任务正在运行，请先取消当前任务才能提交新任务');
-                    return;
-                }
-
-                const config = validateConfig();
-                if (!config) return;
-                
-                const file0Input = document.getElementById('merge-file0');
-                const notlangInput = document.getElementById('merge-notlang');
-                
-                if (!file0Input.files.length) {
-                    alert('请先上传源文件');
-                    return;
-                }
-                if (!notlangInput.files.length) {
-                    alert('请先上传待合并文件');
-                    return;
-                }
-                
-                const formData = new FormData();
-                formData.append('file0', file0Input.files[0]);
-                formData.append('file_name0', file0Input.files[0].name);
-                formData.append('notlang_file', notlangInput.files[0]);
-                formData.append('nolang_file_name', notlangInput.files[0].name);
-                
-                const file1Input = document.getElementById('merge-file1');
-                if (file1Input.files.length) {
-                    formData.append('file1', file1Input.files[0]);
-                    formData.append('file_name1', file1Input.files[0].name);
-                }
-                
-                await submitTask('/mergelangupdate', formData, config, '合并语言更新');
             });
             
             // 刷新日志
