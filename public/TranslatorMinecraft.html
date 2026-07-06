@@ -435,7 +435,7 @@
             border-radius: 8px;
             padding: 15px;
             margin-top: 20px;
-            max-height: 800px; /* 日志框高度 */
+            max-height: 1200px; /* 日志框高度 */
             overflow-y: auto;
             font-family: 'Courier New', monospace;
             font-size: 0.9rem;
@@ -1153,7 +1153,7 @@
                 if (!task_id || !config) return;
                 
                 try {
-                    const response = await fetch(`${config.apiUrl}/task/logs/${task_id}?last_lines=400`, {
+                    const response = await fetch(`${config.apiUrl}/task/logs/${task_id}?last_lines=1200`, {
                         headers: {
                             'Authorization': `Bearer ${config.apiKey}`
                         }
