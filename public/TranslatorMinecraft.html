@@ -1125,7 +1125,6 @@
         <nav class="side-nav">
             <button class="side-item active" data-target="file0-drop" data-view="work" title="翻译"><i class="fas fa-file-import"></i> <span>翻译</span></button>
             <button class="side-item" data-target="task-detail" data-view="work" title="任务详情"><i class="fas fa-tasks"></i> <span>任务详情</span></button>
-            <button class="side-item" data-target="maintenance-notice" title="公告"><i class="fas fa-info-circle"></i> <span>公告</span></button>
             <button class="side-item" data-target="view-about" data-view="about" title="关于"><i class="fas fa-circle-info"></i> <span>关于</span></button>
         </nav>
         <button class="side-item side-toggle" id="toggle-sidebar" title="折叠 / 展开侧边栏"><i class="fas fa-bars"></i> <span>折叠</span></button>
@@ -1164,10 +1163,9 @@
         <!-- ========== 维护中卡片结束 ========== -->
 
         <div class="status notice" id="maintenance-notice">
-            <p><strong>单个文件不能超过 95MB</strong>（Cloudflare 免费版单请求上限 100MB），更大的文件请上传到 QQ 群 606269975。</p>
-            <p>有可能在修复BUG用不了, BUG/问题/大文件翻译 反馈至GitHub或QQ群: 606269975 / 开发者: 3254693390 (我很好说话的)</p>
-            <p>当前使用翻译模型: Qwen3.7 Flash 等效并发150, 启用翻译前总结。平均翻译速度140条/s 2w条目需要约4~5分钟。</p>
-            <p>当前使用嵌入模型: BGE-Base-EN-v1.5 向量搜索: NSGSQ8 + Refine</p>
+            <p><strong>单个文件不能超过 95MB</strong>，更大的文件请发到 QQ 群 606269975。</p>
+            <p>当前翻译模型：Qwen3.7 Flash，翻译一个文件大约需要 30 秒 ~ 4 分钟（看文件大小）。</p>
+            <p>有问题或建议：加 QQ 群 606269975（开发者 3254693390），或到 GitHub 提 Issue，我很好说话的。</p>
         </div>
 
                     <div id="view-work">
@@ -1308,8 +1306,11 @@
                         <li>核电工艺重制版附加包</li>
                         <li>未知伤亡语言文件(CasualtiesUnknown)</li>
                         <li>BepInEx 插件 / 模组翻译 / TX Loader</li>
-                        <li>SFT 数据集(用于蒸馏)</li>
                     </ul>
+                    <p class="about-text" style="font-size: 0.88rem;">
+                        上传后按文件结构自动识别，认不出来的会直接返回日志（也就是失败）。
+                        资源包和 TX Loader 请放进整合包一起传，单独传 zip 识别不出来。
+                    </p>
 
                     <h3>本网站</h3>
                     <p class="about-text">
@@ -1327,9 +1328,8 @@
 
                     <h3>运营成本</h3>
                     <p class="about-text">
-                        AI 接口 + 域名，合计约 <strong>20 元/月</strong>——对作者来说已经算一笔巨款了。
-                        本站没有广告、也没有任何收费项目，全靠自费维持；
-                        觉得有用的话，反馈问题、帮忙校对译文、或者进 QQ 群 606269975 提建议就行。
+                        AI 接口 + 域名，合计约 <strong>20 元/月</strong>，自费，没有广告也没有收费项目。
+                        就是个翻译网站，出错了这边看日志修。
                     </p>
                     <p style="text-align: right; font-size: 0.78rem; opacity: 0.5; margin-top: -6px;">
                         <span id="open-donate" style="cursor: pointer; border-bottom: 1px dotted currentColor;">赞助</span>
@@ -2108,10 +2108,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadCfg();
             loadTasks();
-            if (!localStorage.getItem(CFG_KEY)) {
-                // 首次访问自动打开设置，方便填写 API
-                $('settings-modal').classList.add('show');
-            }
 
             ['api-url', 'api-key', 'concurrency'].forEach(id => {
                 $(id).addEventListener('blur', saveCfg);
