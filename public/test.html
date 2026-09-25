@@ -1131,8 +1131,9 @@
         /* 创建密钥弹窗 */
         .key-type-picker {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            /* minmax(0,1fr)：两列严格等宽，内容长的那边自己换行，不把列撑宽 */
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 8px;
         }
 
         .key-type-opt {
