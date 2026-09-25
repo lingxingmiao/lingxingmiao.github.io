@@ -1719,6 +1719,12 @@
     <div class="container">
 
                     <div id="view-work">
+            <!-- 公告：只挂在主页面里，切到别的页面就不显示 -->
+            <div class="status notice" id="maintenance-notice">
+                <p><strong>单个文件不能超过 95MB</strong>，更大的文件请发到 QQ 群 606269975。</p>
+                <p>当前翻译模型：Qwen3.7 Flash，翻译一个文件大约需要 30 秒 ~ 4 分钟（看文件大小）。</p>
+                <p>有问题或建议：加 QQ 群 606269975（开发者 3254693390），或到 <a href="https://github.com/lingxingmiao/Translator-Minecraft/issues" target="_blank" rel="noopener">GitHub 提 Issue</a>，我很好说话的。</p>
+            </div>
 <div class="tab-content active" style="border-radius: 4px;">
             <div class="work-head">
                 <h2><i class="fas fa-file-import"></i> 上传待翻译文件</h2>
@@ -1883,11 +1889,6 @@
                             <a href="javascript:void(0)" type="button" class="btn btn-sm" id="key-create-open"><i class="fas fa-plus"></i> 创建 API key</a>
                         </div>
                     </div>
-                    <p class="about-text" style="margin-bottom: 14px;">
-                        密钥在服务端按<strong>名称 → 密钥</strong>保存。<strong>用户密钥</strong>用于 <code>/network/transl</code> 翻译，
-                        <strong>管理员密钥</strong>用于 <code>/key/*</code> 管理；名称重复会返回 <code>409</code>；列表里 Key 默认打码，点一下显示完整值（或点复制按钮直接复制），
-                        配置里写死的管理员密钥（<code>配置文件N</code>）删除时会被保护。
-                    </p>
 
                     <table class="task-table key-table">
                         <thead>
@@ -1955,8 +1956,8 @@
 
                     <h3>本网站</h3>
                     <p class="about-text">
-                        公益站点，只提供翻译功能，免费、不限量、不限速，输出语言固定为中文（需要其它输出语言请直接调用 API）。
-                        可上传 .jar / .zip / .7z / .rar / .mrpack / .mcpack / .mcaddon / .lang / .json / .zs / .dll / .txt，每个文件算一个任务，最多同时提交 3 个（可在设置里改）。
+                        公益站点，只提供翻译功能，免费、不限量、不限速。
+                        可上传 .jar / .zip / .7z / .rar / .mrpack / .mcpack / .mcaddon / .lang / .json / .zs / .dll / .txt，每个文件算一个任务，最多同时提交 3 个。
                         单个文件上限 95MB（Cloudflare 免费版单请求上限 100MB），更大的文件请上传到 QQ 群 606269975。
                         上传的参考文件用于差异对比，会把已有译文作为参考词。
                     </p>
@@ -2006,11 +2007,6 @@
                         翻译结果由大语言模型生成，可能存在误译或漏译，重要内容请自行校对；
                         作者不对翻译结果造成的损失负责。
                     </p>
-
-                    <p class="about-meta">
-                        仓库 lingxingmiao/Translator-Minecraft · Python · AGPL-3.0 · Star 5 · 最后推送 2026-09-18<br>
-                        当前 TranslatorMinecraftCore 版本 Release.1.6（内部版），Release.1.7 Bata.1 开发中
-                    </p>
                 </div>
             </div>
 
@@ -2042,7 +2038,6 @@
                 <label for="concurrency"><i class="fas fa-gauge-high"></i> 同时翻译数（0 为不限）</label>
                 <input type="number" id="concurrency" class="form-control" min="0" max="32" value="3">
             </div>
-            <p class="modal-tip">配置保存在本机浏览器，输入后立即生效。翻译接口只认用户密钥，<code>401</code> 说明密钥不在服务端列表里，可到侧栏「Key 管理」里生成或填入。新接口要求上传体是 zstd 流，本页会在本地把文件封装成标准 zstd 帧（Raw_Block，不改动文件内容）后再上传。</p>
             <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="run-diag" style="width: 100%; margin-top: 10px;">
                 <i class="fas fa-circle-info"></i> 页面自检（按钮没反应时点这个）
             </a>
