@@ -3297,6 +3297,89 @@ async function 删除单条(条目) {
             } catch (e) {}
         }
 
+        // ===== 文件本体的本地缓存（IndexedDB）=====
+        // localStorage 存不了文件，刷新后 blob 就空了，于是「重试」还得重新选一次文件。
+        // 这里把文件本体存进浏览器：刷新后自动找回，重试/开始都不用再选。
+        // 浏览器不给用（无痕模式之类）时全部退化成原来的「重新选文件」行为。
+        const 文件库名 = 'translator-file-cache';
+        const 文件表名 = 'files';
+        let 文件库 = null;
+
+        function 打开文件库() {
+            if (文件库) return Promise.resolve(文件库);
+            if (!window.indexedDB) return Promise.resolve(null);
+            return new Promise(解决 => {
+                let 请求;
+                try { 请求 = indexedDB.open(文件库名, 1); } catch (e) { 解决(null); return; }
+                请求.onupgradeneeded = () => {
+                    const 库 = 请求.result;
+                    if (!库.objectStoreNames.contains(文件表名)) 库.createObjectStore(文件表名, { keyPath: 'id' });
+                };
+                请求.onsuccess = () => { 文件库 = 请求.result; 解决(文件库); };
+                请求.onerror = () => 解决(null);
+                请求.onblocked = () => 解决(null);
+            });
+        }
+
+        async function 存文件(id, 文件) {
+            if (!id || !文件) return false;
+            const 库 = await 打开文件库();
+            if (!库) return false;
+            return new Promise(解决 => {
+                try {
+                    const 事务 = 库.transaction(文件表名, 'readwrite');
+                    事务.objectStore(文件表名).put({ id: id, name: 文件.name, size: 文件.size, at: Date.now(), blob: 文件 });
+                    事务.oncomplete = () => 解决(true);
+                    事务.onerror = () => 解决(false);
+                    事务.onabort = () => 解决(false);
+                } catch (e) { 解决(false); }
+            });
+        }
+
+        async function 取文件(id) {
+            const 库 = await 打开文件库();
+            if (!库 || !id) return null;
+            return new Promise(解决 => {
+                try {
+                    const 请求 = 库.transaction(文件表名, 'readonly').objectStore(文件表名).get(id);
+                    请求.onsuccess = () => 解决(请求.result ? 请求.result.blob : null);
+                    请求.onerror = () => 解决(null);
+                } catch (e) { 解决(null); }
+            });
+        }
+
+        async function 删文件(ids) {
+            const 列表 = (Array.isArray(ids) ? ids : [ids]).filter(Boolean);
+            if (!列表.length) return;
+            const 库 = await 打开文件库();
+            if (!库) return;
+            try {
+                const 事务 = 库.transaction(文件表名, 'readwrite');
+                const 表 = 事务.objectStore(文件表名);
+                列表.forEach(id => 表.delete(id));
+            } catch (e) {}
+        }
+
+        // 刷新后把文件找回来：找回成功就能直接开始/重试，不用再选文件
+        async function 恢复本地文件() {
+            const 候选 = tasks.filter(t => !t.blob && t.原状态 !== 'completed');
+            if (!候选.length) return;
+            let 成功 = 0;
+            for (const t of 候选) {
+                const 文件 = await 取文件(t.id);
+                if (!文件) continue;
+                t.blob = 文件;
+                if (文件.name) t.name = 文件.name;
+                if (文件.size) t.size = 文件.size;
+                const 原 = t.原状态 || 'ready';
+                t.status = (原 === 'ready' || 原 === 'needfile' || 原 === 'uploading') ? 'ready' : 原;
+                if (t.status === 'ready') t.msg = '文件已找回，可以直接开始';
+                else if (t.status === 'failed') t.msg = t.logResult ? '失败：只有日志可下载' : '';
+                成功 += 1;
+            }
+            if (成功) { saveTasks(); render(); hint('已从浏览器找回 ' + 成功 + ' 个任务的文件，重试不用再选'); }
+        }
+
         function loadTasks() {
             let saved = [];
             try { saved = JSON.parse(localStorage.getItem(TASK_KEY) || '[]'); } catch (e) {}
@@ -3317,6 +3400,7 @@ async function 删除单条(条目) {
                 at: t.at || Date.now()
             }));
             tasks.forEach(t => {
+                t.原状态 = t.status;   // 找回文件后按这个恢复状态
                 if (t.status === 'queued' || t.status === 'processing') {
                     t.msg = '恢复跟踪中';
                 } else if (t.status === 'failed' && t.logResult && t.taskId) {
@@ -3506,7 +3590,7 @@ function warnTooBig(list) {
                 }
                 const dup = tasks.some(t => t.name === f.name && t.size === f.size && ENDED.indexOf(t.status) < 0);
                 if (dup) return;
-                tasks.push({
+                const 新任务 = {
                     id: nextId(),
                     name: f.name,
                     size: f.size,
@@ -3520,7 +3604,9 @@ function warnTooBig(list) {
                     msg: '',
                     queued: false,
                     at: Date.now()
-                });
+                };
+                tasks.push(新任务);
+                存文件(新任务.id, f);   // 文件本体进浏览器缓存，刷新后还能直接重试
                 added += 1;
             });
             if (big.length) warnTooBig(big);
@@ -3555,6 +3641,7 @@ function warnTooBig(list) {
                 t.progress = 0;
                 t.err = '';
                 t.msg = '';
+                存文件(t.id, f);
                 saveTasks();
                 render();
                 if (待重选文件 === t.id) {   // 从「重选并重试」进来的：选完就直接开跑
@@ -3768,6 +3855,7 @@ function warnTooBig(list) {
                         t.filename = file;
                         t.logResult = /\.log$/i.test(file);
                         t.status = t.logResult ? 'failed' : 'completed';
+                        if (t.status === 'completed') 删文件(t.id);   // 已经成功，文件不用再占浏览器空间
                         t.err = t.logResult ? '翻译失败（服务端只返回了日志文件，没有结果文件）' : '';
                         t.msg = t.logResult ? '失败：只有日志可下载' : '已完成';
                         finished = true;
@@ -3863,6 +3951,7 @@ async function remove(id, quiet) {
                  if (!确认移除) return;
             }
             if (t.xhr && t.status === 'uploading') t.xhr.abort();
+            删文件(id);
             tasks = tasks.filter(x => x.id !== id);
             if (current === id) {
                 current = null;
@@ -3935,6 +4024,7 @@ async function remove(id, quiet) {
             if (是否维护中()) { 进入维护模式(); return; }
             loadCfg();
             loadTasks();
+            恢复本地文件();
             读配置();
             刷新配置页();
 
@@ -4076,6 +4166,7 @@ async function remove(id, quiet) {
 
             绑定事件($('clear-finished'), 'click', () => {
                 const before = tasks.length;
+                删文件(tasks.filter(t => ENDED.indexOf(t.status) >= 0).map(t => t.id));
                 tasks = tasks.filter(t => ENDED.indexOf(t.status) < 0);
                 if (current && !task(current)) {
                     current = null;
@@ -4091,6 +4182,7 @@ async function remove(id, quiet) {
                const 确认清空 = await 询问('确定清空任务列表吗？\n服务器上的翻译不受影响。',
                     { 标题: '清空列表', 图标: 'broom', 确定文本: '清空' });
                if (!确认清空) return;
+                删文件(tasks.map(t => t.id));
                 tasks = [];
                 current = null;
                 autoLog(false);
@@ -4116,7 +4208,7 @@ async function remove(id, quiet) {
                     select(id);
                     if (!t.blob) {
                         待重选文件 = t.id;
-                        hint('这个任务的文件没有被浏览器保存，重新选一次就会自动重试');
+                        hint('浏览器里没找到这个任务的文件，重新选一次就会自动重试');
                         pickFile(t);
                         return;
                     }
