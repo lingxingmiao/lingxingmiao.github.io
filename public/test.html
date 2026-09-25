@@ -864,6 +864,16 @@
             width: 150px;
         }
 
+        .lang-model {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lang-model .config-quick-input {
+            width: 140px;
+        }
+
         .lang-field .config-quick-input {
             width: 100%;
         }
@@ -1740,6 +1750,10 @@
                         <input type="text" id="config-lang-out" class="config-quick-input" placeholder="zh_cn" autocomplete="off" spellcheck="false" title="输出语言 LANGUAGE_OUTPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-out">
                         <div class="lang-menu" id="lang-menu-out" role="listbox" aria-label="输出语言候选"></div>
                     </div>
+                    <label class="lang-model" title="发给大模型的「目标语言」说明（LANGUAGE_MODEL，可以写「文言文」这种名字，不必是语言代码）；留空就与输出语言相同">
+                        <span class="config-quick-label">模型语言</span>
+                        <input type="text" id="config-lang-model" class="config-quick-input" placeholder="留空 = 输出语言" autocomplete="off" spellcheck="false" aria-label="模型语言 LANGUAGE_MODEL">
+                    </label>
                 </div>
             </div>
 
@@ -2313,7 +2327,7 @@
             const 必需 = ['api-url','api-key','api-admin-key','concurrency','add-files','file0','file0-drop','file1-drop','file1',
                           'start-all','stop-all','clear-finished','clear-all','task-list','task-hint','view-work','view-keys','view-about',
                           'key-page','key-reload','key-create-open','key-create-modal','key-create-note','key-create-submit','key-table-body','key-table-hint',
-                          'config-page','config-lang-in','config-lang-out','config-save','config-reset','lang-menu-in','lang-menu-out',
+                          'config-page','config-lang-in','config-lang-out','config-lang-model','config-save','config-reset','lang-menu-in','lang-menu-out',
                           'config-editor','config-editor-input','config-gutter','config-status',
                           'settings-modal','open-settings','donate-modal','open-donate'];
             const 缺失 = 必需.filter(id => !$(id));
@@ -2583,14 +2597,20 @@
             return 请求配置;
         }
 
-        // 只保留这两个键；空值就退回默认，避免发出空字符串让服务端当语言用
+        // 只保留白名单里的语言键；空值就退回默认，避免发出空字符串让服务端当语言用
+        // LANGUAGE_MODEL 是「发给模型的目标语言说明」，留空表示跟输出语言一样（服务端自己回落）
+        const 语言键 = ['LANGUAGE_INPUT', 'LANGUAGE_OUTPUT', 'LANGUAGE_MODEL'];
+
         function 归一配置(原始) {
             const 源 = 原始 && 原始.LANGUAGE_INPUT != null ? String(原始.LANGUAGE_INPUT).trim() : '';
             const 目标 = 原始 && 原始.LANGUAGE_OUTPUT != null ? String(原始.LANGUAGE_OUTPUT).trim() : '';
-            return {
+            const 模型 = 原始 && 原始.LANGUAGE_MODEL != null ? String(原始.LANGUAGE_MODEL).trim() : '';
+            const 结果 = {
                 LANGUAGE_INPUT: 源 || 配置默认.LANGUAGE_INPUT,
                 LANGUAGE_OUTPUT: 目标 || 配置默认.LANGUAGE_OUTPUT,
             };
+            if (模型) 结果.LANGUAGE_MODEL = 模型;   // 留空就不发这个键
+            return 结果;
         }
 
         function 写配置(新配置) {
@@ -2640,6 +2660,7 @@
             const 行 = 前.split('\n').length;
             const 列 = 光标 - 前.lastIndexOf('\n');
             右.textContent = 请求配置.LANGUAGE_INPUT + ' → ' + 请求配置.LANGUAGE_OUTPUT
+                + (请求配置.LANGUAGE_MODEL ? '（模型：' + 请求配置.LANGUAGE_MODEL + '）' : '')
                 + ' ｜ 行 ' + 行 + '，列 ' + 列 + ' ｜ ' + 编辑.value.length + ' 字符';
             if (提示) 右.textContent = 提示 + ' ｜ ' + 右.textContent;
         }
@@ -2679,7 +2700,7 @@
             if (!结果) {
                 配置提示('JSON 里有问题，保存前先修好', 'bad');
             } else {
-                const 其它键 = Object.keys(结果.解析).filter(键 => ['LANGUAGE_INPUT', 'LANGUAGE_OUTPUT'].indexOf(键) < 0);
+                const 其它键 = Object.keys(结果.解析).filter(键 => 语言键.indexOf(键) < 0);
                 配置提示('未保存的改动' + (其它键.length ? '（非白名单键会被服务端忽略：' + 其它键.join(', ') + '）' : ''), '');
             }
             更新编辑器状态();
@@ -2690,15 +2711,19 @@
             if (编辑) 编辑.value = JSON.stringify(请求配置);
             if ($('config-lang-in')) $('config-lang-in').value = 请求配置.LANGUAGE_INPUT;
             if ($('config-lang-out')) $('config-lang-out').value = 请求配置.LANGUAGE_OUTPUT;
+            if ($('config-lang-model')) $('config-lang-model').value = 请求配置.LANGUAGE_MODEL || '';
             更新行号();
             更新编辑器状态();
         }
 
         function 从快捷输入生成配置() {
-            return {
+            const 配置 = {
                 LANGUAGE_INPUT: ($('config-lang-in') || {}).value || '',
                 LANGUAGE_OUTPUT: ($('config-lang-out') || {}).value || '',
             };
+            const 模型 = (($('config-lang-model') || {}).value || '').trim();
+            if (模型) 配置.LANGUAGE_MODEL = 模型;
+            return 配置;
         }
 
         // 快捷输入 → 编辑器（实时同步）→ 自动落盘生效（不用再点按钮）
@@ -2735,7 +2760,7 @@
         function 保存配置() {
             const 结果 = 解析编辑器(false);
             if (!结果) return false;
-            const 其它键 = Object.keys(结果.解析).filter(键 => ['LANGUAGE_INPUT', 'LANGUAGE_OUTPUT'].indexOf(键) < 0);
+            const 其它键 = Object.keys(结果.解析).filter(键 => 语言键.indexOf(键) < 0);
             写配置(结果.解析);
             const 编辑 = $('config-editor-input');
             if (编辑) 编辑.value = JSON.stringify(请求配置);
@@ -3802,8 +3827,10 @@ async function remove(id, quiet) {
             挂语言选择器('config-lang-out', 'lang-menu-out');
             绑定事件($('config-lang-in'), 'input', 快捷输入已改动);
             绑定事件($('config-lang-out'), 'input', 快捷输入已改动);
+            绑定事件($('config-lang-model'), 'input', 快捷输入已改动);
             绑定事件($('config-lang-in'), 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); 保存配置(); } });
             绑定事件($('config-lang-out'), 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); 保存配置(); } });
+            绑定事件($('config-lang-model'), 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); 保存配置(); } });
             绑定事件($('config-editor-input'), 'input', 编辑器已改动);
             绑定事件($('config-editor-input'), 'scroll', () => { const 行号 = $('config-gutter'); if (行号) 行号.scrollTop = $('config-editor-input').scrollTop; });
             ['click', 'keyup', 'select'].forEach(事件名 => {
