@@ -880,11 +880,17 @@
             white-space: nowrap;
         }
 
+        /* 宽屏就长到 340px；空间不够先缩到 200px，再不够整组换行（标签和输入框都不许被压扁） */
+        .work-head .lang-model {
+            flex: 1 1 200px;
+            min-width: 200px;
+            max-width: 340px;
+        }
+
         .lang-model .config-quick-input {
             width: auto;
-            flex: 1 1 170px;    /* 有空间就把富余宽度吃下来，最长 300px */
-            min-width: 170px;
-            max-width: 300px;
+            flex: 1 1 auto;
+            min-width: 0;
         }
 
         .lang-field .config-quick-input {
