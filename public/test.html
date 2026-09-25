@@ -1750,9 +1750,9 @@
                         <input type="text" id="config-lang-out" class="config-quick-input" placeholder="zh_cn" autocomplete="off" spellcheck="false" title="输出语言 LANGUAGE_OUTPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-out">
                         <div class="lang-menu" id="lang-menu-out" role="listbox" aria-label="输出语言候选"></div>
                     </div>
-                    <label class="lang-model" title="发给大模型的「目标语言」说明（LANGUAGE_MODEL，可以写「文言文」这种名字，不必是语言代码）；留空就与输出语言相同">
+                    <label class="lang-model" title="告诉大模型要译成哪种语言（LANGUAGE_MODEL）。语言代码不好描述时（比如 lzh 文言），这里写个人话的名字，例如「文言文」；留空就等于输出语言代码">
                         <span class="config-quick-label">模型语言</span>
-                        <input type="text" id="config-lang-model" class="config-quick-input" placeholder="留空 = 输出语言" autocomplete="off" spellcheck="false" aria-label="模型语言 LANGUAGE_MODEL">
+                        <input type="text" id="config-lang-model" class="config-quick-input" placeholder="如：文言文（可留空）" autocomplete="off" spellcheck="false" aria-label="模型语言 LANGUAGE_MODEL">
                     </label>
                 </div>
             </div>
@@ -1762,6 +1762,7 @@
                 <option value="en_gb">en_gb 英语（英国）</option>
                 <option value="zh_cn">zh_cn 简体中文</option>
                 <option value="zh_tw">zh_tw 繁体中文</option>
+                <option value="lzh">lzh 文言（文言文）</option>
                 <option value="ja_jp">ja_jp 日语</option>
                 <option value="ko_kr">ko_kr 韩语</option>
                 <option value="ru_ru">ru_ru 俄语</option>
@@ -2660,7 +2661,7 @@
             const 行 = 前.split('\n').length;
             const 列 = 光标 - 前.lastIndexOf('\n');
             右.textContent = 请求配置.LANGUAGE_INPUT + ' → ' + 请求配置.LANGUAGE_OUTPUT
-                + (请求配置.LANGUAGE_MODEL ? '（模型：' + 请求配置.LANGUAGE_MODEL + '）' : '')
+                + (请求配置.LANGUAGE_MODEL ? '（模型按「' + 请求配置.LANGUAGE_MODEL + '」译）' : '')
                 + ' ｜ 行 ' + 行 + '，列 ' + 列 + ' ｜ ' + 编辑.value.length + ' 字符';
             if (提示) 右.textContent = 提示 + ' ｜ ' + 右.textContent;
         }
