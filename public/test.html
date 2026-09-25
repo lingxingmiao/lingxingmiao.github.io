@@ -881,8 +881,10 @@
         }
 
         .lang-model .config-quick-input {
-            width: 150px;
-            flex: 0 0 auto;
+            width: auto;
+            flex: 1 1 170px;    /* 有空间就把富余宽度吃下来，最长 300px */
+            min-width: 170px;
+            max-width: 300px;
         }
 
         .lang-field .config-quick-input {
@@ -1763,7 +1765,7 @@
                     </div>
                     <label class="lang-model" title="告诉大模型要译成哪种语言（LANGUAGE_MODEL）。语言代码不好描述时（比如 lzh 文言），这里写个人话的名字，例如「文言文」；留空就等于输出语言代码">
                         <span class="config-quick-label">模型语言</span>
-                        <input type="text" id="config-lang-model" class="config-quick-input" placeholder="如：文言文（可留空）" autocomplete="off" spellcheck="false" aria-label="模型语言 LANGUAGE_MODEL">
+                        <input type="text" id="config-lang-model" class="config-quick-input" placeholder="如：文言文" autocomplete="off" spellcheck="false" aria-label="模型语言 LANGUAGE_MODEL">
                     </label>
                 </div>
             </div>
