@@ -839,6 +839,72 @@
             color: var(--primary);
         }
 
+        /* 语言下拉：原生 datalist 会按输入框内容过滤（框里有 en_us 就只有 en_us），所以自己画 */
+        .lang-field {
+            position: relative;
+            width: 150px;
+        }
+
+        .lang-field .config-quick-input {
+            width: 100%;
+        }
+
+        .lang-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            z-index: 60;
+            max-height: 264px;
+            overflow-y: auto;
+            padding: 4px;
+            background: #fff;
+            border: 2px solid #343a40;
+            border-radius: 3px;
+            box-shadow: 4px 4px 0 rgba(33, 37, 41, 0.18);
+            display: none;
+        }
+
+        .lang-menu.show {
+            display: block;
+        }
+
+        .lang-item {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 6px 8px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 0.86rem;
+        }
+
+        .lang-item code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .lang-item span {
+            color: var(--gray);
+            font-size: 0.82rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lang-item:hover,
+        .lang-item.on {
+            background: #eef1fb;
+        }
+
+        .lang-empty {
+            padding: 8px;
+            color: var(--gray);
+            font-size: 0.82rem;
+        }
+
         .vsc-editor {
             border: 1px solid #1e1e1e;
             border-radius: 6px;
@@ -1784,9 +1850,15 @@
 
                     <div class="config-quick">
                         <span class="config-quick-label"><i class="fas fa-bolt"></i> 快捷设置</span>
-                        <input type="text" id="config-lang-in" class="config-quick-input" list="config-lang-list" placeholder="en_us" autocomplete="off" spellcheck="false" title="输入语言 LANGUAGE_INPUT">
+                        <div class="lang-field">
+                            <input type="text" id="config-lang-in" class="config-quick-input" placeholder="en_us" autocomplete="off" spellcheck="false" title="输入语言 LANGUAGE_INPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-in">
+                            <div class="lang-menu" id="lang-menu-in" role="listbox" aria-label="输入语言候选"></div>
+                        </div>
                         <i class="fas fa-arrow-right config-quick-arrow"></i>
-                        <input type="text" id="config-lang-out" class="config-quick-input" list="config-lang-list" placeholder="zh_cn" autocomplete="off" spellcheck="false" title="输出语言 LANGUAGE_OUTPUT">
+                        <div class="lang-field">
+                            <input type="text" id="config-lang-out" class="config-quick-input" placeholder="zh_cn" autocomplete="off" spellcheck="false" title="输出语言 LANGUAGE_OUTPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-out">
+                            <div class="lang-menu" id="lang-menu-out" role="listbox" aria-label="输出语言候选"></div>
+                        </div>
                     </div>
 
                     <div class="vsc-editor" id="config-editor">
@@ -1879,7 +1951,7 @@
 
                     <h3>运营成本</h3>
                     <p class="about-text">
-                        AI 接口 + 域名，合计约 <strong>20 元/月</strong>，自费，没有广告也没有收费项目。
+                        AI 接口 + 域名，合计约 <strong>25 元/月</strong>，自费，没有广告也没有收费项目。
                         就是个翻译网站，出错了这边看日志修。
                     </p>
                     <p style="text-align: right; font-size: 0.78rem; opacity: 0.5; margin-top: -6px;">
@@ -1919,8 +1991,6 @@
 
         <div class="footer">
             <p>Copyright © 2026-2026 <a href="https://github.com/lingxingmiao/Translator-Minecraft/">Translator Minecraft</a>. GNU Affero General Public License v3.0.</p>
-            <p>禁止将该公益API商用/转发。</p>
-            <p>当前 TranslatorMinecraftCore 版本: Release.1.6 (内部版)</p>
         </div>
     </div>
     </main>
@@ -2223,7 +2293,7 @@
             const 必需 = ['api-url','api-key','api-admin-key','concurrency','add-files','file0','file0-drop','file1-drop','file1',
                           'start-all','stop-all','clear-finished','clear-all','task-list','task-hint','view-work','view-keys','view-about',
                           'key-page','key-reload','key-create-open','key-create-modal','key-create-note','key-create-submit','key-table-body','key-table-hint',
-                          'config-page','config-lang-in','config-lang-out','config-save','config-reset',
+                          'config-page','config-lang-in','config-lang-out','config-save','config-reset','lang-menu-in','lang-menu-out',
                           'config-editor','config-editor-input','config-gutter','config-status',
                           'settings-modal','open-settings','donate-modal','open-donate'];
             const 缺失 = 必需.filter(id => !$(id));
@@ -2635,6 +2705,110 @@
                 + (其它键.length ? '；这些键服务端会忽略 → ' + 其它键.join(', ') : ''), 'ok');
             更新编辑器状态();
             return true;
+        }
+
+        // ===== 语言下拉 =====
+        // 之前给输入框挂了原生 datalist（list 属性），浏览器会拿框里的文字去过滤候选项：
+        // 框里已经有 en_us，点开就只剩 en_us 一条（看着像"只有一种语言"）。
+        // 这里自己画列表：点一下/聚焦就列出全部语言，边打字边过滤，也能直接填任意代码。
+        const 语言候选 = Array.from(document.querySelectorAll('#config-lang-list option'))
+            .map(项 => ({ 代码: 项.value, 名称: (项.textContent || '').replace(项.value, '').trim() }));
+
+        function 挂语言选择器(inputId, menuId) {
+            const 输入 = $(inputId), 菜单 = $(menuId);
+            if (!输入 || !菜单 || !语言候选.length) return;
+            语言候选.forEach((项, 序) => {
+                const 行 = document.createElement('div');
+                行.className = 'lang-item';
+                行.setAttribute('role', 'option');
+                行.dataset.code = 项.代码;
+                const 码 = document.createElement('code');
+                码.textContent = 项.代码;
+                const 名 = document.createElement('span');
+                名.textContent = 项.名称;
+                行.appendChild(码);
+                行.appendChild(名);
+                行.addEventListener('mousedown', e => { e.preventDefault(); 选中(序); });
+                菜单.appendChild(行);
+            });
+            const 空行 = document.createElement('div');
+            空行.className = 'lang-empty';
+            空行.textContent = '没有匹配的语言；也可以直接输入任意代码';
+            菜单.appendChild(空行);
+
+            let 高亮 = -1;   // 语言候选里的下标
+            const 打开着 = () => 菜单.classList.contains('show');
+
+            function 打开() {
+                菜单.classList.add('show');
+                输入.setAttribute('aria-expanded', 'true');
+            }
+            function 关闭() {
+                菜单.classList.remove('show');
+                输入.setAttribute('aria-expanded', 'false');
+            }
+            function 设置高亮(序) {
+                高亮 = 序;
+                语言候选.forEach((项, 号) => 菜单.children[号].classList.toggle('on', 号 === 序));
+                if (序 >= 0) 菜单.children[序].scrollIntoView({ block: 'nearest' });
+            }
+            function 可见序() {
+                return 语言候选.map((项, 序) => 序).filter(序 => 菜单.children[序].style.display !== 'none');
+            }
+            function 移动(步) {
+                const 列 = 可见序();
+                if (!列.length) return;
+                const 位置 = 列.indexOf(高亮);
+                const 新 = 位置 < 0 ? (步 > 0 ? 0 : 列.length - 1) : (位置 + 步 + 列.length) % 列.length;
+                设置高亮(列[新]);
+            }
+            function 画(过滤) {
+                const 词 = String(过滤 == null ? '' : 过滤).trim().toLowerCase();
+                let 可见 = 0;
+                let 命中 = -1;
+                语言候选.forEach((项, 序) => {
+                    const 行 = 菜单.children[序];
+                    const 命中项 = !词
+                        || 项.代码.toLowerCase().indexOf(词) >= 0
+                        || 项.名称.toLowerCase().indexOf(词) >= 0;
+                    行.style.display = 命中项 ? '' : 'none';
+                    行.classList.remove('on');
+                    if (命中项) { 可见++; if (项.代码 === 输入.value.trim()) 命中 = 序; }
+                });
+                空行.style.display = 可见 ? 'none' : '';
+                高亮 = 命中;
+                if (命中 >= 0) 菜单.children[命中].classList.add('on');
+                打开();
+            }
+            function 选中(序) {
+                const 项 = 语言候选[序];
+                if (!项) return;
+                输入.value = 项.代码;
+                设置高亮(序);
+                关闭();
+                输入.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            // 聚焦或点一下：列出全部（不再受框里的旧值过滤）
+            输入.addEventListener('focus', () => 画(''));
+            输入.addEventListener('click', () => { if (!打开着()) 画(''); });
+            // 打字才过滤
+            输入.addEventListener('input', () => 画(输入.value));
+            // 这个监听在页面自己的 Enter=保存 之前注册，选中时能把它拦下来
+            输入.addEventListener('keydown', e => {
+                if (e.key === 'ArrowDown') { e.preventDefault(); if (打开着()) 移动(1); else 画(''); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); if (打开着()) 移动(-1); else 画(''); }
+                else if (e.key === 'Enter') {
+                    if (打开着() && 高亮 >= 0) { e.preventDefault(); e.stopImmediatePropagation(); 选中(高亮); }
+                    else 关闭();
+                } else if (e.key === 'Escape') { 关闭(); e.stopImmediatePropagation(); }
+                else if (e.key === 'Tab') { 关闭(); }
+            });
+            document.addEventListener('mousedown', e => {
+                if (!打开着()) return;
+                if (菜单.contains(e.target) || e.target === 输入) return;
+                关闭();
+            });
         }
 
         // ===== Key 管理：全部密钥合成一张表（名称 / Key / 类型）=====
@@ -3577,6 +3751,8 @@ async function remove(id, quiet) {
 
             绑定点击('config-save', 保存配置);
             绑定点击('config-reset', () => { 写配置(配置默认); 配置提示('已恢复默认：' + 配置默认.LANGUAGE_INPUT + ' → ' + 配置默认.LANGUAGE_OUTPUT, 'ok'); });
+            挂语言选择器('config-lang-in', 'lang-menu-in');
+            挂语言选择器('config-lang-out', 'lang-menu-out');
             绑定事件($('config-lang-in'), 'input', 快捷输入已改动);
             绑定事件($('config-lang-out'), 'input', 快捷输入已改动);
             绑定事件($('config-lang-in'), 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); 保存配置(); } });
