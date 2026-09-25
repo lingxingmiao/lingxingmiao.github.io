@@ -2183,7 +2183,7 @@
             </div>
             <div class="form-group">
                 <label for="key-create-note"><i class="fas fa-tag"></i> 名称</label>
-                <input type="text" id="key-create-note" class="form-control" placeholder="例如：我的翻译密钥" autocomplete="off">
+                <input type="text" id="key-create-note" class="form-control" placeholder="输入 API key 的名称" autocomplete="off">
             </div>
             <div class="form-group" style="margin-bottom: 0;">
                 <label><i class="fas fa-shapes"></i> 类型</label>
@@ -3320,7 +3320,7 @@ async function 删除单条(条目) {
                 if (t.status === 'queued' || t.status === 'processing') {
                     t.msg = '恢复跟踪中';
                 } else if (t.status === 'failed' && t.logResult && t.taskId) {
-                    t.msg = '失败：只有日志可下载';
+                    t.msg = '失败：只有日志可下载；重试需重新选一次文件';
                 } else if (t.status !== 'completed' && t.status !== 'detached') {
                     t.status = 'needfile';
                     t.msg = '页面刷新后需重新选择文件';
@@ -3337,7 +3337,8 @@ async function 删除单条(条目) {
             if (t.status === 'detached') ops.push(['resume', '恢复']);
             if (t.status === 'completed') ops.push(['download', '下载']);
             if (t.status === 'failed' && t.logResult && t.taskId) ops.push(['download', '下载日志']);
-            if (t.status === 'failed' || t.status === 'expired') ops.push(['retry', '重试']);
+            // 文件本体不会被浏览器保存：刷新后 blob 为空，这时按钮说清楚是要重选文件
+            if (t.status === 'failed' || t.status === 'expired') ops.push(['retry', t.blob ? '重试' : '重选并重试']);
             if (t.taskId) ops.push(['logs', '日志']);
             ops.push(['remove', '移除']);
             return ops;
@@ -3533,6 +3534,9 @@ function warnTooBig(list) {
             hint('已添加 ' + added + ' 个文件');
         }
 
+        // 点了「重选并重试」的任务 id：选完文件自动接着重试
+        let 待重选文件 = null;
+
         function pickFile(t) {
             const input = document.createElement('input');
             input.type = 'file';
@@ -3553,6 +3557,10 @@ function warnTooBig(list) {
                 t.msg = '';
                 saveTasks();
                 render();
+                if (待重选文件 === t.id) {   // 从「重选并重试」进来的：选完就直接开跑
+                    待重选文件 = null;
+                    enqueue(t.id);
+                }
             };
             input.click();
         }
@@ -4106,6 +4114,12 @@ async function remove(id, quiet) {
                 const act = btn.dataset.act;
                 if (act === 'start' || act === 'retry') {
                     select(id);
+                    if (!t.blob) {
+                        待重选文件 = t.id;
+                        hint('这个任务的文件没有被浏览器保存，重新选一次就会自动重试');
+                        pickFile(t);
+                        return;
+                    }
                     enqueue(id);
                 } else if (act === 'pick') {
                     select(id);
