@@ -1141,6 +1141,12 @@
             cursor: pointer;
         }
 
+        /* .form-group label 是 flex，会把里面的卡片压成"内容宽度"导致两个块不一样宽；
+           这里显式 block，让卡片铺满整个格子 */
+        .key-type-picker .key-type-opt {
+            display: block;
+        }
+
         .key-type-opt input {
             position: absolute;
             opacity: 0;
