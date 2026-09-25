@@ -858,20 +858,6 @@
             font-size: 0.88rem;
         }
 
-        .work-lang-tip {
-            color: var(--gray);
-            font-size: 0.82rem;
-            max-width: 320px;
-        }
-
-        .work-lang-tip.ok {
-            color: #1b7f3b;
-        }
-
-        .work-lang-tip.bad {
-            color: #dc3545;
-        }
-
         /* 语言下拉：原生 datalist 会按输入框内容过滤（框里有 en_us 就只有 en_us），所以自己画 */
         .lang-field {
             position: relative;
@@ -1748,8 +1734,6 @@
                         <input type="text" id="config-lang-out" class="config-quick-input" placeholder="zh_cn" autocomplete="off" spellcheck="false" title="输出语言 LANGUAGE_OUTPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-out">
                         <div class="lang-menu" id="lang-menu-out" role="listbox" aria-label="输出语言候选"></div>
                     </div>
-                    <a href="javascript:void(0)" type="button" role="button" draggable="false" class="btn btn-secondary btn-sm" id="work-lang-save" title="把语言写进配置并立即生效（等同配置器里的「保存并使用」）"><i class="fas fa-floppy-disk"></i> 应用</a>
-                    <span class="work-lang-tip" id="work-lang-tip"></span>
                 </div>
             </div>
 
@@ -2335,7 +2319,6 @@
                           'start-all','stop-all','clear-finished','clear-all','task-list','task-hint','view-work','view-keys','view-about',
                           'key-page','key-reload','key-create-open','key-create-modal','key-create-note','key-create-submit','key-table-body','key-table-hint',
                           'config-page','config-lang-in','config-lang-out','config-save','config-reset','lang-menu-in','lang-menu-out',
-                          'work-lang-save','work-lang-tip',
                           'config-editor','config-editor-input','config-gutter','config-status',
                           'settings-modal','open-settings','donate-modal','open-donate'];
             const 缺失 = 必需.filter(id => !$(id));
@@ -2638,11 +2621,6 @@
             if (条) {
                 条.className = 'vsc-statusbar' + (类型 ? ' ' + 类型 : '');
             }
-            const 主页提示 = $('work-lang-tip');
-            if (主页提示) {
-                主页提示.className = 'work-lang-tip' + (类型 ? ' ' + 类型 : '');
-                主页提示.textContent = 文本;
-            }
         }
 
         // 行号：跟着编辑器内容走
@@ -2728,15 +2706,35 @@
             };
         }
 
-        // 快捷输入 → 编辑器（实时同步，不落盘）
+        // 快捷输入 → 编辑器（实时同步）→ 自动落盘生效（不用再点按钮）
+        let 自动应用计时 = null;
+
         function 快捷输入已改动() {
             const 编辑 = $('config-editor-input');
             if (!编辑) return;
             编辑.value = JSON.stringify(从快捷输入生成配置());
             更新行号();
-            const 结果 = 解析编辑器(true);
-            配置提示(结果 ? '已同步，点「应用」生效' : '语言不能为空、也不能相同', 结果 ? '' : 'bad');
             更新编辑器状态();
+            clearTimeout(自动应用计时);
+            if (!解析编辑器(true)) {
+                配置提示('语言不能为空、也不能相同（暂未生效）', 'bad');
+                return;
+            }
+            自动应用计时 = setTimeout(自动应用, 300);   // 打字停顿一下或选完就生效
+        }
+
+        // 和「保存并使用」同一条路径，只是不弹窗、不打断输入
+        function 自动应用() {
+            clearTimeout(自动应用计时);
+            const 结果 = 解析编辑器(true);
+            if (!结果) return false;
+            写配置(结果.解析);
+            const 编辑 = $('config-editor-input');
+            if (编辑) 编辑.value = JSON.stringify(请求配置);
+            更新行号();
+            更新编辑器状态();
+            配置提示('已自动生效：' + 请求配置.LANGUAGE_INPUT + ' → ' + 请求配置.LANGUAGE_OUTPUT, 'ok');
+            return true;
         }
 
         function 保存配置() {
@@ -3805,7 +3803,6 @@ async function remove(id, quiet) {
 
             绑定点击('config-save', 保存配置);
             绑定点击('config-reset', () => { 写配置(配置默认); 配置提示('已恢复默认：' + 配置默认.LANGUAGE_INPUT + ' → ' + 配置默认.LANGUAGE_OUTPUT, 'ok'); });
-            绑定点击('work-lang-save', 保存配置);
             挂语言选择器('config-lang-in', 'lang-menu-in');
             挂语言选择器('config-lang-out', 'lang-menu-out');
             绑定事件($('config-lang-in'), 'input', 快捷输入已改动);
