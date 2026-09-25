@@ -853,7 +853,10 @@
             position: absolute;
             top: calc(100% + 6px);
             left: 0;
-            right: 0;
+            right: auto;
+            width: max-content;
+            min-width: 100%;
+            max-width: 240px;
             z-index: 60;
             max-height: 264px;
             overflow-y: auto;
@@ -2736,7 +2739,9 @@
             空行.textContent = '没有匹配的语言；也可以直接输入任意代码';
             菜单.appendChild(空行);
 
-            let 高亮 = -1;   // 语言候选里的下标
+            let 高亮 = -1;      // 语言候选里的下标
+            let 已导航 = false;  // 只有按过 ↑↓ 才把 Enter 当"选中"，否则 Enter 仍然是页面自己的"保存"
+            let 正在选中 = false;
             const 打开着 = () => 菜单.classList.contains('show');
 
             function 打开() {
@@ -2746,6 +2751,7 @@
             function 关闭() {
                 菜单.classList.remove('show');
                 输入.setAttribute('aria-expanded', 'false');
+                已导航 = false;
             }
             function 设置高亮(序) {
                 高亮 = 序;
@@ -2758,6 +2764,7 @@
             function 移动(步) {
                 const 列 = 可见序();
                 if (!列.length) return;
+                已导航 = true;
                 const 位置 = 列.indexOf(高亮);
                 const 新 = 位置 < 0 ? (步 > 0 ? 0 : 列.length - 1) : (位置 + 步 + 列.length) % 列.length;
                 设置高亮(列[新]);
@@ -2778,6 +2785,7 @@
                 空行.style.display = 可见 ? 'none' : '';
                 高亮 = 命中;
                 if (命中 >= 0) 菜单.children[命中].classList.add('on');
+                已导航 = false;
                 打开();
             }
             function 选中(序) {
@@ -2785,21 +2793,23 @@
                 if (!项) return;
                 输入.value = 项.代码;
                 设置高亮(序);
-                关闭();
-                输入.dispatchEvent(new Event('input', { bubbles: true }));
+                正在选中 = true;
+                输入.dispatchEvent(new Event('input', { bubbles: true }));   // 让页面把语言同步进编辑器
+                正在选中 = false;
+                关闭();                                                      // 必须在派发之后再关，否则会被 input 监听重新弹开
             }
 
             // 聚焦或点一下：列出全部（不再受框里的旧值过滤）
             输入.addEventListener('focus', () => 画(''));
             输入.addEventListener('click', () => { if (!打开着()) 画(''); });
             // 打字才过滤
-            输入.addEventListener('input', () => 画(输入.value));
+            输入.addEventListener('input', () => { if (!正在选中) 画(输入.value); });
             // 这个监听在页面自己的 Enter=保存 之前注册，选中时能把它拦下来
             输入.addEventListener('keydown', e => {
                 if (e.key === 'ArrowDown') { e.preventDefault(); if (打开着()) 移动(1); else 画(''); }
                 else if (e.key === 'ArrowUp') { e.preventDefault(); if (打开着()) 移动(-1); else 画(''); }
                 else if (e.key === 'Enter') {
-                    if (打开着() && 高亮 >= 0) { e.preventDefault(); e.stopImmediatePropagation(); 选中(高亮); }
+                    if (打开着() && 已导航 && 高亮 >= 0) { e.preventDefault(); e.stopImmediatePropagation(); 选中(高亮); }
                     else 关闭();
                 } else if (e.key === 'Escape') { 关闭(); e.stopImmediatePropagation(); }
                 else if (e.key === 'Tab') { 关闭(); }
