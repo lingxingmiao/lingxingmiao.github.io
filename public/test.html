@@ -2301,8 +2301,6 @@
                   const 操作格 = document.createElement('td');
                   操作格.className = 'tops';
                   操作格.appendChild(建图标按钮('copy', '复制', '复制完整密钥（不受打码影响）', () => 复制密钥(行.dataset.key, 行.querySelector('code'))));
-                  if (条目.类型 === 'user') 操作格.appendChild(建图标按钮('pencil', '设为用户密钥', '填入设置并保存为翻译用密钥', () => 设为设置密钥(行.dataset.key, false)));
-                  else 操作格.appendChild(建图标按钮('pencil', '设为管理员密钥', '填入设置并保存为管理用密钥', () => 设为设置密钥(行.dataset.key, true)));
                   操作格.appendChild(建图标按钮('trash', '删除', '删除这个密钥', () => 删除单条(条目)));
                   行.appendChild(操作格);
 
@@ -2377,13 +2375,6 @@ function 缩写密钥(值) {
      if (!值) return '';
      return 值.length <= 18 ? 值 : 值.slice(0, 8) + '…' + 值.slice(-4);
 }
-
-        function 设为设置密钥(密钥, 是管理员) {
-             if (是管理员) $('api-admin-key').value = 密钥;
-             else $('api-key').value = 密钥;
-             saveCfg();
-             hint(是管理员 ? '已填入设置里的管理员密钥' : '已填入设置里的 API 密钥（用户密钥）');
-        }
 
         function 密钥提示(文本, 类型) {
              const 框 = $('key-table-hint');
