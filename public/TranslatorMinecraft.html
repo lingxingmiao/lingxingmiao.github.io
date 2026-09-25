@@ -137,8 +137,27 @@
             }
         }
         
-        .maintenance-hidden {
+        /* ========== 维护模式：整站只留一张维护卡片 ========== */
+        .maintenance-page {
+            display: none;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 20px;
+        }
+
+        body.maintenance .maintenance-page {
+            display: flex;
+        }
+
+        body.maintenance .sidebar,
+        body.maintenance .main {
             display: none !important;
+        }
+
+        .maintenance-page .maintenance-card {
+            max-width: 760px;
+            margin-bottom: 0;
         }
         /* ========== 维护中卡片样式结束 ========== */
         
@@ -211,6 +230,19 @@
         .form-control::placeholder {
             color: var(--gray);
             opacity: 0.7;
+        }
+        
+        /* 密钥输入框：用 text + 字符遮蔽，而不是 type="password"。
+           密码管理器/浏览器只对有 password 字段的页面注入 <form> 与保存提示，
+           换成 text 后仍显示圆点，但不会再被注入表单或自动填充。 */
+        .遮蔽输入 {
+            -webkit-text-security: disc;
+            font-family: 'Consolas', 'Courier New', monospace;
+            letter-spacing: 0.5px;
+        }
+        
+        .遮蔽输入:focus {
+            -webkit-text-security: none;
         }
         
         .tabs {
@@ -437,24 +469,41 @@
             gap: 10px;
             width: 100%;
             box-shadow: 3px 3px 0 rgba(47, 75, 196, 0.25);
+            /* 按钮改用 <a> 承载，补齐链接默认样式差异 */
+            text-decoration: none;
+            line-height: 1.4;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        a.btn:visited {
+            color: white;
         }
         
         .btn:hover {
             transform: translate(-1px, -1px);
             box-shadow: 5px 5px 0 rgba(47, 75, 196, 0.28);
+            color: white;
         }
         
         .btn:active {
             transform: translate(2px, 2px);
             box-shadow: 1px 1px 0 rgba(47, 75, 196, 0.28);
+            color: white;
         }
         
-        .btn:disabled {
+        .btn:disabled,
+        .btn.is-disabled {
             background: #adb5bd;
             border-color: #adb5bd;
+            color: #343a40;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+            pointer-events: none !important;
         }
         
         .btn i {
@@ -464,6 +513,11 @@
         .btn-secondary {
             background: linear-gradient(45deg, #6c757d, #495057);
             border-color: #3d4449;
+        }
+        
+        a.btn.btn-secondary,
+        a.btn.btn-secondary:visited {
+            color: white;
         }
         
         .btn-secondary:hover {
@@ -688,6 +742,588 @@
     border: 2px solid #ccd6e4;
 }
 
+        /* ========== Key 管理页面 ========== */
+        .key-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .key-head h2 {
+            margin: 0;
+        }
+
+        .key-head-ops {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .key-head-ops .btn {
+            width: auto;
+        }
+
+        .key-table code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.86rem;
+            word-break: break-all;
+            color: #343a40;
+        }
+
+        .key-table .key-name {
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .key-badge {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .key-badge.user {
+            background: #e7f5ff;
+            color: #1971c2;
+            border: 1px solid #a5d8ff;
+        }
+
+        .key-badge.admin {
+            background: #fff4e6;
+            color: #d9480f;
+            border: 1px solid #ffd8a8;
+        }
+
+        .key-table .tops .btn {
+            width: auto;
+            padding: 5px 9px;
+            font-size: 0.82rem;
+            margin: 2px 3px 2px 0;
+        }
+
+        /* 打码态看起来是灰的，展开后变深色并允许整段选中 */
+        .key-table code.revealed {
+            color: #1c7ed6;
+            background: #e7f5ff;
+            border-radius: 3px;
+            padding: 1px 4px;
+            user-select: all;
+        }
+
+        .key-table code:hover {
+            color: #1c7ed6;
+        }
+
+        .key-table .tops i {
+            font-size: 0.9rem;
+        }
+
+        /* ===== 配置器：VSCode 风格大编辑器 ===== */
+        .config-quick {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .config-quick-label {
+            color: var(--gray);
+            font-weight: 600;
+        }
+
+        .config-quick-input {
+            width: 150px;
+            padding: 7px 10px;
+            border: 2px solid #b9c5d6;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            background: #f2f5fa;
+        }
+
+        .config-quick-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 2px 2px 0 rgba(67, 97, 238, 0.25);
+        }
+
+        .config-quick-arrow {
+            color: var(--primary);
+        }
+
+        /* 主页面标题行：左边标题、右边语言快捷设置 */
+        .work-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px 18px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .work-head h2 {
+            margin: 0;
+        }
+
+        /* 右边这组语言设置：整组可以缩成多行（内部换行），但单个控件不许被压扁——
+           之前 flex 收缩会把输入框宽度挤到几乎没有，里面的字就看不见了 */
+        .work-head .config-quick {
+            flex: 1 1 auto;
+            min-width: 0;
+            justify-content: flex-end;
+            margin-bottom: 0;
+            font-size: 0.88rem;
+        }
+
+        .work-head .config-quick > * {
+            flex: 0 0 auto;
+        }
+
+        /* 语言下拉：原生 datalist 会按输入框内容过滤（框里有 en_us 就只有 en_us），所以自己画 */
+        .lang-field {
+            position: relative;
+            width: 150px;
+        }
+
+        .lang-model {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        /* 宽屏就长到 340px；空间不够先缩到 200px，再不够整组换行（标签和输入框都不许被压扁） */
+        .work-head .lang-model {
+            flex: 1 1 200px;
+            min-width: 200px;
+            max-width: 340px;
+        }
+
+        .lang-model .config-quick-input {
+            width: auto;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .lang-field .config-quick-input {
+            width: 100%;
+        }
+
+        .lang-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: auto;
+            width: max-content;
+            min-width: 100%;
+            max-width: 240px;
+            z-index: 60;
+            max-height: 264px;
+            overflow-y: auto;
+            padding: 4px;
+            background: #fff;
+            border: 2px solid #343a40;
+            border-radius: 3px;
+            box-shadow: 4px 4px 0 rgba(33, 37, 41, 0.18);
+            display: none;
+        }
+
+        .lang-menu.show {
+            display: block;
+        }
+
+        .lang-item {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 6px 8px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 0.86rem;
+        }
+
+        .lang-item code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .lang-item span {
+            color: var(--gray);
+            font-size: 0.82rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lang-item:hover,
+        .lang-item.on {
+            background: #eef1fb;
+        }
+
+        .lang-empty {
+            padding: 8px;
+            color: var(--gray);
+            font-size: 0.82rem;
+        }
+
+        .vsc-editor {
+            border: 1px solid #1e1e1e;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #1e1e1e;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.28);
+            display: flex;
+            flex-direction: column;
+            height: min(62vh, 620px);
+            min-height: 320px;
+        }
+
+        .vsc-titlebar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: #252526;
+            border-bottom: 1px solid #1b1b1c;
+            padding: 6px 8px;
+        }
+
+        .vsc-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 14px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #d4d4d4;
+            background: #1e1e1e;
+            border-top: 1px solid #0e639c;
+            border-radius: 3px 3px 0 0;
+        }
+
+        .vsc-tab i {
+            color: #e2c08d;
+        }
+
+        .vsc-titlebar-ops {
+            display: flex;
+            gap: 8px;
+        }
+
+        .vsc-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            color: #d4d4d4;
+            background: #3a3d41;
+            border: 1px solid #3a3d41;
+            border-radius: 3px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .vsc-btn:hover {
+            background: #45494e;
+            color: #fff;
+        }
+
+        .vsc-btn.primary {
+            background: #0e639c;
+            border-color: #0e639c;
+            color: #fff;
+        }
+
+        .vsc-btn.primary:hover {
+            background: #1177bb;
+        }
+
+        .vsc-body {
+            flex: 1 1 auto;
+            display: flex;
+            min-height: 0;
+            background: #1e1e1e;
+        }
+
+        .vsc-gutter {
+            flex: none;
+            width: 52px;
+            padding: 12px 10px 12px 0;
+            text-align: right;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 21px;
+            color: #858585;
+            background: #1e1e1e;
+            border-right: 1px solid #2b2b2b;
+            overflow: hidden;
+            white-space: pre;
+            user-select: none;
+        }
+
+        .vsc-input {
+            flex: 1 1 auto;
+            min-width: 0;
+            border: 0;
+            outline: none;
+            resize: none;
+            padding: 12px 14px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            caret-color: #aeafad;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 21px;
+            tab-size: 2;
+            white-space: pre;
+            overflow: auto;
+        }
+
+        .vsc-input::selection {
+            background: #264f78;
+        }
+
+        .vsc-statusbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #007acc;
+            color: #fff;
+            font-size: 0.78rem;
+            padding: 4px 10px;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        .vsc-statusbar.ok {
+            background: #16825d;
+        }
+
+        .vsc-statusbar.bad {
+            background: #a1260d;
+        }
+
+        /* 页面大标题（配置器等页面顶部的标题） */
+        .page-title {
+            color: var(--primary);
+            margin: 0 0 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+        }
+
+        .page-title i {
+            font-size: 1.8rem;
+        }
+
+        /* 创建密钥弹窗 */
+        .key-type-picker {
+            display: grid;
+            /* minmax(0,1fr)：两列严格等宽，内容长的那边自己换行，不把列撑宽 */
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 8px;
+        }
+
+        .key-type-opt {
+            position: relative;
+            cursor: pointer;
+        }
+
+        /* .form-group label 是 flex，会把里面的卡片压成"内容宽度"导致两个块不一样宽；
+           这里显式 block，让卡片铺满整个格子 */
+        .key-type-picker .key-type-opt {
+            display: block;
+        }
+
+        .key-type-opt input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 扁平长方块：图标在左，右侧两行小字（名称 / 用途） */
+        .key-type-opt > span {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 12px;
+            border: 2px solid #b9c5d6;
+            border-radius: 3px;
+            background: #f2f5fa;
+            font-weight: 600;
+            transition: var(--transition);
+            text-align: left;
+        }
+
+        .key-type-opt > span > i {
+            flex: 0 0 auto;
+            font-size: 1.15rem;
+            color: var(--primary);
+        }
+
+        .key-type-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            line-height: 1.3;
+        }
+
+        .key-type-opt > span small {
+            font-weight: 400;
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .key-type-opt input:checked + span {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.08);
+            box-shadow: 3px 3px 0 rgba(67, 97, 238, 0.25);
+        }
+
+        .key-type-opt input:focus-visible + span {
+            outline: 2px solid var(--primary-light);
+            outline-offset: 1px;
+        }
+
+        /* 确认窗口：替掉原生 confirm/alert（原生弹窗会让 click 继续走默认行为，可能提交表单刷新整页） */
+        .confirm-text {
+            font-size: 0.95rem;
+            color: var(--dark);
+            line-height: 1.7;
+            margin: 4px 0 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .key-create-ops {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .key-create-ops .btn {
+            width: auto;
+            padding: 9px 22px;
+            font-size: 0.95rem;
+        }
+
+        .key-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        .key-card {
+            background: #f7f9fd;
+            border: 2px solid #ccd6e4;
+            border-radius: var(--border-radius);
+            padding: 18px;
+        }
+
+        .key-card h3 {
+            color: var(--primary);
+            font-size: 1.05rem;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .key-card .form-control {
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        .key-card .form-group {
+            margin-bottom: 14px;
+        }
+
+        .key-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .key-actions .form-control {
+            width: auto;
+            flex: 1 1 90px;
+            min-width: 90px;
+        }
+
+        .key-out {
+            margin-top: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--gray);
+            min-height: 20px;
+        }
+
+        .key-out.ok {
+            color: #1b7f3b;
+        }
+
+        .key-out.bad {
+            color: #c92a2a;
+        }
+
+        .key-list {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .key-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid #dfe6f0;
+            border-radius: 3px;
+            padding: 6px 8px;
+        }
+
+        .key-row code {
+            flex: 1;
+            font-size: 0.82rem;
+            word-break: break-all;
+            color: #343a40;
+        }
+
+        .key-row .btn {
+            flex: none;
+            width: auto;
+            padding: 6px 10px;
+            font-size: 0.82rem;
+        }
+
+        .key-foot {
+            margin-top: 14px;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
 
         .toolbar {
             display: flex;
@@ -751,8 +1387,9 @@
             white-space: nowrap;
         }
 
-        .task-table .tops button {
+        .task-table .tops .btn {
             margin: 3px 4px 3px 0;
+            width: auto; /* 现在由 <a> 承载，宽度要贴内容而不是撑满整格 */
         }
 
         .hint {
@@ -828,6 +1465,15 @@
             text-align: left;
             cursor: pointer;
             transition: var(--transition);
+            text-decoration: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .side-item,
+        .side-item:visited {
+            color: #ced4da;
         }
 
         .side-item i {
@@ -835,15 +1481,22 @@
             text-align: center;
         }
 
-        .side-item:hover {
+        .side-item:hover,
+        .side-item:hover:visited {
             background: #2b3035;
             color: #fff;
         }
 
-        .side-item.active {
+        .side-item.active,
+        .side-item.active:visited {
             background: rgba(67, 97, 238, 0.18);
             border-color: #4361ee;
             color: #fff;
+        }
+
+        a.side-settings,
+        a.side-settings:visited {
+            color: #ced4da;
         }
 
         .side-toggle {
@@ -1114,77 +1767,115 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
 </head>
-<body>
+<!-- ==================== 维护开关 ====================
+     整站维护：把 <body> 的 data-maintenance 改成 "true"（就是下面这行），
+     页面就只显示「系统维护中」那张卡片，侧栏和所有功能页都不显示。改回 "false" 即恢复。
+     临时预览（不用改文件、不用重新部署）：网址后面加 ?维护=1 走维护页；加 ?维护=0 强制正常。
+     =================================================== -->
+<body data-maintenance="false">
+    <div class="maintenance-page" id="maintenance-page">
+        <div class="maintenance-card">
+            <h3>
+                <span class="warning-icon">⚠️</span>
+                系统维护中 - 服务暂时不可用
+            </h3>
+            <p><strong>翻译服务正在维护，暂时没法处理文件。</strong></p>
+            <p>很抱歉给你带来不便，过一会儿刷新试试。</p>
+            <p>
+                有问题或建议：加 QQ 群 606269975（开发者 3254693390），或到
+                <a href="https://github.com/lingxingmiao/Translator-Minecraft/issues" target="_blank" rel="noopener">GitHub 提 Issue</a>。
+            </p>
+            <p style="margin-top: 15px; font-size: 0.95rem; opacity: 0.8;">
+                感谢你的理解与支持！
+            </p>
+        </div>
+    </div>
+
     <aside class="sidebar">
         <div class="brand">
-            <i class="fas fa-language"></i>
+            <i class="fas fa-language" data-图标已渲染="1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false"><path d="M0 128C0 92.7 28.7 64 64 64H256h48 16H576c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H320 304 256 64c-35.3 0-64-28.7-64-64V128zm320 0V384H576V128H320zM178.3 175.9c-3.2-7.2-10.4-11.9-18.3-11.9s-15.1 4.7-18.3 11.9l-64 144c-4.5 10.1 .1 21.9 10.2 26.4s21.9-.1 26.4-10.2l8.9-20.1h73.6l8.9 20.1c4.5 10.1 16.3 14.6 26.4 10.2s14.6-16.3 10.2-26.4l-64-144zM160 233.2L179 276H141l19-42.8zM448 164c11 0 20 9 20 20v4h44 16c11 0 20 9 20 20s-9 20-20 20h-2l-1.6 4.5c-8.9 24.4-22.4 46.6-39.6 65.4c.9 .6 1.8 1.1 2.7 1.6l18.9 11.3c9.5 5.7 12.5 18 6.9 27.4s-18 12.5-27.4 6.9l-18.9-11.3c-4.5-2.7-8.8-5.5-13.1-8.5c-10.6 7.5-21.9 14-34 19.4l-3.6 1.6c-10.1 4.5-21.9-.1-26.4-10.2s.1-21.9 10.2-26.4l3.6-1.6c6.4-2.9 12.6-6.1 18.5-9.8l-12.2-12.2c-7.8-7.8-7.8-20.5 0-28.3s20.5-7.8 28.3 0l14.6 14.6 .5 .5c12.4-13.1 22.5-28.3 29.8-45H448 376c-11 0-20-9-20-20s9-20 20-20h52v-4c0-11 9-20 20-20z"/></svg></i>
             <span>TranslatorMinecraft</span>
         </div>
         <nav class="side-nav">
-            <button class="side-item active" data-target="file0-drop" data-view="work" title="翻译"><i class="fas fa-file-import"></i> <span>翻译</span></button>
-            <button class="side-item" data-target="task-detail" data-view="work" title="任务详情"><i class="fas fa-tasks"></i> <span>任务详情</span></button>
-            <button class="side-item" data-target="view-about" data-view="about" title="关于"><i class="fas fa-circle-info"></i> <span>关于</span></button>
+            <a href="javascript:void(0)" type="button" role="button" draggable="false" class="side-item active" data-target="file0-drop" data-view="work" title="翻译"><i class="fas fa-file-import" data-图标已渲染="1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false"><path d="M128 64c0-35.3 28.7-64 64-64H352V128c0 17.7 14.3 32 32 32H512V448c0 35.3-28.7 64-64 64H192c-35.3 0-64-28.7-64-64V336H302.1l-39 39c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l80-80c9.4-9.4 9.4-24.6 0-33.9l-80-80c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l39 39H128V64zm0 224v48H24c-13.3 0-24-10.7-24-24s10.7-24 24-24H128zM512 128H384V0L512 128z"/></svg></i> <span>翻译</span></a>
+            <a href="javascript:void(0)" type="button" role="button" draggable="false" class="side-item" data-target="key-page" data-view="keys" title="Key 管理"><i class="fas fa-key" data-图标已渲染="1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false"><path d="M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17v80c0 13.3 10.7 24 24 24h80c13.3 0 24-10.7 24-24V448h40c13.3 0 24-10.7 24-24V384h40c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z"/></svg></i> <span>Key 管理</span></a>
+            <a href="javascript:void(0)" type="button" role="button" draggable="false" class="side-item" data-target="config-page" data-view="config" title="配置器"><i class="fas fa-code" data-图标已渲染="1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false"><path d="M392.8 1.2c-17-4.9-34.7 5-39.6 22l-128 448c-4.9 17 5 34.7 22 39.6s34.7-5 39.6-22l128-448c4.9-17-5-34.7-22-39.6zm80.6 120.1c-12.5 12.5-12.5 32.8 0 45.3L562.7 256l-89.4 89.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l112-112c12.5-12.5 12.5-32.8 0-45.3l-112-112c-12.5-12.5-32.8-12.5-45.3 0zm-306.7 0c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3l112 112c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256l89.4-89.4c12.5-12.5 12.5-32.8 0-45.3z"/></svg></i> <span>配置器</span></a>
+            <a href="javascript:void(0)" type="button" role="button" draggable="false" class="side-item" data-target="view-about" data-view="about" title="关于"><i class="fas fa-circle-info" data-图标已渲染="1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></i> <span>关于</span></a>
         </nav>
-        <button class="side-item side-toggle" id="toggle-sidebar" title="折叠 / 展开侧边栏"><i class="fas fa-bars"></i> <span>折叠</span></button>
-        <button class="side-item side-settings" id="open-settings" title="设置"><i class="fas fa-cog"></i> <span>设置</span></button>
+        <a href="javascript:void(0)" type="button" role="button" draggable="false" class="side-item side-toggle" id="toggle-sidebar" title="折叠 / 展开侧边栏"><i class="fas fa-bars" data-图标已渲染="1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false"><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></i> <span>折叠</span></a>
+        <a href="javascript:void(0)" type="button" role="button" draggable="false" class="side-item side-settings" id="open-settings" title="设置"><i class="fas fa-gear" data-图标已渲染="1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false"><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg></i> <span>设置</span></a>
     </aside>
     <main class="main">
     <div class="container">
 
-        <!-- ========== 维护中卡片 ========== <strong> -->
-        <div class="maintenance-card" id="maintenance-card">
-            <h3>
-                <i class="fas fa-tools"></i>
-                <span class="warning-icon">⚠️</span>
-                系统维护中 - 服务暂时不可用
-            </h3>
-            <p>
-                <strong>尊敬的倪哥(x：</strong>
-            </p>
-            <p>
-                下载QQ群文件电脑似了，预计将在 <strong>2026年9月25日</strong> 前恢复。
-            </p>
-            <p>
-                很抱歉为您带来的不便！
-            </p>
-            <p>
-                如有需要翻译或问题反馈，请联系：
-                <br>
-                📧 QQ群: 606269975 | 开发者QQ: 3254693390
-                <br>
-                💻 GitHub Issues: <a href="https://github.com/lingxingmiao/Translator-Minecraft/issues">提交问题</a>
-            </p>
-            <p style="margin-top: 15px; font-size: 0.95rem; opacity: 0.8;">
-                <i class="fas fa-info-circle"></i> 感谢您的理解与支持！
-            </p>
-        </div>
-        <!-- ========== 维护中卡片结束 ========== -->
-
-        <div class="status notice" id="maintenance-notice">
-            <p><strong>单个文件不能超过 95MB</strong>，更大的文件请发到 QQ 群 606269975。</p>
-            <p>当前翻译模型：Qwen3.7 Flash，翻译一个文件大约需要 30 秒 ~ 4 分钟（看文件大小）。</p>
-            <p>有问题或建议：加 QQ 群 606269975（开发者 3254693390），或到 GitHub 提 Issue，我很好说话的。</p>
-        </div>
-
                     <div id="view-work">
+            <!-- 公告：只挂在主页面里，切到别的页面就不显示 -->
+            <div class="status notice" id="maintenance-notice">
+                <p><strong>单个文件不能超过 95MB</strong>，更大的文件请发到 QQ 群 606269975。</p>
+                <p>当前翻译模型：Qwen3.7 Flash，翻译一个文件大约需要 30 秒 ~ 4 分钟（看文件大小）。</p>
+                <p>有问题或建议：加 QQ 群 606269975（开发者 3254693390），或到 <a href="https://github.com/lingxingmiao/Translator-Minecraft/issues" target="_blank" rel="noopener">GitHub 提 Issue</a>，我很好说话的。</p>
+            </div>
 <div class="tab-content active" style="border-radius: 4px;">
-            <h2><i class="fas fa-file-import"></i> 上传待翻译文件</h2>
+            <div class="work-head">
+                <h2><i class="fas fa-file-import"></i> 上传待翻译文件</h2>
+
+                <div class="config-quick">
+                    <span class="config-quick-label"><i class="fas fa-bolt"></i> 语言</span>
+                    <div class="lang-field">
+                        <input type="text" id="config-lang-in" class="config-quick-input" placeholder="en_us" autocomplete="off" spellcheck="false" title="输入语言 LANGUAGE_INPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-in">
+                        <div class="lang-menu" id="lang-menu-in" role="listbox" aria-label="输入语言候选"></div>
+                    </div>
+                    <i class="fas fa-arrow-right config-quick-arrow"></i>
+                    <div class="lang-field">
+                        <input type="text" id="config-lang-out" class="config-quick-input" placeholder="zh_cn" autocomplete="off" spellcheck="false" title="输出语言 LANGUAGE_OUTPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-out">
+                        <div class="lang-menu" id="lang-menu-out" role="listbox" aria-label="输出语言候选"></div>
+                    </div>
+                    <label class="lang-model" title="告诉大模型要译成哪种语言（LANGUAGE_MODEL）。语言代码不好描述时（比如 lzh 文言），这里写个人话的名字，例如「文言文」；留空就等于输出语言代码">
+                        <span class="config-quick-label">模型语言</span>
+                        <input type="text" id="config-lang-model" class="config-quick-input" placeholder="空时使用输出语言，生僻语言时填写" autocomplete="off" spellcheck="false" aria-label="模型语言 LANGUAGE_MODEL">
+                    </label>
+                </div>
+            </div>
+
+            <datalist id="config-lang-list">
+                <option value="en_us">en_us 英语（美国）</option>
+                <option value="en_gb">en_gb 英语（英国）</option>
+                <option value="zh_cn">zh_cn 简体中文</option>
+                <option value="zh_tw">zh_tw 繁体中文</option>
+                <option value="lzh">lzh 文言（文言文）</option>
+                <option value="ja_jp">ja_jp 日语</option>
+                <option value="ko_kr">ko_kr 韩语</option>
+                <option value="ru_ru">ru_ru 俄语</option>
+                <option value="de_de">de_de 德语</option>
+                <option value="fr_fr">fr_fr 法语</option>
+                <option value="es_es">es_es 西班牙语</option>
+                <option value="pt_br">pt_br 葡萄牙语（巴西）</option>
+                <option value="it_it">it_it 意大利语</option>
+                <option value="pl_pl">pl_pl 波兰语</option>
+                <option value="tr_tr">tr_tr 土耳其语</option>
+                <option value="uk_ua">uk_ua 乌克兰语</option>
+                <option value="vi_vn">vi_vn 越南语</option>
+                <option value="th_th">th_th 泰语</option>
+                <option value="id_id">id_id 印尼语</option>
+                <option value="ar_sa">ar_sa 阿拉伯语</option>
+                <option value="nl_nl">nl_nl 荷兰语</option>
+            </datalist>
 
             <div class="upload-row">
                 <label class="file-upload" id="file0-drop" for="file0">
-                    <i class="fas fa-cloud-upload-alt"></i>
+                    <i class="fas fa-cloud-arrow-up"></i>
                     <p>拖放文件到此处，或点击选择</p>
-                    <small>支持 .jar / .zip / .mrpack / .lang / .json / .zs / .dll（可多选，单文件 ≤ 95MB）</small>
-                    <input type="file" id="file0" class="hidden" multiple accept=".jar,.zip,.lang,.json,.mrpack,.dll,.zs,.txt">
+                    <small>支持 .zip / .jar / .json 等常见格式（可多选，单文件 ≤ 95MB）</small>
+                    <input type="file" id="file0" class="hidden" multiple accept=".jar,.zip,.7z,.rar,.tar,.gz,.tgz,.xz,.mrpack,.mcpack,.mcaddon,.lang,.json,.dll,.zs,.txt">
                 </label>
                 <div class="upload-col">
                     <label class="file-upload" id="file1-drop" for="file1">
                         <i class="fas fa-bolt"></i>
                         <p>（可选）参考文件</p>
                         <small>拖放或点击选择，用于差异对比</small>
-                        <input type="file" id="file1" class="hidden" accept=".jar,.zip,.lang,.json">
+                        <input type="file" id="file1" class="hidden" accept=".jar,.zip,.7z,.rar,.tar,.gz,.tgz,.xz,.mcpack,.mcaddon,.lang,.json">
                     </label>
                     <div class="file-info" id="file1-info">
                         <div class="file-name">
@@ -1197,11 +1888,11 @@
             </div>
 
             <div class="toolbar">
-                <button class="btn btn-secondary btn-sm" id="add-files"><i class="fas fa-plus"></i> 添加文件</button>
-                <button class="btn btn-sm" id="start-all"><i class="fas fa-play"></i> 开始全部</button>
-                <button class="btn btn-secondary btn-sm" id="stop-all"><i class="fas fa-stop"></i> 停止全部</button>
-                <button class="btn btn-secondary btn-sm" id="clear-finished"><i class="fas fa-broom"></i> 清除已结束</button>
-                <button class="btn btn-secondary btn-sm" id="clear-all"><i class="fas fa-trash"></i> 清空列表</button>
+                <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="add-files"><i class="fas fa-plus"></i> 添加文件</a>
+                <a href="javascript:void(0)" type="button" class="btn btn-sm" id="start-all"><i class="fas fa-play"></i> 开始全部</a>
+                <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="stop-all"><i class="fas fa-stop"></i> 停止全部</a>
+                <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="clear-finished"><i class="fas fa-broom"></i> 清除已结束</a>
+                <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="clear-all"><i class="fas fa-trash"></i> 清空列表</a>
             </div>
 
             <p class="stat-line" id="task-stats">暂无任务</p>
@@ -1221,70 +1912,119 @@
             </table>
 
             <p class="hint" id="task-hint"></p>
-        </div>
 
-        <!-- 任务详情 -->
-        <div class="task-progress" id="task-detail">
-            <div class="task-header">
-                <i class="fas fa-tasks"></i>
-                <h2 id="detail-name">任务详情</h2>
-                <button class="btn btn-secondary btn-sm" id="cancel-task" style="margin-left: auto;">
-                    <i class="fas fa-times"></i> <span>停止跟踪</span>
-                </button>
-            </div>
+                    <div class="task-progress" id="task-detail">
+                        <div class="task-header">
+                            <i class="fas fa-list-check"></i>
+                            <h2 id="detail-name">任务详情</h2>
+                            <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="cancel-task" style="margin-left: auto;">
+                                <i class="fas fa-xmark"></i> <span>停止跟踪</span>
+                            </a>
+                        </div>
 
-            <div style="margin-bottom: 15px;">
-                <strong>任务 ID:</strong> <span id="task-id-display">-</span>
-            </div>
+                        <div style="margin-bottom: 15px;">
+                            <strong>任务 ID:</strong> <span id="task-id-display">-</span>
+                        </div>
 
-            <div style="margin-bottom: 10px;">
-                <strong>状态:</strong>
-                <span class="status-badge status-idle" id="status-badge">待启动</span>
-            </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>状态:</strong>
+                            <span class="status-badge status-idle" id="status-badge">待启动</span>
+                        </div>
 
-            <div class="progress-container">
-                <div class="progress-bar" id="progress-bar">0%</div>
-            </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progress-bar">0%</div>
+                        </div>
 
-            <div class="status-info">
-                <span>进度: <strong id="progress-text">0%</strong></span>
-                <span>预计剩余: <strong id="eta-text">-</strong></span>
-            </div>
+                        <div class="status-info">
+                            <span>进度: <strong id="progress-text">0%</strong></span>
+                            <span>预计剩余: <strong id="eta-text">-</strong></span>
+                        </div>
 
-            <div id="detail-msg" style="margin-top: 12px; color: var(--gray); font-size: 0.92rem; word-break: break-all;"></div>
+                        <div id="detail-msg" style="margin-top: 12px; color: var(--gray); font-size: 0.92rem; word-break: break-all;"></div>
 
-            <div class="log-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0;">
-                    <strong>实时日志（内部日志需要手动刷新）</strong>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-secondary btn-sm" id="refresh-logs">
-                            <i class="fas fa-sync"></i> 刷新
-                        </button>
-                        <button class="btn btn-secondary btn-sm" id="clear-logs">
-                            <i class="fas fa-trash"></i> 清空
-                        </button>
-                        <button class="btn btn-secondary btn-sm" id="auto-refresh-toggle">
-                            <i class="fas fa-play"></i> <span>自动刷新</span>
-                        </button>
+                        <div class="log-section">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0;">
+                                <strong>实时日志（内部日志需要手动刷新）</strong>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="refresh-logs">
+                                        <i class="fas fa-arrows-rotate"></i> 刷新
+                                    </a>
+                                    <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="clear-logs">
+                                        <i class="fas fa-trash"></i> 清空
+                                    </a>
+                                    <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="auto-refresh-toggle">
+                                        <i class="fas fa-play"></i> <span>自动刷新</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="log-container" id="log-container" style="background: #1e1f29; color: #abb2bf; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9rem; border: 2px solid #3b4048; max-height: 500px; padding: 12px; border-radius: 3px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;">[INFO] 请先添加文件</div>
+                        </div>
+
+                        <div class="download-section" id="download-section" style="display: none;">
+                            <div style="margin-bottom: 15px;">
+                                <i class="fas fa-circle-check" id="download-icon" style="color: #28a745; font-size: 2rem;"></i>
+                                <p style="margin-top: 10px; font-size: 1.1rem; color: var(--dark);" id="download-state">任务完成</p>
+                            </div>
+                            <a href="javascript:void(0)" type="button" class="btn download-btn" id="download-btn">
+                                <i class="fas fa-download"></i> <span id="download-filename">下载结果文件</span>
+                            </a>
+                            <p style="margin-top: 10px; color: var(--gray); font-size: 0.9rem;">
+                                <i class="fas fa-circle-info"></i> 下载后任务会从列表移除
+                            </p>
+                        </div>
                     </div>
+
                 </div>
-                <div class="log-container" id="log-container" style="background: #1e1f29; color: #abb2bf; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9rem; border: 2px solid #3b4048; max-height: 500px; padding: 12px; border-radius: 3px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;">[INFO] 请先添加文件</div>
             </div>
 
-            <div class="download-section" id="download-section" style="display: none;">
-                <div style="margin-bottom: 15px;">
-                    <i class="fas fa-check-circle" id="download-icon" style="color: #28a745; font-size: 2rem;"></i>
-                    <p style="margin-top: 10px; font-size: 1.1rem; color: var(--dark);" id="download-state">任务完成</p>
-                </div>
-                <button class="btn download-btn" id="download-btn">
-                    <i class="fas fa-download"></i> <span id="download-filename">下载结果文件</span>
-                </button>
-                <p style="margin-top: 10px; color: var(--gray); font-size: 0.9rem;">
-                    <i class="fas fa-info-circle"></i> 下载后任务会从列表移除
-                </p>
-            </div>
-        </div>
+            <div id="view-keys" style="display: none;">
+                <div class="tab-content active" style="border-radius: 4px;" id="key-page">
+                    <div class="key-head">
+                        <h2><i class="fas fa-key"></i> Key 管理</h2>
+                        <div class="key-head-ops">
+                            <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="key-reload" title="重新拉取两侧列表"><i class="fas fa-rotate"></i> 刷新</a>
+                            <a href="javascript:void(0)" type="button" class="btn btn-sm" id="key-create-open"><i class="fas fa-plus"></i> 创建 API key</a>
+                        </div>
+                    </div>
 
+                    <table class="task-table key-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;">名称</th>
+                                <th>Key</th>
+                                <th style="width: 110px;">类型</th>
+                                <th style="width: 190px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="key-table-body"></tbody>
+                    </table>
+                    <p class="hint" id="key-table-hint"></p>
+                </div>
+            </div>
+
+            <div id="view-config" style="display: none;">
+                <div class="tab-content active" style="border-radius: 4px;" id="config-page">
+                    <h2 class="page-title"><i class="fas fa-code"></i> 配置器</h2>
+
+                    <div class="vsc-editor" id="config-editor">
+                        <div class="vsc-titlebar">
+                            <span class="vsc-tab active"><i class="fas fa-file-code"></i> config.json</span>
+                            <div class="vsc-titlebar-ops">
+                                <a href="javascript:void(0)" type="button" class="vsc-btn" id="config-reset" title="恢复默认"><i class="fas fa-rotate-left"></i> 恢复默认</a>
+                                <a href="javascript:void(0)" type="button" class="vsc-btn primary" id="config-save" title="Ctrl+S"><i class="fas fa-floppy-disk"></i> 保存并使用</a>
+                            </div>
+                        </div>
+                        <div class="vsc-body">
+                            <div class="vsc-gutter" id="config-gutter" aria-hidden="true">1</div>
+                            <textarea id="config-editor-input" class="vsc-input" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" wrap="off" aria-label="Config JSON 编辑器"></textarea>
+                        </div>
+                        <div class="vsc-statusbar">
+                            <span id="config-status"><i class="fas fa-circle-check"></i> 就绪</span>
+                            <span id="config-status-right"></span>
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
             <div id="view-about" style="display: none;">
@@ -1309,13 +2049,12 @@
                     </ul>
                     <p class="about-text" style="font-size: 0.88rem;">
                         上传后按文件结构自动识别，认不出来的会直接返回日志（也就是失败）。
-                        资源包和 TX Loader 请放进整合包一起传，单独传 zip 识别不出来。
                     </p>
 
                     <h3>本网站</h3>
                     <p class="about-text">
-                        公益站点，只提供翻译功能，免费、不限量、不限速，输出语言固定为中文（需要其它输出语言请直接调用 API）。
-                        可上传 .jar / .zip / .mrpack / .lang / .json / .zs / .dll / .txt，每个文件算一个任务，最多同时提交 3 个（可在设置里改）。
+                        公益站点，只提供翻译功能，免费、不限量、不限速。
+                        可上传 .jar / .zip / .7z / .rar / .mrpack / .mcpack / .mcaddon / .lang / .json / .zs / .dll / .txt，每个文件算一个任务，最多同时提交 3 个。
                         单个文件上限 95MB（Cloudflare 免费版单请求上限 100MB），更大的文件请上传到 QQ 群 606269975。
                         上传的参考文件用于差异对比，会把已有译文作为参考词。
                     </p>
@@ -1325,10 +2064,17 @@
                         公益 API：<code>https://api.tanslamc.top</code>，密钥 <code>sk-123456</code>，
                         请求格式与端点见仓库里的 <code>TranslatorAPI.py</code>。该 API 可自定义输出语言。
                     </p>
+                    <p class="about-text" style="font-size: 0.86rem;">
+                        上传接口为 <code>POST /network/transl</code>：请求体是 multipart，字段
+                        <code>File0</code>（zstd 压缩后的流）、<code>FileName0</code>（原始文件名）、
+                        <code>Config</code>（JSON，可含 <code>LANGUAGE_INPUT</code> / <code>LANGUAGE_OUTPUT</code> /
+                        <code>LANGUAGE_VARIANT</code> / <code>LANGUAGE</code>），可选 <code>File1</code> / <code>FileName1</code> 参考文件、
+                        <code>AllMode</code> 与 <code>ExportInspection</code> 开关；本页在本地把文件封装成标准 zstd 帧后再上传。
+                    </p>
 
                     <h3>运营成本</h3>
                     <p class="about-text">
-                        AI 接口 + 域名，合计约 <strong>20 元/月</strong>，自费，没有广告也没有收费项目。
+                        AI 接口 + 域名，合计约 <strong>25 元/月</strong>，自费，没有广告也没有收费项目。
                         就是个翻译网站，出错了这边看日志修。
                     </p>
                     <p style="text-align: right; font-size: 0.78rem; opacity: 0.5; margin-top: -6px;">
@@ -1358,18 +2104,11 @@
                         翻译结果由大语言模型生成，可能存在误译或漏译，重要内容请自行校对；
                         作者不对翻译结果造成的损失负责。
                     </p>
-
-                    <p class="about-meta">
-                        仓库 lingxingmiao/Translator-Minecraft · Python · AGPL-3.0 · Star 5 · 最后推送 2026-09-18<br>
-                        当前 TranslatorMinecraftCore 版本 Release.1.6（内部版），Release.1.7 Bata.1 开发中
-                    </p>
                 </div>
             </div>
 
         <div class="footer">
             <p>Copyright © 2026-2026 <a href="https://github.com/lingxingmiao/Translator-Minecraft/">Translator Minecraft</a>. GNU Affero General Public License v3.0.</p>
-            <p>禁止将该公益API商用/转发。</p>
-            <p>当前 TranslatorMinecraftCore 版本: Release.1.6 (内部版)</p>
         </div>
     </div>
     </main>
@@ -1377,7 +2116,7 @@
     <div class="modal" id="settings-modal">
         <div class="modal-box">
             <div class="modal-head">
-                <h3><i class="fas fa-cog"></i> API 配置</h3>
+                <h3><i class="fas fa-gear"></i> API 配置</h3>
                 <span class="modal-close" id="close-settings">&times;</span>
             </div>
             <div class="form-group">
@@ -1385,17 +2124,23 @@
                 <input type="text" id="api-url" class="form-control" placeholder="例如: https://api.tanslamc.top" value="https://api.tanslamc.top">
             </div>
             <div class="form-group">
-                <label for="api-key"><i class="fas fa-key"></i> API 密钥</label>
-                <input type="password" id="api-key" class="form-control" placeholder="例如: sk-123456" value="sk-123456">
+                <label for="api-key"><i class="fas fa-key"></i> API 密钥（用户密钥）</label>
+                <input type="text" id="api-key" class="form-control 遮蔽输入" placeholder="例如: sk-123456" value="sk-123456" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" name="api-key-hidden">
+            </div>
+            <div class="form-group">
+                <label for="api-admin-key"><i class="fas fa-user-gear"></i> 管理员密钥（可选）</label>
+                <input type="text" id="api-admin-key" class="form-control 遮蔽输入" placeholder="用于左侧「Key 管理」页面，翻译不需要" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" name="api-admin-key-hidden">
             </div>
             <div class="form-group" style="margin-bottom: 0;">
-                <label for="concurrency"><i class="fas fa-tachometer-alt"></i> 同时翻译数（0 为不限）</label>
+                <label for="concurrency"><i class="fas fa-gauge-high"></i> 同时翻译数（0 为不限）</label>
                 <input type="number" id="concurrency" class="form-control" min="0" max="32" value="3">
             </div>
-            <p class="modal-tip">配置保存在本机浏览器，输入后立即生效。</p>
-            <button class="btn btn-sm" id="save-settings" style="width: 100%; margin-top: 14px;">
+            <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="run-diag" style="width: 100%; margin-top: 10px;">
+                <i class="fas fa-circle-info"></i> 页面自检（按钮没反应时点这个）
+            </a>
+            <a href="javascript:void(0)" type="button" class="btn btn-sm" id="save-settings" style="width: 100%; margin-top: 14px;">
                 <i class="fas fa-check"></i> 完成
-            </button>
+            </a>
         </div>
     </div>
 
@@ -1413,14 +2158,175 @@
                 服务质量不因是否赞助而改变，也不会影响其他用户。<br>
                 本站与公益 API 依旧禁止商用与转发。
             </p>
-            <p class="modal-tip">赞助仅用于分摊 AI 接口与域名的开销（约 20 元/月）。</p>
+            <p class="modal-tip">赞助仅用于分摊 AI 接口与域名的开销（约 25 元/月）。</p>
+        </div>
+    </div>
+
+    <div class="modal" id="confirm-modal">
+        <div class="modal-box" style="max-width: 380px;">
+            <div class="modal-head">
+                <h3 id="confirm-title"><i class="fas fa-triangle-exclamation"></i> 确认</h3>
+            </div>
+            <p class="confirm-text" id="confirm-text"></p>
+            <div class="key-create-ops">
+                <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="confirm-cancel">取消</a>
+                <a href="javascript:void(0)" type="button" class="btn btn-sm" id="confirm-ok">确定</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="key-create-modal">
+        <div class="modal-box" style="max-width: 420px;">
+            <div class="modal-head">
+                <h3><i class="fas fa-plus"></i> 创建 API key</h3>
+                <span class="modal-close" id="key-create-close">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="key-create-note"><i class="fas fa-tag"></i> 名称</label>
+                <input type="text" id="key-create-note" class="form-control" placeholder="输入 API key 的名称" autocomplete="off">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label><i class="fas fa-shapes"></i> 类型</label>
+                <div class="key-type-picker" id="key-create-type">
+                    <label class="key-type-opt">
+                        <input type="radio" name="key-type" value="user" checked>
+                        <span><i class="fas fa-users"></i><span class="key-type-text"><b>用户</b><small>用于翻译接口</small></span></span>
+                    </label>
+                    <label class="key-type-opt">
+                        <input type="radio" name="key-type" value="admin">
+                        <span><i class="fas fa-user-gear"></i><span class="key-type-text"><b>管理员</b><small>可管理所有密钥</small></span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="key-create-ops">
+                <a href="javascript:void(0)" type="button" class="btn btn-secondary btn-sm" id="key-create-cancel">取消</a>
+                <a href="javascript:void(0)" type="button" class="btn btn-sm" id="key-create-submit">创建</a>
+            </div>
         </div>
     </div>
 
     <script>
-        const IS_MAINTENANCE = false;
-        if (!IS_MAINTENANCE) {
-            document.getElementById('maintenance-card').classList.add('maintenance-hidden');
+        // 全局兜底：本页没有任何表单需要提交，任何来源（扩展注入、模板改动、回车键）的
+        // submit 事件一律在捕获阶段掐断，绝不允许整页导航。
+        document.addEventListener('submit', e => e.preventDefault(), true);
+
+        // ===== 卸载原因诊断 =====
+        // 「点个按钮就刷新」有两种完全不同的原因，靠这个一次分辨：
+        //   ① 页面自己提交了表单（会留下 submit 记录 + 它是"离开"）
+        //   ② 外部工具重载（VS Code Live Server 监听文件变化、或手动刷新）→ 没有 submit，且是"重载"
+        const 卸载诊断 = { 原因: '未知', 详情: '', 时间: '' };
+
+        function 记卸载诊断(原因, 详情) {
+            卸载诊断.原因 = 原因;
+            卸载诊断.详情 = 详情 || '';
+            卸载诊断.时间 = new Date().toTimeString().slice(0, 8);
+            try { sessionStorage.setItem('webui:卸载诊断', JSON.stringify(卸载诊断)); } catch (e) {}
+        }
+
+        // 任何来源的 submit 都记一笔（全局守卫在捕获阶段已经 preventDefault）
+        document.addEventListener('submit', e => {
+            const 表单 = e.target;
+            记卸载诊断('页面内发生了表单提交', 'form id=' + (表单 && 表单.id ? 表单.id : '(无)')
+                + ' action=' + (表单 && 表单.getAttribute ? (表单.getAttribute('action') || '(空)') : '?'));
+        }, true);
+
+        // 真的在离开页面时记一笔。pagehide / visibilitychange 都比 beforeunload 可靠
+        // （注意：真实 reload 时浏览器可能丢弃这次 storage 写入，所以下面还有"加载次数"判据）
+        function 记录外部重载() {
+            if (卸载诊断.原因 === '未知' || 卸载诊断.原因.indexOf('外部重载') === 0) {
+                记卸载诊断('外部重载（没有 submit，页面被重新加载）', '常见来源：VS Code Live Server 之类监听文件的自动刷新、手动 F5');
+            }
+        }
+        window.addEventListener('pagehide', 记录外部重载);
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') 记录外部重载(); });
+
+        // ===== 加载次数判据 =====
+        // 如果页面在没人操作的情况下被反复加载，最可能是有工具在监听文件变化自动刷新
+        // （VS Code Live Server 默认就跑在 127.0.0.1:5500，靠 WebSocket 触发 reload）。
+        function 记一次加载() {
+            try {
+                const 原始 = JSON.parse(sessionStorage.getItem('webui:加载记录') || '[]');
+                const 现在 = Date.now();
+                const 记录 = (Array.isArray(原始) ? 原始 : []).concat([现在]).filter(时 => 现在 - 时 < 60000).slice(-20);
+                sessionStorage.setItem('webui:加载记录', JSON.stringify(记录));
+                return 记录;
+            } catch (e) { return []; }
+        }
+
+        function 自动重载判据() {
+            try {
+                const 记录 = JSON.parse(sessionStorage.getItem('webui:加载记录') || '[]');
+                if (!Array.isArray(记录) || 记录.length < 2) return '（本次会话第 1 次加载）';
+                const 现在 = Date.now();
+                const 最近10秒 = 记录.filter(时 => 现在 - 时 < 10000).length;
+                const 首次 = new Date(记录[0]).toTimeString().slice(0, 8);
+                let 结论 = '本会话共加载 ' + 记录.length + ' 次（首次 ' + 首次 + '）';
+                if (最近10秒 >= 2) 结论 += '；10 秒内加载了 ' + 最近10秒 + ' 次 → 疑似有工具在自动刷新页面，不是页面自己提交表单';
+                return 结论;
+            } catch (e) { return '（读取失败）'; }
+        }
+
+        // 脚本一加载就记一笔（用于上面的判据）
+        记一次加载();
+
+        // ===== 图标：加载后把 FA 的 <i class="fas fa-xxx"> 换成内联 SVG =====
+        // 之前用 CSS mask + 字体都不可靠（无字体时是实心方块），内联 SVG 用 currentColor 上色，
+        // 不依赖任何外部资源，也一定会渲染出来。
+        const 图标表 = {"bars":{"viewBox":"0 0 448 512","d":["M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"]},"bolt":{"viewBox":"0 0 448 512","d":["M349.4 44.6c5.9-13.7 1.5-29.7-10.6-38.5s-28.6-8-39.9 1.8l-256 224c-10 8.8-13.6 22.9-8.9 35.3S50.7 288 64 288H175.5L98.6 467.4c-5.9 13.7-1.5 29.7 10.6 38.5s28.6 8 39.9-1.8l256-224c10-8.8 13.6-22.9 8.9-35.3s-16.6-20.7-30-20.7H272.5L349.4 44.6z"]},"broom":{"viewBox":"0 0 576 512","d":["M566.6 54.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192-34.7-34.7c-4.2-4.2-10-6.6-16-6.6c-12.5 0-22.6 10.1-22.6 22.6v29.1L364.3 320h29.1c12.5 0 22.6-10.1 22.6-22.6c0-6-2.4-11.8-6.6-16l-34.7-34.7 192-192zM341.1 353.4L222.6 234.9c-42.7-3.7-85.2 11.7-115.8 42.3l-8 8C76.5 307.5 64 337.7 64 369.2c0 6.8 7.1 11.2 13.2 8.2l51.1-25.5c5-2.5 9.5 4.1 5.4 7.9L7.3 473.4C2.7 477.6 0 483.6 0 489.9C0 502.1 9.9 512 22.1 512l173.3 0c38.8 0 75.9-15.4 103.4-42.8c30.6-30.6 45.9-73.1 42.3-115.8z"]},"check":{"viewBox":"0 0 448 512","d":["M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"]},"circle-check":{"viewBox":"0 0 512 512","d":["M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"]},"circle-info":{"viewBox":"0 0 512 512","d":["M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"]},"cloud-arrow-up":{"viewBox":"0 0 640 512","d":["M144 480C64.5 480 0 415.5 0 336c0-62.8 40.2-116.2 96.2-135.9c-.1-2.7-.2-5.4-.2-8.1c0-88.4 71.6-160 160-160c59.3 0 111 32.2 138.7 80.2C409.9 102 428.3 96 448 96c53 0 96 43 96 96c0 12.2-2.3 23.8-6.4 34.6C596 238.4 640 290.1 640 352c0 70.7-57.3 128-128 128H144zm79-217c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l39-39V392c0 13.3 10.7 24 24 24s24-10.7 24-24V257.9l39 39c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-80-80c-9.4-9.4-24.6-9.4-33.9 0l-80 80z"]},"gear":{"viewBox":"0 0 512 512","d":["M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"]},"download":{"viewBox":"0 0 512 512","d":["M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"]},"circle-exclamation":{"viewBox":"0 0 512 512","d":["M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm0-384c13.3 0 24 10.7 24 24V264c0 13.3-10.7 24-24 24s-24-10.7-24-24V152c0-13.3 10.7-24 24-24zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"]},"file":{"viewBox":"0 0 384 512","d":["M0 64C0 28.7 28.7 0 64 0H224V128c0 17.7 14.3 32 32 32H384V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64zm384 64H256V0L384 128z"]},"file-import":{"viewBox":"0 0 512 512","d":["M128 64c0-35.3 28.7-64 64-64H352V128c0 17.7 14.3 32 32 32H512V448c0 35.3-28.7 64-64 64H192c-35.3 0-64-28.7-64-64V336H302.1l-39 39c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l80-80c9.4-9.4 9.4-24.6 0-33.9l-80-80c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l39 39H128V64zm0 224v48H24c-13.3 0-24-10.7-24-24s10.7-24 24-24H128zM512 128H384V0L512 128z"]},"globe":{"viewBox":"0 0 512 512","d":["M352 256c0 22.2-1.2 43.6-3.3 64H163.3c-2.2-20.4-3.3-41.8-3.3-64s1.2-43.6 3.3-64H348.7c2.2 20.4 3.3 41.8 3.3 64zm28.8-64H503.9c5.3 20.5 8.1 41.9 8.1 64s-2.8 43.5-8.1 64H380.8c2.1-20.6 3.2-42 3.2-64s-1.1-43.4-3.2-64zm112.6-32H376.7c-10-63.9-29.8-117.4-55.3-151.6c78.3 20.7 142 77.5 171.9 151.6zm-149.1 0H167.7c6.1-36.4 15.5-68.6 27-94.7c10.5-23.6 22.2-40.7 33.5-51.5C239.4 3.2 248.7 0 256 0s16.6 3.2 27.8 13.8c11.3 10.8 23 27.9 33.5 51.5c11.6 26 20.9 58.2 27 94.7zm-209 0H18.6C48.6 85.9 112.2 29.1 190.6 8.4C165.1 42.6 145.3 96.1 135.3 160zM8.1 192H131.2c-2.1 20.6-3.2 42-3.2 64s1.1 43.4 3.2 64H8.1C2.8 299.5 0 278.1 0 256s2.8-43.5 8.1-64zM194.7 446.6c-11.6-26-20.9-58.2-27-94.6H344.3c-6.1 36.4-15.5 68.6-27 94.6c-10.5 23.6-22.2 40.7-33.5 51.5C272.6 508.8 263.3 512 256 512s-16.6-3.2-27.8-13.8c-11.3-10.8-23-27.9-33.5-51.5zM135.3 352c10 63.9 29.8 117.4 55.3 151.6C112.2 482.9 48.6 426.1 18.6 352H135.3zm358.1 0c-30 74.1-93.6 130.9-171.9 151.6c25.5-34.2 45.2-87.7 55.3-151.6H493.4z"]},"mug-hot":{"viewBox":"0 0 512 512","d":["M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"]},"pause":{"viewBox":"0 0 320 512","d":["M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"]},"play":{"viewBox":"0 0 384 512","d":["M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"]},"plus":{"viewBox":"0 0 448 512","d":["M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"]},"rotate":{"viewBox":"0 0 512 512","d":["M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z"]},"stop":{"viewBox":"0 0 384 512","d":["M0 128C0 92.7 28.7 64 64 64H320c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128z"]},"arrows-rotate":{"viewBox":"0 0 512 512","d":["M105.1 202.6c7.7-21.8 20.2-42.3 37.8-59.8c62.5-62.5 163.8-62.5 226.3 0L386.3 160H336c-17.7 0-32 14.3-32 32s14.3 32 32 32H463.5c0 0 0 0 0 0h.4c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32s-32 14.3-32 32v51.2L414.4 97.6c-87.5-87.5-229.3-87.5-316.8 0C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5zM39 289.3c-5 1.5-9.8 4.2-13.7 8.2c-4 4-6.7 8.8-8.1 14c-.3 1.2-.6 2.5-.8 3.8c-.3 1.7-.4 3.4-.4 5.1V448c0 17.7 14.3 32 32 32s32-14.3 32-32V396.9l17.6 17.5 0 0c87.5 87.4 229.3 87.4 316.7 0c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.5 62.5-163.8 62.5-226.3 0l-.1-.1L125.6 352H176c17.7 0 32-14.3 32-32s-14.3-32-32-32H48.4c-1.6 0-3.2 .1-4.8 .3s-3.1 .5-4.6 1z"]},"gauge-high":{"viewBox":"0 0 512 512","d":["M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM256 416c35.3 0 64-28.7 64-64c0-17.4-6.9-33.1-18.1-44.6L366 161.7c5.3-12.1-.2-26.3-12.3-31.6s-26.3 .2-31.6 12.3L257.9 288c-.6 0-1.3 0-1.9 0c-35.3 0-64 28.7-64 64s28.7 64 64 64zM176 144a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM96 288a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm352-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"]},"list-check":{"viewBox":"0 0 512 512","d":["M152.1 38.2c9.9 8.9 10.7 24 1.8 33.9l-72 80c-4.4 4.9-10.6 7.8-17.2 7.9s-12.9-2.4-17.6-7L7 113C-2.3 103.6-2.3 88.4 7 79s24.6-9.4 33.9 0l22.1 22.1 55.1-61.2c8.9-9.9 24-10.7 33.9-1.8zm0 160c9.9 8.9 10.7 24 1.8 33.9l-72 80c-4.4 4.9-10.6 7.8-17.2 7.9s-12.9-2.4-17.6-7L7 273c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l22.1 22.1 55.1-61.2c8.9-9.9 24-10.7 33.9-1.8zM224 96c0-17.7 14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H256c-17.7 0-32-14.3-32-32zm0 160c0-17.7 14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H256c-17.7 0-32-14.3-32-32zM160 416c0-17.7 14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H192c-17.7 0-32-14.3-32-32zM48 368a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"]},"xmark":{"viewBox":"0 0 384 512","d":["M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"]},"trash":{"viewBox":"0 0 448 512","d":["M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"]},"triangle-exclamation":{"viewBox":"0 0 512 512","d":["M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"]},"user-gear":{"viewBox":"0 0 640 512","d":["M224 0a128 128 0 1 1 0 256A128 128 0 1 1 224 0zM178.3 304h91.4c11.8 0 23.4 1.2 34.5 3.3c-2.1 18.5 7.4 35.6 21.8 44.8c-16.6 10.6-26.7 31.6-20 53.3c4 12.9 9.4 25.5 16.4 37.6s15.2 23.1 24.4 33c15.7 16.9 39.6 18.4 57.2 8.7v.9c0 9.2 2.7 18.5 7.9 26.3H29.7C13.3 512 0 498.7 0 482.3C0 383.8 79.8 304 178.3 304zM436 218.2c0-7 4.5-13.3 11.3-14.8c10.5-2.4 21.5-3.7 32.7-3.7s22.2 1.3 32.7 3.7c6.8 1.5 11.3 7.8 11.3 14.8v30.6c7.9 3.4 15.4 7.7 22.3 12.8l24.9-14.3c6.1-3.5 13.7-2.7 18.5 2.4c7.6 8.1 14.3 17.2 20.1 27.2s10.3 20.4 13.5 31c2.1 6.7-1.1 13.7-7.2 17.2l-25 14.4c.4 4 .7 8.1 .7 12.3s-.2 8.2-.7 12.3l25 14.4c6.1 3.5 9.2 10.5 7.2 17.2c-3.3 10.6-7.8 21-13.5 31s-12.5 19.1-20.1 27.2c-4.8 5.1-12.5 5.9-18.5 2.4l-24.9-14.3c-6.9 5.1-14.3 9.4-22.3 12.8l0 30.6c0 7-4.5 13.3-11.3 14.8c-10.5 2.4-21.5 3.7-32.7 3.7s-22.2-1.3-32.7-3.7c-6.8-1.5-11.3-7.8-11.3-14.8V454.8c-8-3.4-15.6-7.7-22.5-12.9l-24.7 14.3c-6.1 3.5-13.7 2.7-18.5-2.4c-7.6-8.1-14.3-17.2-20.1-27.2s-10.3-20.4-13.5-31c-2.1-6.7 1.1-13.7 7.2-17.2l24.8-14.3c-.4-4.1-.7-8.2-.7-12.4s.2-8.3 .7-12.4L343.8 325c-6.1-3.5-9.2-10.5-7.2-17.2c3.3-10.6 7.7-21 13.5-31s12.5-19.1 20.1-27.2c4.8-5.1 12.4-5.9 18.5-2.4l24.8 14.3c6.9-5.1 14.5-9.4 22.5-12.9V218.2zm92.1 133.5a48.1 48.1 0 1 0 -96.1 0 48.1 48.1 0 1 0 96.1 0z"]},"users":{"viewBox":"0 0 640 512","d":["M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192h42.7c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0H21.3C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7h42.7C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3H405.3zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352H378.7C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7H154.7c-14.7 0-26.7-11.9-26.7-26.7z"]},"key":{"viewBox":"0 0 512 512","d":["M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17v80c0 13.3 10.7 24 24 24h80c13.3 0 24-10.7 24-24V448h40c13.3 0 24-10.7 24-24V384h40c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z"]},"language":{"viewBox":"0 0 640 512","d":["M0 128C0 92.7 28.7 64 64 64H256h48 16H576c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H320 304 256 64c-35.3 0-64-28.7-64-64V128zm320 0V384H576V128H320zM178.3 175.9c-3.2-7.2-10.4-11.9-18.3-11.9s-15.1 4.7-18.3 11.9l-64 144c-4.5 10.1 .1 21.9 10.2 26.4s21.9-.1 26.4-10.2l8.9-20.1h73.6l8.9 20.1c4.5 10.1 16.3 14.6 26.4 10.2s14.6-16.3 10.2-26.4l-64-144zM160 233.2L179 276H141l19-42.8zM448 164c11 0 20 9 20 20v4h44 16c11 0 20 9 20 20s-9 20-20 20h-2l-1.6 4.5c-8.9 24.4-22.4 46.6-39.6 65.4c.9 .6 1.8 1.1 2.7 1.6l18.9 11.3c9.5 5.7 12.5 18 6.9 27.4s-18 12.5-27.4 6.9l-18.9-11.3c-4.5-2.7-8.8-5.5-13.1-8.5c-10.6 7.5-21.9 14-34 19.4l-3.6 1.6c-10.1 4.5-21.9-.1-26.4-10.2s.1-21.9 10.2-26.4l3.6-1.6c6.4-2.9 12.6-6.1 18.5-9.8l-12.2-12.2c-7.8-7.8-7.8-20.5 0-28.3s20.5-7.8 28.3 0l14.6 14.6 .5 .5c12.4-13.1 22.5-28.3 29.8-45H448 376c-11 0-20-9-20-20s9-20 20-20h52v-4c0-11 9-20 20-20z"]},"info":{"viewBox":"0 0 192 512","d":["M48 80a48 48 0 1 1 96 0A48 48 0 1 1 48 80zM0 224c0-17.7 14.3-32 32-32H96c17.7 0 32 14.3 32 32V448h32c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H64V256H32c-17.7 0-32-14.3-32-32z"]},"pencil":{"viewBox":"0 0 512 512","d":["M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"]},"tag":{"viewBox":"0 0 448 512","d":["M0 80V229.5c0 17 6.7 33.3 18.7 45.3l176 176c25 25 65.5 25 90.5 0L418.7 317.3c25-25 25-65.5 0-90.5l-176-176c-12-12-28.3-18.7-45.3-18.7H48C21.5 32 0 53.5 0 80zm112 32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"]},"shapes":{"viewBox":"0 0 512 512","d":["M315.4 15.5C309.7 5.9 299.2 0 288 0s-21.7 5.9-27.4 15.5l-96 160c-5.9 9.9-6.1 22.2-.4 32.2s16.3 16.2 27.8 16.2H384c11.5 0 22.2-6.2 27.8-16.2s5.5-22.3-.4-32.2l-96-160zM288 312V456c0 22.1 17.9 40 40 40H472c22.1 0 40-17.9 40-40V312c0-22.1-17.9-40-40-40H328c-22.1 0-40 17.9-40 40zM128 512a128 128 0 1 0 0-256 128 128 0 1 0 0 256z"]},"copy":{"viewBox":"0 0 512 512","d":["M272 0H396.1c12.7 0 24.9 5.1 33.9 14.1l67.9 67.9c9 9 14.1 21.2 14.1 33.9V336c0 26.5-21.5 48-48 48H272c-26.5 0-48-21.5-48-48V48c0-26.5 21.5-48 48-48zM48 128H192v64H64V448H256V416h64v48c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V176c0-26.5 21.5-48 48-48z"]},"code":{"viewBox":"0 0 640 512","d":["M392.8 1.2c-17-4.9-34.7 5-39.6 22l-128 448c-4.9 17 5 34.7 22 39.6s34.7-5 39.6-22l128-448c4.9-17-5-34.7-22-39.6zm80.6 120.1c-12.5 12.5-12.5 32.8 0 45.3L562.7 256l-89.4 89.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l112-112c12.5-12.5 12.5-32.8 0-45.3l-112-112c-12.5-12.5-32.8-12.5-45.3 0zm-306.7 0c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3l112 112c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256l89.4-89.4c12.5-12.5 12.5-32.8 0-45.3z"]},"rotate-left":{"viewBox":"0 0 512 512","d":["M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"]},"floppy-disk":{"viewBox":"0 0 448 512","d":["M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V173.3c0-17-6.7-33.3-18.7-45.3L352 50.7C340 38.7 323.7 32 306.7 32H64zm0 96c0-17.7 14.3-32 32-32H288c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V128zM224 288a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"]},"arrow-right-to-bracket":{"viewBox":"0 0 512 512","d":["M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"]},"arrow-right-from-bracket":{"viewBox":"0 0 512 512","d":["M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"]},"arrow-right":{"viewBox":"0 0 448 512","d":["M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"]},"file-code":{"viewBox":"0 0 384 512","d":["M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM153 289l-31 31 31 31c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0L71 337c-9.4-9.4-9.4-24.6 0-33.9l48-48c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9zM265 255l48 48c9.4 9.4 9.4 24.6 0 33.9l-48 48c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l31-31-31-31c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0z"]}};
+        function 渲染图标(根节点) {
+            const 范围 = (根节点 || document).querySelectorAll('i[class*="fa-"]');
+            范围.forEach(节点 => {
+                if (节点.dataset.图标已渲染) return;
+                const 名 = (节点.className.match(/fa-([a-z0-9-]+)/) || [])[1];
+                const 图标 = 名 && 图标表[名];
+                节点.dataset.图标已渲染 = '1';
+                if (!图标) { 节点.setAttribute('data-图标缺失', 名 || '未知'); return; }
+                节点.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + 图标.viewBox + '"'
+                    + ' width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false">'
+                    + 图标.d.map(d => '<path d="' + d + '"/>').join('')
+                    + '</svg>';
+            });
+        }
+        function 监视图标() {
+            if (typeof MutationObserver !== 'function') return;
+            new MutationObserver(记录 => {
+                记录.forEach(项 => {
+                    if (项.type === 'childList') {
+                        项.addedNodes.forEach(n => {
+                            if (n.nodeType !== 1) return;
+                            if (n.matches && n.matches('i[class*="fa-"]')) 渲染图标(n.parentNode || document);
+                            else if (n.querySelector && n.querySelector('i[class*="fa-"]')) 渲染图标(n);
+                        });
+                    } else if (项.type === 'attributes' && 项.target.querySelector) {
+                        渲染图标(项.target);
+                    }
+                });
+            }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+        }
+
+        // 图标必须在脚本一解析完就渲染：后面初始化里任何一步抛错，都不该让图标（尤其只显示图标的侧栏）整片消失
+        渲染图标();
+        监视图标();
+
+        // ===== 维护开关 =====
+        // 开关就是 <body data-maintenance="true|false"> 那一个属性；
+        // 另外支持用网址临时覆盖：?维护=1 强制维护、?维护=0 强制正常，方便线上预览。
+        function 是否维护中() {
+            let 覆盖 = null;
+            try {
+                const 参数 = new URLSearchParams(location.search);
+                覆盖 = 参数.get('维护') !== null ? 参数.get('维护') : 参数.get('maintenance');
+            } catch (e) {}
+            if (覆盖 === '1' || 覆盖 === '0') return 覆盖 === '1';
+            return String(document.body.dataset.maintenance || '').toLowerCase() === 'true';
+        }
+
+        // 维护模式：只显示维护卡片，不加载配置、不拉任务、不轮询（页面不发任何请求）
+        function 进入维护模式() {
+            document.body.classList.add('maintenance');
+            document.title = '系统维护中 - TranslatorMinecraft';
+            window.__页面诊断.初始化 = '维护模式';
+            渲染图标();
         }
 
         const CFG_KEY = 'minecraft_translator_config';
@@ -1428,6 +2334,9 @@
         const ACTIVE = ['uploading', 'queued', 'processing'];
         const MAX_MB = 95; // 单文件上限：Cloudflare 免费版单请求 100MB，留点余量
         const ENDED = ['completed', 'failed', 'expired'];
+        const API_ENDPOINT = '/network/transl'; // 新接口：上传体走 zstd 流式解压
+        const ZSTD_BLOCK = 131072; // zstd 单块上限 128KiB
+        // 翻译请求带的 Config 现在由侧栏「配置器」维护（见 请求配置 / 读配置 / 写配置）
         const STATUS = {
             ready: ['待启动', 'status-idle'],
             needfile: ['缺文件', 'status-idle'],
@@ -1450,6 +2359,151 @@
 
         const $ = id => document.getElementById(id);
         const st = s => STATUS[s] || [s, 'status-idle'];
+
+        // ========== 故障自曝 ==========
+        // 页面出错时不要静默：把错误直接画在页面顶部，并提供一键自检，
+        // 这样"按钮没反应"能立刻看出是哪一步坏了，而不是只能靠猜。
+        window.__页面诊断 = { 脚本版本: '2026-09-25-icon-inline', 错误: [], 初始化: '未开始', 绑定情况: [] };
+
+        function 显示横幅(标题, 正文, 类型) {
+            let 条 = document.getElementById('diag-banner');
+            if (!条) {
+                条 = document.createElement('div');
+                条.id = 'diag-banner';
+                条.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:9999;padding:12px 16px;'
+                    + 'font:13px/1.5 Consolas,"Courier New",monospace;max-height:46vh;overflow:auto;white-space:pre-wrap;'
+                    + 'box-shadow:0 2px 10px rgba(0,0,0,.3)';
+                const 关 = document.createElement('span');
+                关.textContent = ' ✕ 关闭';
+                关.style.cssText = 'float:right;cursor:pointer;font-weight:700';
+                关.addEventListener('click', () => 条.remove());
+                条.appendChild(关);
+                const 标题节点 = document.createElement('strong');
+                标题节点.id = 'diag-banner-title';
+                条.appendChild(标题节点);
+                const 正文节点 = document.createElement('div');
+                正文节点.id = 'diag-banner-body';
+                条.appendChild(正文节点);
+                (document.body || document.documentElement).appendChild(条);
+            }
+            const 红 = 类型 !== 'ok';
+            条.style.background = 红 ? '#fff3cd' : '#d3f9d8';
+            条.style.color = 红 ? '#7a4b00' : '#1b7f3b';
+            条.style.borderBottom = '3px solid ' + (红 ? '#ffc107' : '#37b24d');
+            document.getElementById('diag-banner-title').textContent = 标题;
+            document.getElementById('diag-banner-body').textContent = 正文 || '';
+        }
+
+        window.addEventListener('error', e => {
+            const 详情 = (e.message || '未知错误') + (e.filename ? '\n位置: ' + e.filename + ':' + e.lineno + ':' + e.colno : '');
+            window.__页面诊断.错误.push(详情);
+            显示横幅('页面脚本出错（这会导致按钮没反应）', 详情, 'bad');
+        });
+        window.addEventListener('unhandledrejection', e => {
+            const 详情 = '未处理的 Promise 异常: ' + ((e.reason && (e.reason.stack || e.reason.message)) || e.reason);
+            window.__页面诊断.错误.push(详情);
+            显示横幅('页面脚本出错（这会导致按钮没反应）', 详情, 'bad');
+        });
+
+        async function 自检(必须显示) {
+            // 网络探测只在手动点「页面自检」时做：启动时自动探测会在控制台留下
+            // 401/403/500 之类"看着像报错"的记录，反而干扰排查。
+            return await 自检内部(必须显示, !!必须显示);
+        }
+
+        async function 自检内部(必须显示, 探测网络) {
+            // 整体兜底：自检本身绝不能因为某一个探针炸掉而什么都不显示
+            try {
+                return await 自检主体(必须显示, 探测网络);
+            } catch (e) {
+                const 兜底 = '自检过程出错（这本身就是个 bug，请把这段发给我）\n' + ((e && (e.stack || e.message)) || e);
+                显示横幅('自检失败', 兜底, 'bad');
+                return 兜底;
+            }
+        }
+
+        async function 自检主体(必须显示, 探测网络) {
+            const 必需 = ['api-url','api-key','api-admin-key','concurrency','add-files','file0','file0-drop','file1-drop','file1',
+                          'start-all','stop-all','clear-finished','clear-all','task-list','task-hint','view-work','view-keys','view-about',
+                          'key-page','key-reload','key-create-open','key-create-modal','key-create-note','key-create-submit','key-table-body','key-table-hint',
+                          'config-page','config-lang-in','config-lang-out','config-lang-model','config-save','config-reset','lang-menu-in','lang-menu-out',
+                          'config-editor','config-editor-input','config-gutter','config-status',
+                          'settings-modal','open-settings','donate-modal','open-donate'];
+            const 缺失 = 必需.filter(id => !$(id));
+            const 行 = [];
+            行.push('脚本版本: ' + window.__页面诊断.脚本版本);
+            行.push('页面地址: ' + location.href);
+            行.push('加载状态: ' + document.readyState);
+            行.push('初始化: ' + window.__页面诊断.初始化);
+            行.push('缺失元素: ' + (缺失.length ? 缺失.join(', ') : '无'));
+            行.push('绑定情况: ' + (window.__页面诊断.绑定情况.length ? window.__页面诊断.绑定情况.join(' | ') : '无记录'));
+            行.push('图标: 已渲染 ' + document.querySelectorAll('i.fas > svg').length + ' / ' + document.querySelectorAll('i.fas').length
+                + '，缺失: ' + (document.querySelectorAll('i[data-图标缺失]').length
+                    ? Array.from(document.querySelectorAll('i[data-图标缺失]')).map(节点 => 节点.getAttribute('data-图标缺失')).join(',')
+                    : '无'));
+            行.push('外部资源: ' + document.querySelectorAll('link[rel="stylesheet"], script[src]').length + ' 个（应为 0，非 0 说明加载的是旧缓存页面）');
+            行.push('按钮总数: ' + document.querySelectorAll('.btn, .side-item').length);
+            try { localStorage.setItem('__probe', '1'); localStorage.removeItem('__probe'); 行.push('localStorage: 可用'); }
+            catch (e) { 行.push('localStorage: 不可用 - ' + e.message); }
+            const c = { url: ($('api-url') || {}).value || '', key: ($('api-key') || {}).value || '', admin: ($('api-admin-key') || {}).value || '' };
+            行.push('API 地址: ' + (c.url || '(未填)') + ' | 用户密钥: ' + (c.key ? '已填(' + c.key.slice(0, 6) + '…)' : '(空)') + ' | 管理员密钥: ' + (c.admin ? '已填' : '(空)'));
+            if (探测网络 && c.url) {
+                for (const [名称, 路径, 令牌] of [['用户列表接口 /key/user/list', '/key/user/list', c.admin], ['状态接口 /task/status', '/task/status/__probe__', c.key]]) {
+                    if (!令牌) { 行.push(名称 + ': 跳过（缺密钥）'); continue; }
+                    try {
+                        const 是列表 = 路径.indexOf('list') >= 0;
+                        const 响应 = await fetch(c.url + 路径, { method: 是列表 ? 'POST' : 'GET', headers: { 'Authorization': 'Bearer ' + 令牌 }, body: 是列表 ? new FormData() : undefined });
+                        // 不能用 res.json()：500 之类返回的不是 JSON，会抛错并中断整个自检
+                        let 详情 = '';
+                        try {
+                            const 文本 = await 响应.text();
+                            详情 = 文本.slice(0, 160).replace(/\s+/g, ' ');
+                        } catch (e) { 详情 = '(读取响应失败)'; }
+                        行.push(名称 + ': HTTP ' + 响应.status
+                            + (响应.status === 404 ? (名称.indexOf('状态接口') >= 0 ? ' ← 正常（这个请求就是拿 404 验证密钥是否被接受的）' : ' ← 该地址上没有这个接口（部署的版本较旧，或地址填的是别的服务）') : '')
+                            + (响应.status === 401 ? ' ← 密钥不对/未认证' : '')
+                            + (响应.status === 403 ? ' ← 密钥不在服务端列表里' : '')
+                            + (响应.status === 500 ? ' ← 服务端内部错误（常见：这个密钥类别在服务端是空的，比如用户密钥全被删了）' : '')
+                            + (详情 ? ' | ' + 详情 : ''));
+                    } catch (e) { 行.push(名称 + ': 请求失败 - ' + ((e && e.message) || e)); }
+                }
+            } else if (c.url) {
+                行.push('接口连通性: 跳过（启动时不自检网络，点「页面自检」按钮才会实际请求）');
+            }
+            行.push('已记录的错误: ' + (window.__页面诊断.错误.length ? window.__页面诊断.错误.join(' ／ ') : '无'));
+            // 上次页面为什么被卸载：能直接分辨"表单提交"还是"外部重载"
+            let 上次卸载 = '（无记录，说明上次是首次打开或已清理）';
+            try {
+                const 存档 = sessionStorage.getItem('webui:卸载诊断');
+                if (存档) {
+                    const 解析 = JSON.parse(存档);
+                    上次卸载 = 解析.原因 + ' @' + 解析.时间 + (解析.详情 ? ' | ' + 解析.详情 : '');
+                }
+            } catch (e) {}
+            行.push('上次卸载原因: ' + 上次卸载);
+            行.push('页面加载情况: ' + 自动重载判据());
+            行.push('页面内 form 数量: ' + document.querySelectorAll('form').length);
+            // 读一次就清掉，方便连续观察"下一次"的卸载原因
+            try { sessionStorage.removeItem('webui:卸载诊断'); } catch (e) {}
+            const 文本 = 行.join('\n');
+            const 有问题 = 缺失.length || window.__页面诊断.错误.length;
+            if (有问题 || 必须显示) 显示横幅(有问题 ? '自检发现问题（把这块内容发给我）' : '自检通过', 文本, 有问题 ? 'bad' : 'ok');
+            return 文本;
+        }
+
+        // 页面里不再使用 <button>（避免任何隐式表单提交），按钮统一是 <a href="javascript:void(0)">。
+        // type="button" 属性在锚点上没有意义，但为了外部脚本/扩展能识别，依旧写上。
+        function 建按钮(类名, 文本, 属性) {
+            const 元素 = document.createElement('a');
+            元素.href = 'javascript:void(0)';
+            元素.setAttribute('role', 'button');
+            元素.setAttribute('type', 'button');
+            元素.setAttribute('draggable', 'false');
+            元素.className = 类名;
+            if (文本) 元素.textContent = 文本;
+            if (属性) Object.keys(属性).forEach(键 => { 元素.dataset[键] = 属性[键]; });
+            return 元素;
+        }
 
         function nextId() {
             seq += 1;
@@ -1480,8 +2534,46 @@
 
         function progressText(t) {
             const percent = t.status === 'completed' ? '100%' : (t.progress || 0) + '%';
+            if (t.status === 'uploading' && t.compressing) return percent + ' · 压缩中';
             if (t.status === 'uploading' && t.speed) return percent + ' · ' + humanSpeed(t.speed);
             return percent;
+        }
+
+        // 新接口要求上传体是 zstd 流（服务端流式解压）。浏览器没有原生 zstd，
+        // 这里用最小实现生成标准 zstd 帧：帧头 + Raw_Block（未压缩块，zstd 规范允许且解码器必须支持）。
+        // Raw_Block 不改变数据，只负责"包一层合法容器"，因此压缩/解压两边都不会出错。
+        function zstd帧(字节, 块大小) {
+            const 块上限 = 块大小 || ZSTD_BLOCK;
+            // 帧头: magic(4) + FHD(1) + contentSize(8)。
+            // FHD=0xE0 = 非单段模式 + Content_Size_Flag=0(8 字节)。未单段时 libzstd 会使用默认 1MiB 窗口，
+            // 足以容纳 128KiB 的数据块，因此无需再写 Window_Descriptor。
+            const 头长度 = 4 + 1 + 8;
+            const 块数 = Math.max(1, Math.ceil(字节.length / 块上限));
+            const 输出 = new Uint8Array(头长度 + 块数 * 3 + 字节.length);
+            const 视图 = new DataView(输出.buffer);
+            let 位置 = 0;
+            视图.setUint32(位置, 0xfd2fb528, true); 位置 += 4; // zstd magic
+            视图.setUint8(位置, 0xe0); 位置 += 1;
+            视图.setUint32(位置, 字节.length >>> 0, true); 位置 += 4; // contentSize 低 32 位
+            视图.setUint32(位置, Math.floor(字节.length / 4294967296), true); 位置 += 4; // contentSize 高 32 位
+            for (let 偏移 = 0; 偏移 < 字节.length; 偏移 += 块上限) {
+                const 长度 = Math.min(块上限, 字节.length - 偏移);
+                const 末块 = 偏移 + 长度 >= 字节.length;
+                const 块头 = (长度 << 3) | (末块 ? 1 : 0); // Last_Block(1bit) | Block_Type(2bit, 0=Raw) << 3 | Block_Size
+                视图.setUint8(位置, 块头 & 0xff); 位置 += 1;
+                视图.setUint8(位置, (块头 >>> 8) & 0xff); 位置 += 1;
+                视图.setUint8(位置, (块头 >>> 16) & 0xff); 位置 += 1;
+                输出.set(字节.subarray(偏移, 偏移 + 长度), 位置);
+                位置 += 长度;
+            }
+            if (字节.length === 0) { // 空文件也要有且只有一个 last raw block
+                视图.setUint8(位置, 1); 位置 += 3;
+            }
+            return 输出.subarray(0, 位置);
+        }
+
+        function zipUpload(blob) {
+            return blob.arrayBuffer().then(缓冲 => new Blob([zstd帧(new Uint8Array(缓冲))], { type: 'application/octet-stream' }));
         }
 
         function hint(msg) {
@@ -1495,6 +2587,7 @@
             return {
                 url: $('api-url').value.trim().replace(/\/+$/, ''),
                 key: $('api-key').value.trim(),
+                admin: $('api-admin-key') ? $('api-admin-key').value.trim() : '',
                 limit: Math.max(0, parseInt($('concurrency').value, 10) || 0)
             };
         }
@@ -1505,10 +2598,13 @@
 
         function saveCfg() {
             try {
+                const 旧存档 = JSON.parse(localStorage.getItem(CFG_KEY) || '{}');
                 localStorage.setItem(CFG_KEY, JSON.stringify({
                     url: $('api-url').value.trim(),
                     key: $('api-key').value.trim(),
-                    limit: $('concurrency').value
+                    admin: $('api-admin-key') ? $('api-admin-key').value.trim() : '',
+                    limit: $('concurrency').value,
+                    translator: 存盘配置(旧存档.translator || 请求配置)
                 }));
             } catch (e) {}
         }
@@ -1518,8 +2614,670 @@
                 const c = JSON.parse(localStorage.getItem(CFG_KEY) || '{}');
                 if (c.url) $('api-url').value = c.url;
                 if (c.key) $('api-key').value = c.key;
+                if (c.admin !== undefined && $('api-admin-key')) $('api-admin-key').value = c.admin;
                 if (c.limit !== undefined) $('concurrency').value = c.limit;
             } catch (e) {}
+        }
+
+        // ========== Key 管理 ==========
+
+        // 密码管理器/扩展有时会往 DOM 里插入 <form> 或 <input type="password">。
+        // 提交已经被全局守卫掐死，这里额外把新出现的 password 框改回遮蔽文本输入，并记录一条提示。
+        function 监视注入表单() {
+            if (typeof MutationObserver !== 'function') return;
+            let 已提示 = false;
+            const 观察器 = new MutationObserver(记录 => {
+                记录.forEach(项 => {
+                    项.addedNodes.forEach(节点 => {
+                        if (节点.nodeType !== 1) return;
+                        const 候选 = [];
+                        if (节点.tagName === 'FORM') 候选.push(节点);
+                        if (节点.querySelectorAll) 节点.querySelectorAll('form, input[type="password"]').forEach(n => 候选.push(n));
+                        if (节点.matches && 节点.matches('input[type="password"]')) 候选.push(节点);
+                        if (!候选.length) return;
+                        候选.forEach(n => {
+                            if (n.tagName === 'INPUT') {
+                                n.type = 'text';
+                                n.classList.add('遮蔽输入');
+                                n.setAttribute('autocomplete', 'off');
+                            }
+                        });
+                        if (!已提示) {
+                            已提示 = true;
+                            hint('检测到外部脚本注入了表单/密码框，已自动改写；提交已被全局阻止');
+                        }
+                    });
+                });
+            });
+            观察器.observe(document.body, { childList: true, subtree: true });
+        }
+
+        function requireAdmin() {
+            const c = cfg();
+            if (!c.url) { 密钥提示('请先在设置里填写 API 地址', 'bad'); return null; }
+            if (!c.admin) { 密钥提示('管理员密钥为空，先在设置里填写并保存', 'bad'); return null; }
+            return c;
+        }
+
+        async function 请求Key(c, 路径, 表单, 方法) {
+            const 响应 = await fetch(c.url + 路径, { method: 方法 || 'POST', headers: auth({ key: c.admin }), body: 表单 });
+            let 数据 = null;
+            try { 数据 = await 响应.json(); } catch (e) {}
+            if (!响应.ok) throw new Error(密钥错误(响应.status, 数据));
+            return 数据 || {};
+        }
+
+        function 密钥错误(状态码, 数据) {
+            const 详情 = 数据 && (数据.detail || 数据.message || 数据.error);
+            const 文本 = typeof 详情 === 'string' && 详情 ? 详情 : '';
+            if (状态码 === 401) return '401 未认证：这条接口需要请求头里的密钥，检查管理员密钥是否填写';
+            if (状态码 === 403) return '403 密钥无效或过期：' + (文本 || '该密钥不在服务端的管理员密钥里');
+            if (状态码 === 400) return '400 请求有误：' + (文本 || '通常是没填备注/密钥，或想删掉最后一个管理员密钥');
+            if (状态码 === 409) return '409 备注重复：' + (文本 || '这个备注已经用过了，换一个');
+            return 状态码 + ' ' + (文本 || '请求失败');
+        }
+
+        // 服务端现在把密钥存成 {备注: 密钥} 字典；这里统一成数组方便渲染，同时兼容旧的数组格式
+        function 键值对(载荷) {
+            const 原 = 载荷 || {};
+            if (Array.isArray(原)) return 原.map(密钥 => ({ 备注: '', 密钥 }));
+            return Object.keys(原).map(备注 => ({ 备注, 密钥: 原[备注] }));
+        }
+
+        // ===== 配置器：只维护源语言与目标语言，随请求的 Config 发给服务端 =====
+        const 配置默认 = { LANGUAGE_INPUT: 'en_us', LANGUAGE_OUTPUT: 'zh_cn' };
+        let 请求配置 = Object.assign({}, 配置默认);
+
+        function 读配置() {
+            try {
+                const 存档 = JSON.parse(localStorage.getItem(CFG_KEY) || '{}');
+                if (存档.translator && typeof 存档.translator === 'object') {
+                    if ('LANGUAGE_MODEL' in 存档.translator) {   // 旧存档里残留的就顺手清掉
+                        存档.translator = 存盘配置(存档.translator);
+                        localStorage.setItem(CFG_KEY, JSON.stringify(存档));
+                    }
+                    请求配置 = 归一配置(存盘配置(存档.translator));
+                }
+            } catch (e) {}
+            return 请求配置;
+        }
+
+        // 只保留白名单里的语言键；空值就退回默认，避免发出空字符串让服务端当语言用
+        // LANGUAGE_MODEL 是「发给模型的目标语言说明」，留空表示跟输出语言一样（服务端自己回落）
+        const 语言键 = ['LANGUAGE_INPUT', 'LANGUAGE_OUTPUT', 'LANGUAGE_MODEL'];
+
+        // 模型语言（LANGUAGE_MODEL）只在本次会话的内存里生效，不写进浏览器存档：
+        // 刷新页面后它回到空（即「跟输出语言一样」），避免上一次填的「文言文」黏在下一次翻译上
+        function 存盘配置(配置) {
+            const 副本 = Object.assign({}, 配置 || {});
+            delete 副本.LANGUAGE_MODEL;
+            return 副本;
+        }
+
+        function 归一配置(原始) {
+            const 源 = 原始 && 原始.LANGUAGE_INPUT != null ? String(原始.LANGUAGE_INPUT).trim() : '';
+            const 目标 = 原始 && 原始.LANGUAGE_OUTPUT != null ? String(原始.LANGUAGE_OUTPUT).trim() : '';
+            const 模型 = 原始 && 原始.LANGUAGE_MODEL != null ? String(原始.LANGUAGE_MODEL).trim() : '';
+            const 结果 = {
+                LANGUAGE_INPUT: 源 || 配置默认.LANGUAGE_INPUT,
+                LANGUAGE_OUTPUT: 目标 || 配置默认.LANGUAGE_OUTPUT,
+            };
+            if (模型) 结果.LANGUAGE_MODEL = 模型;   // 留空就不发这个键
+            return 结果;
+        }
+
+        function 写配置(新配置) {
+            请求配置 = 归一配置(新配置);
+            try {
+                const 存档 = JSON.parse(localStorage.getItem(CFG_KEY) || '{}');
+                存档.translator = 存盘配置(请求配置);
+                localStorage.setItem(CFG_KEY, JSON.stringify(存档));
+            } catch (e) {}
+            刷新配置页();
+            return 请求配置;
+        }
+
+        function 配置提示(文本, 类型) {
+            const 状态栏 = $('config-editor');
+            const 条 = document.querySelector('.vsc-statusbar');
+            const 左 = $('config-status');
+            if (左) {
+                const 图标 = 类型 === 'bad' ? 'circle-exclamation' : (类型 === 'ok' ? 'circle-check' : 'circle-info');
+                左.innerHTML = '<i class="fas fa-' + 图标 + '"></i> ' + 文本;
+                渲染图标(左);
+            }
+            if (条) {
+                条.className = 'vsc-statusbar' + (类型 ? ' ' + 类型 : '');
+            }
+        }
+
+        // 行号：跟着编辑器内容走
+        function 更新行号() {
+            const 编辑 = $('config-editor-input');
+            const 行号 = $('config-gutter');
+            if (!编辑 || !行号) return;
+            const 行数 = 编辑.value.split('\n').length;
+            let 文本 = '';
+            for (let i = 1; i <= 行数; i++) 文本 += i + (i < 行数 ? '\n' : '');
+            行号.textContent = 文本;
+            行号.scrollTop = 编辑.scrollTop;
+        }
+
+        // 状态栏右侧：字符数 / 光标位置
+        function 更新编辑器状态(提示) {
+            const 编辑 = $('config-editor-input');
+            const 右 = $('config-status-right');
+            if (!编辑 || !右) return;
+            const 光标 = 编辑.selectionStart;
+            const 前 = 编辑.value.slice(0, 光标);
+            const 行 = 前.split('\n').length;
+            const 列 = 光标 - 前.lastIndexOf('\n');
+            右.textContent = 请求配置.LANGUAGE_INPUT + ' → ' + 请求配置.LANGUAGE_OUTPUT
+                + (请求配置.LANGUAGE_MODEL ? '（模型按「' + 请求配置.LANGUAGE_MODEL + '」译）' : '')
+                + ' ｜ 行 ' + 行 + '，列 ' + 列 + ' ｜ ' + 编辑.value.length + ' 字符';
+            if (提示) 右.textContent = 提示 + ' ｜ ' + 右.textContent;
+        }
+
+        // 把编辑器内容解析成配置；失败返回 null 并给出原因
+        function 解析编辑器(静默) {
+            const 编辑 = $('config-editor-input');
+            if (!编辑) return null;
+            let 解析;
+            try {
+                解析 = JSON.parse(编辑.value || '{}');
+            } catch (e) {
+                if (!静默) 配置提示('JSON 语法错误：' + e.message, 'bad');
+                return null;
+            }
+            if (typeof 解析 !== 'object' || 解析 === null || Array.isArray(解析)) {
+                if (!静默) 配置提示('Config 必须是一个 JSON 对象', 'bad');
+                return null;
+            }
+            const 源 = 解析.LANGUAGE_INPUT != null ? String(解析.LANGUAGE_INPUT).trim() : '';
+            const 目标 = 解析.LANGUAGE_OUTPUT != null ? String(解析.LANGUAGE_OUTPUT).trim() : '';
+            if (!源 || !目标) {
+                if (!静默) 配置提示('LANGUAGE_INPUT 和 LANGUAGE_OUTPUT 都要填', 'bad');
+                return null;
+            }
+            if (源.toLowerCase() === 目标.toLowerCase()) {
+                if (!静默) 配置提示('输入语言和输出语言相同，翻译没有意义', 'bad');
+                return null;
+            }
+            return { 解析, 源, 目标 };
+        }
+
+        // 编辑器内容变化时实时校验
+        function 编辑器已改动() {
+            更新行号();
+            const 结果 = 解析编辑器(true);
+            if (!结果) {
+                配置提示('JSON 里有问题，保存前先修好', 'bad');
+            } else {
+                const 其它键 = Object.keys(结果.解析).filter(键 => 语言键.indexOf(键) < 0);
+                配置提示('未保存的改动' + (其它键.length ? '（非白名单键会被服务端忽略：' + 其它键.join(', ') + '）' : ''), '');
+            }
+            更新编辑器状态();
+        }
+
+        function 刷新配置页() {
+            const 编辑 = $('config-editor-input');
+            if (编辑) 编辑.value = JSON.stringify(请求配置);
+            if ($('config-lang-in')) $('config-lang-in').value = 请求配置.LANGUAGE_INPUT;
+            if ($('config-lang-out')) $('config-lang-out').value = 请求配置.LANGUAGE_OUTPUT;
+            if ($('config-lang-model')) $('config-lang-model').value = 请求配置.LANGUAGE_MODEL || '';
+            更新行号();
+            更新编辑器状态();
+        }
+
+        function 从快捷输入生成配置() {
+            const 配置 = {
+                LANGUAGE_INPUT: ($('config-lang-in') || {}).value || '',
+                LANGUAGE_OUTPUT: ($('config-lang-out') || {}).value || '',
+            };
+            const 模型 = (($('config-lang-model') || {}).value || '').trim();
+            if (模型) 配置.LANGUAGE_MODEL = 模型;
+            return 配置;
+        }
+
+        // 快捷输入 → 编辑器（实时同步）→ 自动落盘生效（不用再点按钮）
+        let 自动应用计时 = null;
+
+        function 快捷输入已改动() {
+            const 编辑 = $('config-editor-input');
+            if (!编辑) return;
+            编辑.value = JSON.stringify(从快捷输入生成配置());
+            更新行号();
+            更新编辑器状态();
+            clearTimeout(自动应用计时);
+            if (!解析编辑器(true)) {
+                配置提示('语言不能为空、也不能相同（暂未生效）', 'bad');
+                return;
+            }
+            自动应用计时 = setTimeout(自动应用, 300);   // 打字停顿一下或选完就生效
+        }
+
+        // 和「保存并使用」同一条路径，只是不弹窗、不打断输入
+        function 自动应用() {
+            clearTimeout(自动应用计时);
+            const 结果 = 解析编辑器(true);
+            if (!结果) return false;
+            写配置(结果.解析);
+            const 编辑 = $('config-editor-input');
+            if (编辑) 编辑.value = JSON.stringify(请求配置);
+            更新行号();
+            更新编辑器状态();
+            配置提示('已自动生效：' + 请求配置.LANGUAGE_INPUT + ' → ' + 请求配置.LANGUAGE_OUTPUT, 'ok');
+            return true;
+        }
+
+        function 保存配置() {
+            const 结果 = 解析编辑器(false);
+            if (!结果) return false;
+            const 其它键 = Object.keys(结果.解析).filter(键 => 语言键.indexOf(键) < 0);
+            写配置(结果.解析);
+            const 编辑 = $('config-editor-input');
+            if (编辑) 编辑.value = JSON.stringify(请求配置);
+            更新行号();
+            配置提示('已保存：' + 请求配置.LANGUAGE_INPUT + ' → ' + 请求配置.LANGUAGE_OUTPUT
+                + '，之后的翻译请求都会带上它'
+                + (其它键.length ? '；这些键服务端会忽略 → ' + 其它键.join(', ') : ''), 'ok');
+            更新编辑器状态();
+            return true;
+        }
+
+        // ===== 语言下拉 =====
+        // 之前给输入框挂了原生 datalist（list 属性），浏览器会拿框里的文字去过滤候选项：
+        // 框里已经有 en_us，点开就只剩 en_us 一条（看着像"只有一种语言"）。
+        // 这里自己画列表：点一下/聚焦就列出全部语言，边打字边过滤，也能直接填任意代码。
+        const 语言候选 = Array.from(document.querySelectorAll('#config-lang-list option'))
+            .map(项 => ({ 代码: 项.value, 名称: (项.textContent || '').replace(项.value, '').trim() }));
+
+        function 挂语言选择器(inputId, menuId) {
+            const 输入 = $(inputId), 菜单 = $(menuId);
+            if (!输入 || !菜单 || !语言候选.length) return;
+            语言候选.forEach((项, 序) => {
+                const 行 = document.createElement('div');
+                行.className = 'lang-item';
+                行.setAttribute('role', 'option');
+                行.dataset.code = 项.代码;
+                const 码 = document.createElement('code');
+                码.textContent = 项.代码;
+                const 名 = document.createElement('span');
+                名.textContent = 项.名称;
+                行.appendChild(码);
+                行.appendChild(名);
+                行.addEventListener('mousedown', e => { e.preventDefault(); 选中(序); });
+                菜单.appendChild(行);
+            });
+            const 空行 = document.createElement('div');
+            空行.className = 'lang-empty';
+            空行.textContent = '没有匹配的语言；也可以直接输入任意代码';
+            菜单.appendChild(空行);
+
+            let 高亮 = -1;      // 语言候选里的下标
+            let 已导航 = false;  // 只有按过 ↑↓ 才把 Enter 当"选中"，否则 Enter 仍然是页面自己的"保存"
+            let 正在选中 = false;
+            const 打开着 = () => 菜单.classList.contains('show');
+
+            function 打开() {
+                菜单.classList.add('show');
+                输入.setAttribute('aria-expanded', 'true');
+            }
+            function 关闭() {
+                菜单.classList.remove('show');
+                输入.setAttribute('aria-expanded', 'false');
+                已导航 = false;
+            }
+            function 设置高亮(序) {
+                高亮 = 序;
+                语言候选.forEach((项, 号) => 菜单.children[号].classList.toggle('on', 号 === 序));
+                if (序 >= 0) 菜单.children[序].scrollIntoView({ block: 'nearest' });
+            }
+            function 可见序() {
+                return 语言候选.map((项, 序) => 序).filter(序 => 菜单.children[序].style.display !== 'none');
+            }
+            function 移动(步) {
+                const 列 = 可见序();
+                if (!列.length) return;
+                已导航 = true;
+                const 位置 = 列.indexOf(高亮);
+                const 新 = 位置 < 0 ? (步 > 0 ? 0 : 列.length - 1) : (位置 + 步 + 列.length) % 列.length;
+                设置高亮(列[新]);
+            }
+            function 画(过滤) {
+                const 词 = String(过滤 == null ? '' : 过滤).trim().toLowerCase();
+                let 可见 = 0;
+                let 命中 = -1;
+                语言候选.forEach((项, 序) => {
+                    const 行 = 菜单.children[序];
+                    const 命中项 = !词
+                        || 项.代码.toLowerCase().indexOf(词) >= 0
+                        || 项.名称.toLowerCase().indexOf(词) >= 0;
+                    行.style.display = 命中项 ? '' : 'none';
+                    行.classList.remove('on');
+                    if (命中项) { 可见++; if (项.代码 === 输入.value.trim()) 命中 = 序; }
+                });
+                空行.style.display = 可见 ? 'none' : '';
+                高亮 = 命中;
+                if (命中 >= 0) 菜单.children[命中].classList.add('on');
+                已导航 = false;
+                打开();
+            }
+            function 选中(序) {
+                const 项 = 语言候选[序];
+                if (!项) return;
+                输入.value = 项.代码;
+                设置高亮(序);
+                正在选中 = true;
+                输入.dispatchEvent(new Event('input', { bubbles: true }));   // 让页面把语言同步进编辑器
+                正在选中 = false;
+                关闭();                                                      // 必须在派发之后再关，否则会被 input 监听重新弹开
+            }
+
+            // 聚焦或点一下：列出全部（不再受框里的旧值过滤）
+            输入.addEventListener('focus', () => 画(''));
+            输入.addEventListener('click', () => { if (!打开着()) 画(''); });
+            // 打字才过滤
+            输入.addEventListener('input', () => { if (!正在选中) 画(输入.value); });
+            // 这个监听在页面自己的 Enter=保存 之前注册，选中时能把它拦下来
+            输入.addEventListener('keydown', e => {
+                if (e.key === 'ArrowDown') { e.preventDefault(); if (打开着()) 移动(1); else 画(''); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); if (打开着()) 移动(-1); else 画(''); }
+                else if (e.key === 'Enter') {
+                    if (打开着() && 已导航 && 高亮 >= 0) { e.preventDefault(); e.stopImmediatePropagation(); 选中(高亮); }
+                    else 关闭();
+                } else if (e.key === 'Escape') { 关闭(); e.stopImmediatePropagation(); }
+                else if (e.key === 'Tab') { 关闭(); }
+            });
+            document.addEventListener('mousedown', e => {
+                if (!打开着()) return;
+                if (菜单.contains(e.target) || e.target === 输入) return;
+                关闭();
+            });
+        }
+
+        // ===== Key 管理：全部密钥合成一张表（名称 / Key / 类型）=====
+        // 注意：不再把输出写进 #key-user-out / sessionStorage。
+        // 之前那套「输出框 + sessionStorage 恢复」会在刷新后把上一次的旧列表又画出来
+        // （密钥早被删了，页面还在显示），所以整块去掉，提示统一走 #key-table-hint。
+        let 密钥缓存 = [];   // [{ 名称, 密钥, 类型: 'user' | 'admin' }]
+
+        // 打码：一律遮中间，短密钥也一样遮（避免"短的就不打码"这种不一致）
+        function 遮罩密钥(密钥) {
+             if (!密钥) return '';
+             const 头 = Math.min(4, Math.ceil(密钥.length / 3));
+             const 尾 = 密钥.length >= 10 ? 4 : 0;
+             if (密钥.length <= 头 + 尾) return 密钥.slice(0, 头) + '****';
+             return 密钥.slice(0, 头) + '****' + (尾 ? 密钥.slice(-尾) : '');
+        }
+
+        function 类型标签(类型) {
+             return 类型 === 'admin' ? '管理员' : '用户';
+        }
+
+        function 渲染密钥表() {
+             const 表体 = $('key-table-body');
+             if (!表体) return;
+             表体.textContent = '';
+             if (!密钥缓存.length) {
+                  const 行 = document.createElement('tr');
+                  const 格 = document.createElement('td');
+                  格.colSpan = 4;
+                  格.style.textAlign = 'center';
+                  格.style.color = '#6c757d';
+                  格.style.padding = '22px';
+                  格.textContent = '还没有密钥，点右上角「创建 API key」';
+                  行.appendChild(格);
+                  表体.appendChild(行);
+                  return;
+             }
+             密钥缓存.forEach(条目 => {
+                  const 行 = document.createElement('tr');
+                  行.dataset.key = 条目.密钥;
+                  行.dataset.note = 条目.名称;
+                  行.dataset.type = 条目.类型;
+
+                  const 名称格 = document.createElement('td');
+                  名称格.className = 'key-name';
+                  名称格.textContent = 条目.名称 || '（未命名）';
+                  行.appendChild(名称格);
+
+                  const 键格 = document.createElement('td');
+                  const 码 = document.createElement('code');
+     // 默认打码显示；完整值只从 dataset.key（行上）取，复制/填入都用它，绝不依赖显示文本
+     const 明文 = 条目.密钥;
+     let 已展开 = false;
+     码.textContent = 遮罩密钥(明文);
+     码.title = '点击显示完整密钥';
+     码.style.cursor = 'pointer';
+     码.addEventListener('click', () => {
+          已展开 = !已展开;
+          码.textContent = 已展开 ? 明文 : 遮罩密钥(明文);
+          码.title = 已展开 ? '点击重新打码' : '点击显示完整密钥';
+          码.classList.toggle('revealed', 已展开);
+          if (已展开) 选中文本(码);
+     });
+                  键格.appendChild(码);
+                  行.appendChild(键格);
+
+                  const 类型格 = document.createElement('td');
+                  const 徽章 = document.createElement('span');
+                  徽章.className = 'key-badge ' + 条目.类型;
+                  徽章.textContent = 类型标签(条目.类型);
+                  类型格.appendChild(徽章);
+                  行.appendChild(类型格);
+
+                  const 操作格 = document.createElement('td');
+                  操作格.className = 'tops';
+                  操作格.appendChild(建图标按钮('copy', '复制', '复制完整密钥（不受打码影响）', () => 复制密钥(行.dataset.key, 行.querySelector('code'))));
+                  操作格.appendChild(建图标按钮('trash', '删除', '删除这个密钥', () => 删除单条(条目)));
+                  行.appendChild(操作格);
+
+                  表体.appendChild(行);
+             });
+        }
+
+        function 建图标按钮(图标名, 文本, 提示, 处理) {
+             const 元素 = 建按钮('btn btn-secondary btn-sm', '');
+             元素.title = 提示 || 文本;
+             元素.setAttribute('aria-label', 文本);
+             元素.innerHTML = '<i class="fas fa-' + 图标名 + '"></i>';
+             元素.addEventListener('click', 处理);
+             return 元素;
+        }
+
+        // 复制：navigator.clipboard 只在安全上下文（https / localhost）可用，
+// http 打开时直接抛错，所以必须留 execCommand 兜底，否则"复制"看着就是坏的。
+async function 复制密钥(密钥, 元素) {
+     if (!密钥) { hint('没有密钥可复制'); return; }
+     if (navigator.clipboard && window.isSecureContext) {
+          try {
+               await navigator.clipboard.writeText(密钥);
+               hint('已复制密钥到剪贴板：' + 缩写密钥(密钥));
+               return;
+          } catch (e) {}
+     }
+     if (用execCommand复制(密钥)) {
+          hint('已复制密钥到剪贴板：' + 缩写密钥(密钥));
+          return;
+     }
+     // 两条路都不通：把完整密钥摊开并选中，让用户 Ctrl+C
+     if (元素) {
+          元素.style.userSelect = 'all';
+          const 范围 = document.createRange();
+          范围.selectNodeContents(元素);
+          const 选区 = window.getSelection();
+          选区.removeAllRanges();
+          选区.addRange(范围);
+     }
+     hint('浏览器不允许自动复制，已帮你选中，按 Ctrl+C 复制');
+}
+
+        // 把某个元素的文本整段选中，方便用户 Ctrl+C
+        function 选中文本(元素) {
+             if (!元素) return;
+             try {
+                  const 范围 = document.createRange();
+                  范围.selectNodeContents(元素);
+                  const 选区 = window.getSelection();
+                  选区.removeAllRanges();
+                  选区.addRange(范围);
+             } catch (e) {}
+        }
+
+function 用execCommand复制(文本) {
+     try {
+          const 框 = document.createElement('textarea');
+          框.value = 文本;
+          框.setAttribute('readonly', '');
+          框.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+          document.body.appendChild(框);
+          框.select();
+          框.setSelectionRange(0, 文本.length);
+          const 成功 = document.execCommand('copy');
+          框.remove();
+          return 成功;
+     } catch (e) { return false; }
+}
+
+function 缩写密钥(值) {
+     if (!值) return '';
+     return 值.length <= 18 ? 值 : 值.slice(0, 8) + '…' + 值.slice(-4);
+}
+
+        function 密钥提示(文本, 类型) {
+             const 框 = $('key-table-hint');
+             if (!框) return;
+             框.textContent = '[' + new Date().toTimeString().slice(0, 8) + '] ' + 文本;
+             框.style.color = 类型 === 'bad' ? '#c92a2a' : (类型 === 'ok' ? '#1b7f3b' : 'var(--gray)');
+        }
+
+        async function 拉取密钥列表() {
+             const c = cfg();
+             if (!c.url) { 密钥提示('请先在设置里填写 API 地址', 'bad'); return; }
+             if (!c.admin) { 密钥提示('管理员密钥为空，先在设置里填写并保存', 'bad'); 密钥缓存 = []; 渲染密钥表(); return; }
+             密钥提示('正在拉取密钥列表…');
+             const 结果 = [];
+             const 错误 = [];
+             for (const [路径, 类型] of [['/key/user/list', 'user'], ['/key/admin/list', 'admin']]) {
+                  try {
+                       const 数据 = await 请求Key(c, 路径, new FormData());
+                       键值对(数据.keys).forEach(x => 结果.push({ 名称: x.备注, 密钥: x.密钥, 类型 }));
+                  } catch (e) { 错误.push(类型标签(类型) + '：' + String(e.message || e)); }
+             }
+             密钥缓存 = 结果;
+             渲染密钥表();
+             if (!结果.length && 错误.length) { 密钥提示(错误.join(' | '), 'bad'); return; }
+             密钥提示('共 ' + 结果.length + ' 个密钥（用户 ' + 结果.filter(x => x.类型 === 'user').length
+                  + '，管理员 ' + 结果.filter(x => x.类型 === 'admin').length + '）'
+                  + (错误.length ? ' | ' + 错误.join(' | ') : ''), 错误.length ? 'bad' : 'ok');
+        }
+
+async function 删除单条(条目) {
+            const c = requireAdmin();
+            if (!c) return;
+            const 确认删除 = await 询问('确定删除密钥「' + (条目.名称 || 条目.密钥) + '」吗？\n使用它的客户端会立刻失效。',
+                 { 标题: '删除密钥', 图标: 'trash', 确定文本: '删除' });
+            if (!确认删除) return;
+             const 路径 = 条目.类型 === 'admin' ? '/key/admin/rm' : '/key/user/rm';
+             密钥提示('正在删除「' + (条目.名称 || 遮罩密钥(条目.密钥)) + '」…');
+             try {
+                  const 表单 = new FormData();
+                  表单.append('keys', 条目.名称 || 条目.密钥);
+                  const 数据 = await 请求Key(c, 路径, 表单);
+                  const 已删 = 键值对(数据.removed);
+                  密钥提示('已删除 ' + 已删.length + ' 个，剩余 ' + 数据.total + ' 个'
+                      + ((数据.protected || []).length ? '；受配置保护未删：' + 数据.protected.join(' ') : '')
+                      + ((数据.missing || []).length ? '；未找到：' + 数据.missing.join(' ') : ''), 'ok');
+                  if (已删.some(x => x.密钥 === $('api-key').value)) {
+                       $('api-key').value = '';
+                       saveCfg();
+                       hint('刚才用的用户密钥已被删除，请重新填写');
+                  }
+                  await 拉取密钥列表();
+             } catch (e) {
+                  密钥提示('删除失败：' + String(e.message || e), 'bad');
+             }
+        }
+
+        function 打开创建弹窗() {
+             const 弹窗 = $('key-create-modal');
+             if (!弹窗) return;
+             if ($('key-create-note')) $('key-create-note').value = '';
+             const 用户选项 = document.querySelector('#key-create-type input[value="user"]');
+             if (用户选项) 用户选项.checked = true;
+             弹窗.classList.add('show');
+             setTimeout(() => { if ($('key-create-note')) $('key-create-note').focus(); }, 50);
+        }
+
+        // 站内确认窗口：返回 Promise<boolean>；用法 await 询问('要删吗？')
+        let 确认回调 = null;
+
+        function 询问(文本, 选项) {
+             const 配置 = 选项 || {};
+             const 弹窗 = $('confirm-modal');
+             if (!弹窗) return Promise.resolve(window.confirm(文本));   // 兜底：标记缺失时退回原生
+             const 标题 = $('confirm-title');
+             if (标题) 标题.innerHTML = '<i class="fas fa-' + (配置.图标 || 'triangle-exclamation') + '"></i> ' + (配置.标题 || '确认');
+             const 内容 = $('confirm-text');
+             if (内容) 内容.textContent = 文本;
+             const 确定 = $('confirm-ok');
+             if (确定) 确定.textContent = 配置.确定文本 || '确定';
+             const 取消 = $('confirm-cancel');
+             if (取消) 取消.textContent = 配置.取消文本 || '取消';
+             if (取消) 取消.style.display = 配置.只提示 ? 'none' : '';
+             弹窗.classList.add('show');
+             return new Promise(解决 => {
+                  确认回调 = 结果 => {
+                       弹窗.classList.remove('show');
+                       确认回调 = null;
+                       解决(结果);
+                  };
+             });
+        }
+
+        function 提示窗口(文本, 选项) {
+             return 询问(文本, Object.assign({ 标题: '提示', 图标: 'circle-info', 只提示: true }, 选项 || {}));
+        }
+
+        function 关闭创建弹窗() {
+             const 弹窗 = $('key-create-modal');
+             if (弹窗) 弹窗.classList.remove('show');
+        }
+
+        function 选择的密钥类型() {
+             const 选中 = document.querySelector('#key-create-type input[name="key-type"]:checked');
+             return 选中 && 选中.value === 'admin' ? 'admin' : 'user';
+        }
+
+        async function 提交创建() {
+             const c = requireAdmin();
+             if (!c) { 密钥提示('请先在设置里填写 API 地址与管理员密钥', 'bad'); return; }
+             const 名称 = ($('key-create-note') || {}).value ? $('key-create-note').value.trim() : '';
+             if (!名称) { 密钥提示('请先填写名称（服务端必填，重复会返回 409）', 'bad'); $('key-create-note').focus(); return; }
+             const 类型 = 选择的密钥类型();
+             密钥提示('正在创建' + 类型标签(类型) + '密钥「' + 名称 + '」…');
+             try {
+                  const 表单 = new FormData();
+                  表单.append('note', 名称);
+                  const 数据 = await 请求Key(c, 类型 === 'admin' ? '/key/admin/add' : '/key/user/add', 表单);
+                  const 新键 = 键值对(数据.keys)[0];
+                  密钥提示('已创建' + 类型标签(类型) + '密钥「' + 名称 + '」，当前共 ' + 数据.total + ' 个', 'ok');
+                  关闭创建弹窗();
+                  if (新键 && 新键.密钥) {
+                       if (类型 === 'user') {
+                            $('api-key').value = 新键.密钥;
+                            saveCfg();
+                            hint('已把新用户密钥填入设置里的 API 密钥');
+                       } else if (!cfg().admin) {
+                            $('api-admin-key').value = 新键.密钥;
+                            saveCfg();
+                       }
+                  }
+                  await 拉取密钥列表();
+             } catch (e) {
+                  密钥提示('创建失败：' + String(e.message || e), 'bad');
+             }
         }
 
         function saveTasks() {
@@ -1537,6 +3295,89 @@
                     at: t.at
                 }))));
             } catch (e) {}
+        }
+
+        // ===== 文件本体的本地缓存（IndexedDB）=====
+        // localStorage 存不了文件，刷新后 blob 就空了，于是「重试」还得重新选一次文件。
+        // 这里把文件本体存进浏览器：刷新后自动找回，重试/开始都不用再选。
+        // 浏览器不给用（无痕模式之类）时全部退化成原来的「重新选文件」行为。
+        const 文件库名 = 'translator-file-cache';
+        const 文件表名 = 'files';
+        let 文件库 = null;
+
+        function 打开文件库() {
+            if (文件库) return Promise.resolve(文件库);
+            if (!window.indexedDB) return Promise.resolve(null);
+            return new Promise(解决 => {
+                let 请求;
+                try { 请求 = indexedDB.open(文件库名, 1); } catch (e) { 解决(null); return; }
+                请求.onupgradeneeded = () => {
+                    const 库 = 请求.result;
+                    if (!库.objectStoreNames.contains(文件表名)) 库.createObjectStore(文件表名, { keyPath: 'id' });
+                };
+                请求.onsuccess = () => { 文件库 = 请求.result; 解决(文件库); };
+                请求.onerror = () => 解决(null);
+                请求.onblocked = () => 解决(null);
+            });
+        }
+
+        async function 存文件(id, 文件) {
+            if (!id || !文件) return false;
+            const 库 = await 打开文件库();
+            if (!库) return false;
+            return new Promise(解决 => {
+                try {
+                    const 事务 = 库.transaction(文件表名, 'readwrite');
+                    事务.objectStore(文件表名).put({ id: id, name: 文件.name, size: 文件.size, at: Date.now(), blob: 文件 });
+                    事务.oncomplete = () => 解决(true);
+                    事务.onerror = () => 解决(false);
+                    事务.onabort = () => 解决(false);
+                } catch (e) { 解决(false); }
+            });
+        }
+
+        async function 取文件(id) {
+            const 库 = await 打开文件库();
+            if (!库 || !id) return null;
+            return new Promise(解决 => {
+                try {
+                    const 请求 = 库.transaction(文件表名, 'readonly').objectStore(文件表名).get(id);
+                    请求.onsuccess = () => 解决(请求.result ? 请求.result.blob : null);
+                    请求.onerror = () => 解决(null);
+                } catch (e) { 解决(null); }
+            });
+        }
+
+        async function 删文件(ids) {
+            const 列表 = (Array.isArray(ids) ? ids : [ids]).filter(Boolean);
+            if (!列表.length) return;
+            const 库 = await 打开文件库();
+            if (!库) return;
+            try {
+                const 事务 = 库.transaction(文件表名, 'readwrite');
+                const 表 = 事务.objectStore(文件表名);
+                列表.forEach(id => 表.delete(id));
+            } catch (e) {}
+        }
+
+        // 刷新后把文件找回来：找回成功就能直接开始/重试，不用再选文件
+        async function 恢复本地文件() {
+            const 候选 = tasks.filter(t => !t.blob && t.原状态 !== 'completed');
+            if (!候选.length) return;
+            let 成功 = 0;
+            for (const t of 候选) {
+                const 文件 = await 取文件(t.id);
+                if (!文件) continue;
+                t.blob = 文件;
+                if (文件.name) t.name = 文件.name;
+                if (文件.size) t.size = 文件.size;
+                const 原 = t.原状态 || 'ready';
+                t.status = (原 === 'ready' || 原 === 'needfile' || 原 === 'uploading') ? 'ready' : 原;
+                if (t.status === 'ready') t.msg = '文件已找回，可以直接开始';
+                else if (t.status === 'failed') t.msg = t.logResult ? '失败：只有日志可下载' : '';
+                成功 += 1;
+            }
+            if (成功) { saveTasks(); render(); hint('已从浏览器找回 ' + 成功 + ' 个任务的文件，重试不用再选'); }
         }
 
         function loadTasks() {
@@ -1559,10 +3400,11 @@
                 at: t.at || Date.now()
             }));
             tasks.forEach(t => {
+                t.原状态 = t.status;   // 找回文件后按这个恢复状态
                 if (t.status === 'queued' || t.status === 'processing') {
                     t.msg = '恢复跟踪中';
                 } else if (t.status === 'failed' && t.logResult && t.taskId) {
-                    t.msg = '失败：只有日志可下载';
+                    t.msg = '失败：只有日志可下载；重试需重新选一次文件';
                 } else if (t.status !== 'completed' && t.status !== 'detached') {
                     t.status = 'needfile';
                     t.msg = '页面刷新后需重新选择文件';
@@ -1579,7 +3421,8 @@
             if (t.status === 'detached') ops.push(['resume', '恢复']);
             if (t.status === 'completed') ops.push(['download', '下载']);
             if (t.status === 'failed' && t.logResult && t.taskId) ops.push(['download', '下载日志']);
-            if (t.status === 'failed' || t.status === 'expired') ops.push(['retry', '重试']);
+            // 文件本体不会被浏览器保存：刷新后 blob 为空，这时按钮说清楚是要重选文件
+            if (t.status === 'failed' || t.status === 'expired') ops.push(['retry', t.blob ? '重试' : '重选并重试']);
             if (t.taskId) ops.push(['logs', '日志']);
             ops.push(['remove', '移除']);
             return ops;
@@ -1626,10 +3469,7 @@
                 const ops = document.createElement('td');
                 ops.className = 'tops';
                 rowOps(t).forEach(op => {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn btn-secondary btn-sm';
-                    btn.dataset.act = op[0];
-                    btn.textContent = op[1];
+                    const btn = 建按钮('btn btn-secondary btn-sm', op[1], { act: op[0] });
                     ops.appendChild(btn);
                 });
                 tr.appendChild(ops);
@@ -1648,7 +3488,8 @@
             $('task-stats').textContent = tasks.length
                 ? '共 ' + tasks.length + ' 个任务：进行中 ' + run + '，待启动 ' + wait + '，已完成 ' + done + '，失败 ' + fail
                 : '暂无任务';
-            $('start-all').disabled = !tasks.some(t => t.blob && (t.status === 'ready' || t.status === 'failed' || t.status === 'detached'));
+            $('start-all').classList.toggle('is-disabled', !tasks.some(t => t.blob && (t.status === 'ready' || t.status === 'failed' || t.status === 'detached')));
+            $('start-all').setAttribute('aria-disabled', $('start-all').classList.contains('is-disabled') ? 'true' : 'false');
         }
 
         function etaText(t) {
@@ -1662,11 +3503,8 @@
         function renderDetail() {
             const t = current ? task(current) : null;
             const panel = $('task-detail');
-            if (!t) {
-                panel.classList.remove('show');
-                return;
-            }
-            panel.classList.add('show');
+            if (panel) panel.classList.toggle('show', !!t);
+            if (!t) return;
             $('detail-name').textContent = t.name;
             $('task-id-display').textContent = t.taskId || '-';
             const badge = $('status-badge');
@@ -1685,7 +3523,7 @@
             const downloadable = t.taskId && (t.status === 'completed' || (t.status === 'failed' && t.logResult));
             $('download-section').style.display = downloadable ? 'block' : 'none';
             if (downloadable) {
-                $('download-icon').className = isLog ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+                $('download-icon').className = isLog ? 'fas fa-exclamation-circle' : 'fas fa-circle-check';
                 $('download-icon').style.color = isLog ? '#dc3545' : '#28a745';
                 $('download-state').textContent = isLog ? '翻译失败，只有日志可下载' : '任务完成';
                 $('download-filename').textContent = (isLog ? '下载日志 ' : '下载 ') + (t.filename || (isLog ? '日志文件' : '结果文件'));
@@ -1694,6 +3532,7 @@
 
         function render() {
             renderTable();
+            渲染图标();
             renderStats();
             renderDetail();
         }
@@ -1735,10 +3574,10 @@
             return f.size > MAX_MB * 1024 * 1024;
         }
 
-        function warnTooBig(list) {
+function warnTooBig(list) {
             hint('超过 ' + MAX_MB + 'MB 的文件请上传到 QQ 群 606269975');
-            alert('以下文件超过 ' + MAX_MB + 'MB，网页上传不了\n（Cloudflare 免费版单请求上限 100MB）\n\n'
-                + list.join('\n') + '\n\n请把文件上传到 QQ 群 606269975。');
+            提示窗口('以下文件超过 ' + MAX_MB + 'MB，网页上传不了\n（Cloudflare 免费版单请求上限 100MB）\n\n'
+                + list.join('\n') + '\n\n请把文件上传到 QQ 群 606269975。', { 标题: '文件太大', 图标: 'triangle-exclamation' });
         }
 
         function addFiles(files) {
@@ -1751,7 +3590,7 @@
                 }
                 const dup = tasks.some(t => t.name === f.name && t.size === f.size && ENDED.indexOf(t.status) < 0);
                 if (dup) return;
-                tasks.push({
+                const 新任务 = {
                     id: nextId(),
                     name: f.name,
                     size: f.size,
@@ -1765,7 +3604,9 @@
                     msg: '',
                     queued: false,
                     at: Date.now()
-                });
+                };
+                tasks.push(新任务);
+                存文件(新任务.id, f);   // 文件本体进浏览器缓存，刷新后还能直接重试
                 added += 1;
             });
             if (big.length) warnTooBig(big);
@@ -1779,10 +3620,13 @@
             hint('已添加 ' + added + ' 个文件');
         }
 
+        // 点了「重选并重试」的任务 id：选完文件自动接着重试
+        let 待重选文件 = null;
+
         function pickFile(t) {
             const input = document.createElement('input');
             input.type = 'file';
-            input.accept = '.jar,.zip,.lang,.json,.mrpack,.dll,.zs,.txt';
+            input.accept = '.jar,.zip,.7z,.rar,.tar,.gz,.tgz,.xz,.mrpack,.mcpack,.mcaddon,.lang,.json,.dll,.zs,.txt';
             input.onchange = () => {
                 if (!input.files.length) return;
                 const f = input.files[0];
@@ -1797,8 +3641,13 @@
                 t.progress = 0;
                 t.err = '';
                 t.msg = '';
+                存文件(t.id, f);
                 saveTasks();
                 render();
+                if (待重选文件 === t.id) {   // 从「重选并重试」进来的：选完就直接开跑
+                    待重选文件 = null;
+                    enqueue(t.id);
+                }
             };
             input.click();
         }
@@ -1845,74 +3694,112 @@
             }
             t.queued = false;
             t.status = 'uploading';
+            t.compressing = true;
             t.progress = 0;
             t.up = 0;
             t.err = '';
-            t.msg = '上传中';
+            t.msg = '压缩中';
             t.speed = 0;
             t.upStart = Date.now();
             t.at = Date.now();
             saveTasks();
             render();
 
-            const fd = new FormData();
-            fd.append('file0', t.blob);
-            fd.append('file_name0', t.name);
-            const ref = refFile;
-            if (ref) {
-                fd.append('file1', ref);
-                fd.append('file_name1', ref.name);
-            }
-
-            const xhr = new XMLHttpRequest();
-            t.xhr = xhr;
-            xhr.open('POST', c.url + '/translate', true);
-            xhr.setRequestHeader('Authorization', 'Bearer ' + c.key);
-            xhr.upload.onprogress = e => {
-                if (!e.lengthComputable) return;
-                t.up = Math.round(e.loaded / e.total * 100);
-                t.progress = Math.round(t.up * 0.1);
-                const secs = (Date.now() - t.upStart) / 1000;
-                t.speed = secs > 0.2 ? e.loaded / secs : 0;
-                t.msg = '上传中 ' + t.up + '%' + (t.speed ? ' · ' + humanSpeed(t.speed) : '');
+            // 新接口：上传体是 zstd 流（服务端流式解压），先本地压缩再发 multipart
+            const 参考文件 = refFile;
+            Promise.all([zipUpload(t.blob), 参考文件 ? zipUpload(参考文件) : Promise.resolve(null)]).then(([主体, 参考]) => {
+                if (t.status !== 'uploading') return;
+                t.compressing = false;
+                t.msg = '上传中';
                 patchRow(t);
-            };
-            xhr.onload = () => {
-                let data = null;
-                try { data = JSON.parse(xhr.responseText); } catch (e) {}
-                if (xhr.status >= 200 && xhr.status < 300 && data && data.status !== 'success') {
-                    t.taskId = data.task_id;
-                    t.status = 'queued';
-                    t.progress = 10;
-                    t.msg = '排队中';
-                } else {
+
+                const fd = new FormData();
+                fd.append('File0', 主体, t.name + '.zst');
+                fd.append('FileName0', t.name);
+                fd.append('Config', JSON.stringify(请求配置));
+                if (参考) {
+                    fd.append('File1', 参考, 参考文件.name + '.zst');
+                    fd.append('FileName1', 参考文件.name);
+                }
+
+                const xhr = new XMLHttpRequest();
+                t.xhr = xhr;
+                xhr.open('POST', c.url + API_ENDPOINT, true);
+                xhr.setRequestHeader('Authorization', 'Bearer ' + c.key);
+                xhr.upload.onprogress = e => {
+                    if (!e.lengthComputable) return;
+                    t.up = Math.round(e.loaded / e.total * 100);
+                    t.progress = Math.round(t.up * 0.1);
+                    const secs = (Date.now() - t.upStart) / 1000;
+                    t.speed = secs > 0.2 ? e.loaded / secs : 0;
+                    t.msg = '上传中 ' + t.up + '%' + (t.speed ? ' · ' + humanSpeed(t.speed) : '');
+                    patchRow(t);
+                };
+                xhr.onload = () => {
+                    let data = null;
+                    try { data = JSON.parse(xhr.responseText); } catch (e) {}
+                    if (xhr.status >= 200 && xhr.status < 300 && data && data.task_id) {
+                        t.taskId = data.task_id;
+                        t.status = 'queued';
+                        t.progress = 10;
+                        t.msg = '排队中';
+                    } else if (xhr.status >= 200 && xhr.status < 300 && data && data.status === 'success') {
+                        // 服务端同文件去重：任务已建但不会产出结果
+                        t.taskId = data.task_id || null;
+                        t.status = 'failed';
+                        t.progress = 100;
+                        t.err = data.message || '服务端判定该文件已翻译过';
+                        t.msg = '';
+                    } else {
+                        t.status = 'failed';
+                        t.progress = 100;
+                        t.err = apiError(data, xhr);
+                        if (xhr.status === 401 || xhr.status === 403) {
+                            t.err += '（到侧栏「Key 管理」填入或生成一个服务端存在的用户密钥）';
+                            hint('密钥被拒绝：401/403，请到「Key 管理」处理');
+                        }
+                        t.msg = '';
+                    }
+                    saveTasks();
+                    render();
+                    watch();
+                    schedule();
+                };
+                xhr.onerror = () => {
                     t.status = 'failed';
                     t.progress = 100;
-                    t.err = (data && (data.message || data.error)) || ('提交失败 HTTP ' + xhr.status);
+                    t.err = '上传失败，检查 API 地址和跨域设置';
                     t.msg = '';
-                }
-                saveTasks();
-                render();
-                watch();
-                schedule();
-            };
-            xhr.onerror = () => {
+                    saveTasks();
+                    render();
+                    schedule();
+                };
+                xhr.onabort = () => {
+                    t.status = 'ready';
+                    t.progress = 0;
+                    t.msg = '已取消上传';
+                    saveTasks();
+                    render();
+                };
+                xhr.send(fd);
+            }).catch(e => {
+                t.compressing = false;
                 t.status = 'failed';
                 t.progress = 100;
-                t.err = '上传失败，检查 API 地址和跨域设置';
+                t.err = e && e.message ? e.message : '压缩失败';
                 t.msg = '';
                 saveTasks();
                 render();
                 schedule();
-            };
-            xhr.onabort = () => {
-                t.status = 'ready';
-                t.progress = 0;
-                t.msg = '已取消上传';
-                saveTasks();
-                render();
-            };
-            xhr.send(fd);
+            });
+        }
+
+        function apiError(data, xhr) {
+            if (!data) return '提交失败 HTTP ' + xhr.status;
+            const 详情 = data.detail || data.message || data.error;
+            if (typeof 详情 === 'string' && 详情) return 详情;
+            if (Array.isArray(详情) && 详情.length) return 详情.map(d => d.msg || JSON.stringify(d)).join('；');
+            return '提交失败 HTTP ' + xhr.status;
         }
 
         function watch() {
@@ -1952,7 +3839,8 @@
                     t.taskId = null;
                     finished = true;
                 } else if (!res.ok) {
-                    t.msg = '状态查询失败 HTTP ' + res.status;
+                    const 详情 = await res.json().catch(() => null);
+                    t.msg = (详情 && typeof 详情.detail === 'string' ? 详情.detail + ' ' : '') + '状态查询失败 HTTP ' + res.status;
                 } else {
                     const data = await res.json();
                     if (data.error) {
@@ -1967,6 +3855,7 @@
                         t.filename = file;
                         t.logResult = /\.log$/i.test(file);
                         t.status = t.logResult ? 'failed' : 'completed';
+                        if (t.status === 'completed') 删文件(t.id);   // 已经成功，文件不用再占浏览器空间
                         t.err = t.logResult ? '翻译失败（服务端只返回了日志文件，没有结果文件）' : '';
                         t.msg = t.logResult ? '失败：只有日志可下载' : '已完成';
                         finished = true;
@@ -2053,11 +3942,16 @@
             }
         }
 
-        function remove(id, quiet) {
+async function remove(id, quiet) {
             const t = task(id);
             if (!t) return;
-            if (!quiet && !confirm('从列表移除「' + t.name + '」？服务器上的翻译不受影响')) return;
+            if (!quiet) {
+                 const 确认移除 = await 询问('从列表移除「' + t.name + '」？\n服务器上的翻译不受影响。',
+                      { 标题: '移除任务', 图标: 'trash', 确定文本: '移除' });
+                 if (!确认移除) return;
+            }
             if (t.xhr && t.status === 'uploading') t.xhr.abort();
+            删文件(id);
             tasks = tasks.filter(x => x.id !== id);
             if (current === id) {
                 current = null;
@@ -2105,22 +3999,109 @@
             hint(count ? '已加入 ' + count + ' 个任务' : '没有可以开始的任务');
         }
 
+        // 绑定辅助：元素不存在就跳过，避免一个缺失的 id 让整个初始化中断
+        // （曾经的故障：key-test 随卡片一起删掉后，$('key-test') 为 null，
+        //   addEventListener 抛错 → DOMContentLoaded 后半段不执行 → 全页按钮都没绑上。）
+        function 绑定点击(id, 处理) {
+            const 元素 = $(id);
+            if (!元素) {
+                const 提示 = '缺少元素，已跳过绑定: ' + id;
+                window.__页面诊断.绑定情况.push(提示);
+                console.warn('[webui] ' + 提示);
+                return null;
+            }
+            元素.addEventListener('click', 处理);
+            window.__页面诊断.绑定情况.push(id);
+            return 元素;
+        }
+
+        function 绑定事件(元素, 事件名, 处理, 选项) {
+            if (!元素) return;
+            元素.addEventListener(事件名, 处理, 选项);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            if (是否维护中()) { 进入维护模式(); return; }
             loadCfg();
             loadTasks();
+            恢复本地文件();
+            读配置();
+            刷新配置页();
 
-            ['api-url', 'api-key', 'concurrency'].forEach(id => {
-                $(id).addEventListener('blur', saveCfg);
-                $(id).addEventListener('change', saveCfg);
+            ['api-url', 'api-key', 'api-admin-key', 'concurrency'].forEach(id => {
+                绑定事件($(id), 'blur', saveCfg);
+                绑定事件($(id), 'change', saveCfg);
             });
 
-            $('add-files').addEventListener('click', () => $('file0').click());
-            $('file0').addEventListener('change', e => {
+            绑定点击('config-save', 保存配置);
+            绑定点击('config-reset', () => { 写配置(配置默认); 配置提示('已恢复默认：' + 配置默认.LANGUAGE_INPUT + ' → ' + 配置默认.LANGUAGE_OUTPUT, 'ok'); });
+            挂语言选择器('config-lang-in', 'lang-menu-in');
+            挂语言选择器('config-lang-out', 'lang-menu-out');
+            绑定事件($('config-lang-in'), 'input', 快捷输入已改动);
+            绑定事件($('config-lang-out'), 'input', 快捷输入已改动);
+            绑定事件($('config-lang-model'), 'input', 快捷输入已改动);
+            绑定事件($('config-lang-in'), 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); 保存配置(); } });
+            绑定事件($('config-lang-out'), 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); 保存配置(); } });
+            绑定事件($('config-lang-model'), 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); 保存配置(); } });
+            绑定事件($('config-editor-input'), 'input', 编辑器已改动);
+            绑定事件($('config-editor-input'), 'scroll', () => { const 行号 = $('config-gutter'); if (行号) 行号.scrollTop = $('config-editor-input').scrollTop; });
+            ['click', 'keyup', 'select'].forEach(事件名 => {
+                绑定事件($('config-editor-input'), 事件名, () => 更新编辑器状态());
+            });
+            绑定事件($('config-editor-input'), 'keydown', e => {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); 保存配置(); return; }
+                if (e.key === 'Tab') {   // 和编辑器一样：Tab 插两个空格，不跳走焦点
+                    e.preventDefault();
+                    const 编辑 = e.target;
+                    const 起 = 编辑.selectionStart, 止 = 编辑.selectionEnd;
+                    编辑.value = 编辑.value.slice(0, 起) + '  ' + 编辑.value.slice(止);
+                    编辑.selectionStart = 编辑.selectionEnd = 起 + 2;
+                    编辑器已改动();
+                }
+            });
+            绑定点击('key-reload', () => 拉取密钥列表());
+            绑定点击('key-create-open', 打开创建弹窗);
+            绑定点击('key-create-close', 关闭创建弹窗);
+            绑定点击('key-create-cancel', 关闭创建弹窗);
+            绑定点击('confirm-ok', () => { if (确认回调) 确认回调(true); });
+            绑定点击('confirm-cancel', () => { if (确认回调) 确认回调(false); });
+            绑定事件($('confirm-modal'), 'click', e => {
+                if (e.target === $('confirm-modal') && 确认回调) 确认回调(false);
+            });
+            绑定点击('key-create-submit', 提交创建);
+            绑定事件($('key-create-modal'), 'click', e => {
+                if (e.target === $('key-create-modal')) 关闭创建弹窗();
+            });
+            绑定事件($('key-create-note'), 'keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); 提交创建(); }
+            });
+            // 兜底：Key 管理面板里任何按钮点击、任何输入框回车都不允许触发页面导航
+            绑定事件($('key-page'), 'click', e => {
+                const 按钮 = e.target.closest('.btn, .side-item');
+                if (按钮 && 按钮.type !== 'button') { e.preventDefault(); 按钮.type = 'button'; }
+            }, true);
+            绑定事件($('key-page'), 'keydown', e => {
+                if (e.key === 'Enter' && !e.target.closest('textarea')) e.preventDefault();
+            });
+            // 顺手清掉旧版本留在 sessionStorage 里的密钥输出存档，避免老内容残留
+            try { sessionStorage.removeItem('keyout:key-user-out'); sessionStorage.removeItem('keyout:key-admin-out'); } catch (e) {}
+            监视注入表单();
+
+            // 打开 Key 页时自动拉一次列表（有管理员密钥才发得出去）
+            document.querySelectorAll('.side-item[data-view="keys"]').forEach(入口 => {
+                绑定事件(入口, 'click', () => {
+                    if (cfg().url && cfg().admin) 拉取密钥列表();
+                });
+            });
+
+            绑定事件($('add-files'), 'click', () => $('file0').click());
+            绑定事件($('file0'), 'change', e => {
                 addFiles(e.target.files);
                 e.target.value = '';
             });
 
             const drop0 = $('file0-drop');
+            if (drop0) {
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
                 drop0.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); }, false);
             });
@@ -2139,7 +4120,10 @@
                 if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
             });
 
+            }
+
             const drop1 = $('file1-drop');
+            if (drop1) {
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
                 drop1.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); }, false);
             });
@@ -2152,18 +4136,19 @@
             drop1.addEventListener('drop', e => {
                 if (e.dataTransfer.files.length) setRef(e.dataTransfer.files[0]);
             });
+            }
 
-            $('file1').addEventListener('change', () => {
+            绑定事件($('file1'), 'change', () => {
                 if ($('file1').files.length) setRef($('file1').files[0]);
             });
-            $('file1-clear').addEventListener('click', e => {
+            绑定事件($('file1-clear'), 'click', e => {
                 e.stopPropagation();
                 clearFile('file1');
             });
 
-            $('start-all').addEventListener('click', startAll);
+            绑定事件($('start-all'), 'click', startAll);
 
-            $('stop-all').addEventListener('click', () => {
+            绑定事件($('stop-all'), 'click', () => {
                 let count = 0;
                 tasks.forEach(t => {
                     if (ACTIVE.indexOf(t.status) >= 0) {
@@ -2179,8 +4164,9 @@
                 hint(count ? '已停止跟踪 ' + count + ' 个任务' : '没有进行中的任务');
             });
 
-            $('clear-finished').addEventListener('click', () => {
+            绑定事件($('clear-finished'), 'click', () => {
                 const before = tasks.length;
+                删文件(tasks.filter(t => ENDED.indexOf(t.status) >= 0).map(t => t.id));
                 tasks = tasks.filter(t => ENDED.indexOf(t.status) < 0);
                 if (current && !task(current)) {
                     current = null;
@@ -2191,9 +4177,12 @@
                 hint('已清除 ' + (before - tasks.length) + ' 个已结束任务');
             });
 
-            $('clear-all').addEventListener('click', () => {
-                if (!tasks.length) return;
-                if (!confirm('清空任务列表？服务器上的翻译不受影响')) return;
+绑定事件($('clear-all'), 'click', async () => {
+               if (!tasks.length) return;
+               const 确认清空 = await 询问('确定清空任务列表吗？\n服务器上的翻译不受影响。',
+                    { 标题: '清空列表', 图标: 'broom', 确定文本: '清空' });
+               if (!确认清空) return;
+                删文件(tasks.map(t => t.id));
                 tasks = [];
                 current = null;
                 autoLog(false);
@@ -2202,13 +4191,13 @@
                 watch();
             });
 
-            $('task-list').addEventListener('click', e => {
+            绑定事件($('task-list'), 'click', e => {
                 const tr = e.target.closest('tr[data-id]');
                 if (!tr) return;
                 const id = tr.dataset.id;
                 const t = task(id);
                 if (!t) return;
-                const btn = e.target.closest('button[data-act]');
+                const btn = e.target.closest('[data-act]');
                 if (!btn) {
                     select(id);
                     return;
@@ -2217,6 +4206,12 @@
                 const act = btn.dataset.act;
                 if (act === 'start' || act === 'retry') {
                     select(id);
+                    if (!t.blob) {
+                        待重选文件 = t.id;
+                        hint('浏览器里没找到这个任务的文件，重新选一次就会自动重试');
+                        pickFile(t);
+                        return;
+                    }
                     enqueue(id);
                 } else if (act === 'pick') {
                     select(id);
@@ -2239,7 +4234,7 @@
                 }
             });
 
-            $('cancel-task').addEventListener('click', () => {
+            绑定事件($('cancel-task'), 'click', () => {
                 const t = current ? task(current) : null;
                 if (!t) {
                     $('task-detail').classList.remove('show');
@@ -2254,21 +4249,21 @@
                 }
             });
 
-            $('download-btn').addEventListener('click', () => {
+            绑定事件($('download-btn'), 'click', () => {
                 const t = current ? task(current) : null;
                 if (t) download(t);
             });
 
-            $('refresh-logs').addEventListener('click', async () => {
+            绑定事件($('refresh-logs'), 'click', async () => {
                 await loadLog(current ? task(current) : null);
                 hint('日志已刷新');
             });
 
-            $('clear-logs').addEventListener('click', () => {
+            绑定事件($('clear-logs'), 'click', () => {
                 $('log-container').textContent = '[已清空显示]';
             });
 
-            $('auto-refresh-toggle').addEventListener('click', () => {
+            绑定事件($('auto-refresh-toggle'), 'click', () => {
                 if (logTimer) {
                     autoLog(false);
                 } else if (current) {
@@ -2280,37 +4275,43 @@
             });
 
             const SIDE_KEY = 'minecraft_translator_sidebar';
-            document.body.classList.toggle('side-open', localStorage.getItem(SIDE_KEY) === '1');
-            $('toggle-sidebar').addEventListener('click', () => {
+            let 侧栏展开 = false;
+            try { 侧栏展开 = localStorage.getItem(SIDE_KEY) === '1'; } catch (e) {}
+            document.body.classList.toggle('side-open', 侧栏展开);
+            绑定事件($('toggle-sidebar'), 'click', () => {
                 const open = !document.body.classList.contains('side-open');
                 document.body.classList.toggle('side-open', open);
                 try { localStorage.setItem(SIDE_KEY, open ? '1' : '0'); } catch (e) {}
             });
 
-            $('open-settings').addEventListener('click', () => $('settings-modal').classList.add('show'));
-            $('close-settings').addEventListener('click', () => $('settings-modal').classList.remove('show'));
-            $('save-settings').addEventListener('click', () => {
+            绑定事件($('open-settings'), 'click', () => $('settings-modal').classList.add('show'));
+            绑定点击('run-diag', () => 自检(true));
+            绑定事件($('close-settings'), 'click', () => $('settings-modal').classList.remove('show'));
+            绑定事件($('save-settings'), 'click', () => {
                 saveCfg();
                 $('settings-modal').classList.remove('show');
             });
-            $('settings-modal').addEventListener('click', e => {
+            绑定事件($('settings-modal'), 'click', e => {
                 if (e.target === $('settings-modal')) $('settings-modal').classList.remove('show');
             });
             document.addEventListener('keydown', e => {
                 if (e.key === 'Escape') {
+                    if (确认回调) { 确认回调(false); return; }
                     $('settings-modal').classList.remove('show');
                     $('donate-modal').classList.remove('show');
                 }
             });
 
-            $('open-donate').addEventListener('click', () => $('donate-modal').classList.add('show'));
-            $('close-donate').addEventListener('click', () => $('donate-modal').classList.remove('show'));
-            $('donate-modal').addEventListener('click', e => {
+            绑定事件($('open-donate'), 'click', () => $('donate-modal').classList.add('show'));
+            绑定事件($('close-donate'), 'click', () => $('donate-modal').classList.remove('show'));
+            绑定事件($('donate-modal'), 'click', e => {
                 if (e.target === $('donate-modal')) $('donate-modal').classList.remove('show');
             });
 
             function showView(name) {
                 $('view-work').style.display = name === 'work' ? '' : 'none';
+                $('view-keys').style.display = name === 'keys' ? '' : 'none';
+                $('view-config').style.display = name === 'config' ? '' : 'none';
                 $('view-about').style.display = name === 'about' ? '' : 'none';
             }
 
@@ -2328,13 +4329,32 @@
             const running = tasks.find(t => t.taskId && (t.status === 'queued' || t.status === 'processing'));
             if (running) select(running.id);
             watch();
+
+            // 初始化完成：记录状态并自检一次（只在发现问题时把结果画在页面顶部）
+            window.__页面诊断.初始化 = '完成（' + new Date().toTimeString().slice(0, 8) + '）';
+            自检().catch(e => 显示横幅('自检本身出错', String(e), 'bad'));
         });
+
+        // 兜底：如果 3 秒后初始化仍未完成，说明脚本中途挂了，直接把线索画到页面上
+        setTimeout(() => {
+            if (window.__页面诊断.初始化 === '未开始') {
+                显示横幅('页面初始化没有完成（按钮不会有反应）',
+                    '脚本已加载但 DOMContentLoaded 里的初始化没有跑完。\n'
+                    + '已记录的错误: ' + (window.__页面诊断.错误.join(' ／ ') || '（没有捕获到异常）') + '\n'
+                    + '绑定情况: ' + (window.__页面诊断.绑定情况.join(' | ') || '无') + '\n'
+                    + '点右上角关闭后可以继续使用；请把这段文字发给我。', 'bad');
+            }
+        }, 3000);
+
+        // 暴露给控制台/书签：手动跑一次自检
+        window.页面自检 = 自检;
 
         function clearFile(fileId) {
             const input = $(fileId);
             if (!input) return;
             input.value = '';
-            refFile = null;
+            // 只有参考文件才影响全局 refFile；file0 是排队上传的文件，不该被清空参考状态
+            if (fileId === 'file1') refFile = null;
             const zone = $(fileId + '-drop');
             if (zone) zone.classList.remove('chosen');
             const info = $(fileId + '-info');
