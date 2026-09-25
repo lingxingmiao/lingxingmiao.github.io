@@ -839,6 +839,39 @@
             color: var(--primary);
         }
 
+        /* 主页面标题行：左边标题、右边语言快捷设置 */
+        .work-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px 18px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .work-head h2 {
+            margin: 0;
+        }
+
+        .work-head .config-quick {
+            margin-bottom: 0;
+            font-size: 0.88rem;
+        }
+
+        .work-lang-tip {
+            color: var(--gray);
+            font-size: 0.82rem;
+            max-width: 320px;
+        }
+
+        .work-lang-tip.ok {
+            color: #1b7f3b;
+        }
+
+        .work-lang-tip.bad {
+            color: #dc3545;
+        }
+
         /* 语言下拉：原生 datalist 会按输入框内容过滤（框里有 en_us 就只有 en_us），所以自己画 */
         .lang-field {
             position: relative;
@@ -1701,7 +1734,47 @@
 
                     <div id="view-work">
 <div class="tab-content active" style="border-radius: 4px;">
-            <h2><i class="fas fa-file-import"></i> 上传待翻译文件</h2>
+            <div class="work-head">
+                <h2><i class="fas fa-file-import"></i> 上传待翻译文件</h2>
+
+                <div class="config-quick">
+                    <span class="config-quick-label"><i class="fas fa-bolt"></i> 语言</span>
+                    <div class="lang-field">
+                        <input type="text" id="config-lang-in" class="config-quick-input" placeholder="en_us" autocomplete="off" spellcheck="false" title="输入语言 LANGUAGE_INPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-in">
+                        <div class="lang-menu" id="lang-menu-in" role="listbox" aria-label="输入语言候选"></div>
+                    </div>
+                    <i class="fas fa-arrow-right config-quick-arrow"></i>
+                    <div class="lang-field">
+                        <input type="text" id="config-lang-out" class="config-quick-input" placeholder="zh_cn" autocomplete="off" spellcheck="false" title="输出语言 LANGUAGE_OUTPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-out">
+                        <div class="lang-menu" id="lang-menu-out" role="listbox" aria-label="输出语言候选"></div>
+                    </div>
+                    <a href="javascript:void(0)" type="button" role="button" draggable="false" class="btn btn-secondary btn-sm" id="work-lang-save" title="把语言写进配置并立即生效（等同配置器里的「保存并使用」）"><i class="fas fa-floppy-disk"></i> 应用</a>
+                    <span class="work-lang-tip" id="work-lang-tip"></span>
+                </div>
+            </div>
+
+            <datalist id="config-lang-list">
+                <option value="en_us">en_us 英语（美国）</option>
+                <option value="en_gb">en_gb 英语（英国）</option>
+                <option value="zh_cn">zh_cn 简体中文</option>
+                <option value="zh_tw">zh_tw 繁体中文</option>
+                <option value="ja_jp">ja_jp 日语</option>
+                <option value="ko_kr">ko_kr 韩语</option>
+                <option value="ru_ru">ru_ru 俄语</option>
+                <option value="de_de">de_de 德语</option>
+                <option value="fr_fr">fr_fr 法语</option>
+                <option value="es_es">es_es 西班牙语</option>
+                <option value="pt_br">pt_br 葡萄牙语（巴西）</option>
+                <option value="it_it">it_it 意大利语</option>
+                <option value="pl_pl">pl_pl 波兰语</option>
+                <option value="tr_tr">tr_tr 土耳其语</option>
+                <option value="uk_ua">uk_ua 乌克兰语</option>
+                <option value="vi_vn">vi_vn 越南语</option>
+                <option value="th_th">th_th 泰语</option>
+                <option value="id_id">id_id 印尼语</option>
+                <option value="ar_sa">ar_sa 阿拉伯语</option>
+                <option value="nl_nl">nl_nl 荷兰语</option>
+            </datalist>
 
             <div class="upload-row">
                 <label class="file-upload" id="file0-drop" for="file0">
@@ -1851,19 +1924,6 @@
                 <div class="tab-content active" style="border-radius: 4px;" id="config-page">
                     <h2 class="page-title"><i class="fas fa-code"></i> 配置器</h2>
 
-                    <div class="config-quick">
-                        <span class="config-quick-label"><i class="fas fa-bolt"></i> 快捷设置</span>
-                        <div class="lang-field">
-                            <input type="text" id="config-lang-in" class="config-quick-input" placeholder="en_us" autocomplete="off" spellcheck="false" title="输入语言 LANGUAGE_INPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-in">
-                            <div class="lang-menu" id="lang-menu-in" role="listbox" aria-label="输入语言候选"></div>
-                        </div>
-                        <i class="fas fa-arrow-right config-quick-arrow"></i>
-                        <div class="lang-field">
-                            <input type="text" id="config-lang-out" class="config-quick-input" placeholder="zh_cn" autocomplete="off" spellcheck="false" title="输出语言 LANGUAGE_OUTPUT" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="lang-menu-out">
-                            <div class="lang-menu" id="lang-menu-out" role="listbox" aria-label="输出语言候选"></div>
-                        </div>
-                    </div>
-
                     <div class="vsc-editor" id="config-editor">
                         <div class="vsc-titlebar">
                             <span class="vsc-tab active"><i class="fas fa-file-code"></i> config.json</span>
@@ -1882,28 +1942,6 @@
                         </div>
                     </div>
 
-                    <datalist id="config-lang-list">
-                        <option value="en_us">en_us 英语（美国）</option>
-                        <option value="en_gb">en_gb 英语（英国）</option>
-                        <option value="zh_cn">zh_cn 简体中文</option>
-                        <option value="zh_tw">zh_tw 繁体中文</option>
-                        <option value="ja_jp">ja_jp 日语</option>
-                        <option value="ko_kr">ko_kr 韩语</option>
-                        <option value="ru_ru">ru_ru 俄语</option>
-                        <option value="de_de">de_de 德语</option>
-                        <option value="fr_fr">fr_fr 法语</option>
-                        <option value="es_es">es_es 西班牙语</option>
-                        <option value="pt_br">pt_br 葡萄牙语（巴西）</option>
-                        <option value="it_it">it_it 意大利语</option>
-                        <option value="pl_pl">pl_pl 波兰语</option>
-                        <option value="tr_tr">tr_tr 土耳其语</option>
-                        <option value="uk_ua">uk_ua 乌克兰语</option>
-                        <option value="vi_vn">vi_vn 越南语</option>
-                        <option value="th_th">th_th 泰语</option>
-                        <option value="id_id">id_id 印尼语</option>
-                        <option value="ar_sa">ar_sa 阿拉伯语</option>
-                        <option value="nl_nl">nl_nl 荷兰语</option>
-                    </datalist>
                 </div>
             </div>
 
@@ -2044,7 +2082,7 @@
                 服务质量不因是否赞助而改变，也不会影响其他用户。<br>
                 本站与公益 API 依旧禁止商用与转发。
             </p>
-            <p class="modal-tip">赞助仅用于分摊 AI 接口与域名的开销（约 20 元/月）。</p>
+            <p class="modal-tip">赞助仅用于分摊 AI 接口与域名的开销（约 25 元/月）。</p>
         </div>
     </div>
 
@@ -2297,6 +2335,7 @@
                           'start-all','stop-all','clear-finished','clear-all','task-list','task-hint','view-work','view-keys','view-about',
                           'key-page','key-reload','key-create-open','key-create-modal','key-create-note','key-create-submit','key-table-body','key-table-hint',
                           'config-page','config-lang-in','config-lang-out','config-save','config-reset','lang-menu-in','lang-menu-out',
+                          'work-lang-save','work-lang-tip',
                           'config-editor','config-editor-input','config-gutter','config-status',
                           'settings-modal','open-settings','donate-modal','open-donate'];
             const 缺失 = 必需.filter(id => !$(id));
@@ -2599,6 +2638,11 @@
             if (条) {
                 条.className = 'vsc-statusbar' + (类型 ? ' ' + 类型 : '');
             }
+            const 主页提示 = $('work-lang-tip');
+            if (主页提示) {
+                主页提示.className = 'work-lang-tip' + (类型 ? ' ' + 类型 : '');
+                主页提示.textContent = 文本;
+            }
         }
 
         // 行号：跟着编辑器内容走
@@ -2691,7 +2735,7 @@
             编辑.value = JSON.stringify(从快捷输入生成配置());
             更新行号();
             const 结果 = 解析编辑器(true);
-            配置提示(结果 ? '已同步到编辑器，记得保存（Ctrl+S）' : '语言不能为空、也不能相同', 结果 ? '' : 'bad');
+            配置提示(结果 ? '已同步，点「应用」生效' : '语言不能为空、也不能相同', 结果 ? '' : 'bad');
             更新编辑器状态();
         }
 
@@ -3761,6 +3805,7 @@ async function remove(id, quiet) {
 
             绑定点击('config-save', 保存配置);
             绑定点击('config-reset', () => { 写配置(配置默认); 配置提示('已恢复默认：' + 配置默认.LANGUAGE_INPUT + ' → ' + 配置默认.LANGUAGE_OUTPUT, 'ok'); });
+            绑定点击('work-lang-save', 保存配置);
             挂语言选择器('config-lang-in', 'lang-menu-in');
             挂语言选择器('config-lang-out', 'lang-menu-out');
             绑定事件($('config-lang-in'), 'input', 快捷输入已改动);
