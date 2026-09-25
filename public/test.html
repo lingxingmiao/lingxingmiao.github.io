@@ -2061,14 +2061,14 @@
 
                     <h3>API</h3>
                     <p class="about-text">
-                        公益 API：<code>https://api.tanslamc.top</code>，密钥 <code>sk-123456</code>，
+                        公益 API：<code>https://api.tanslamc.top</code>，密钥 <code>sk-00ba6d14a5854e8799817e8b22a4393a274b80e8720747488f4243b6c313fcb3</code>，
                         请求格式与端点见仓库里的 <code>TranslatorAPI.py</code>。该 API 可自定义输出语言。
                     </p>
                     <p class="about-text" style="font-size: 0.86rem;">
                         上传接口为 <code>POST /network/transl</code>：请求体是 multipart，字段
                         <code>File0</code>（zstd 压缩后的流）、<code>FileName0</code>（原始文件名）、
                         <code>Config</code>（JSON，可含 <code>LANGUAGE_INPUT</code> / <code>LANGUAGE_OUTPUT</code> /
-                        <code>LANGUAGE_VARIANT</code> / <code>LANGUAGE</code>），可选 <code>File1</code> / <code>FileName1</code> 参考文件、
+                        <code>LANGUAGE_MODEL</code>（发给模型的语言说明，比如「文言文」）/ <code>LANGUAGE_VARIANT</code> / <code>LANGUAGE</code>），可选 <code>File1</code> / <code>FileName1</code> 参考文件、
                         <code>AllMode</code> 与 <code>ExportInspection</code> 开关；本页在本地把文件封装成标准 zstd 帧后再上传。
                     </p>
 
@@ -2125,7 +2125,7 @@
             </div>
             <div class="form-group">
                 <label for="api-key"><i class="fas fa-key"></i> API 密钥（用户密钥）</label>
-                <input type="text" id="api-key" class="form-control 遮蔽输入" placeholder="例如: sk-123456" value="sk-123456" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" name="api-key-hidden">
+                <input type="text" id="api-key" class="form-control 遮蔽输入" placeholder="例如: sk-xxxxxxxx" value="sk-00ba6d14a5854e8799817e8b22a4393a274b80e8720747488f4243b6c313fcb3" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" name="api-key-hidden">
             </div>
             <div class="form-group">
                 <label for="api-admin-key"><i class="fas fa-user-gear"></i> 管理员密钥（可选）</label>
