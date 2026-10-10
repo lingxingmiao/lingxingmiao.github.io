@@ -2074,7 +2074,15 @@
 
                     <h3>运营成本</h3>
                     <p class="about-text">
-                        AI 接口 + 域名，合计约 <strong>25 元/月</strong>，自费，没有广告也没有收费项目。
+                        全靠自费，没有广告也没有收费项目。成本按这个公式折算：
+                        <strong>月成本 = 当月 AI 接口消耗 + 域名年费 ÷ 12</strong>。
+                    </p>
+                    <ul class="about-list">
+                        <li>域名 <span class="cost-domain-year">39</span> 元/年，折合每月 <span class="cost-domain-month">3.25</span> 元。</li>
+                        <li>AI 接口按实际用量结算，<span class="cost-period">2026 年 9 月</span>消耗 <span class="cost-ai">15.88</span> 元。</li>
+                    </ul>
+                    <p class="about-text">
+                        该月合计 <span class="cost-ai">15.88</span> + <span class="cost-domain-month">3.25</span> = <strong class="cost-total">19.13</strong> 元/月。
                         就是个翻译网站，出错了这边看日志修。
                     </p>
                     <p style="text-align: right; font-size: 0.78rem; opacity: 0.5; margin-top: -6px;">
@@ -2158,7 +2166,7 @@
                 服务质量不因是否赞助而改变，也不会影响其他用户。<br>
                 本站与公益 API 依旧禁止商用与转发。
             </p>
-            <p class="modal-tip">赞助仅用于分摊 AI 接口与域名的开销（约 25 元/月）。</p>
+            <p class="modal-tip">赞助仅用于分摊 AI 接口与域名的开销（约 <span class="cost-total">19.13</span> 元/月）。</p>
         </div>
     </div>
 
@@ -2359,6 +2367,30 @@
 
         const $ = id => document.getElementById(id);
         const st = s => STATUS[s] || [s, 'status-idle'];
+
+        // ========== 运营成本 ==========
+        // 公式：月成本 = 当月 AI 接口消耗 + 域名年费 ÷ 12
+        // 以后只要改下面这两个数，页面上所有金额（含赞助弹窗）会一起变。
+        const 成本 = {
+            域名年费: 39,            // 元/年
+            AI消耗: 15.88,           // 当月 AI 接口实际消耗（元）
+            统计月份: '2026 年 9 月'  // AI 消耗所属月份
+        };
+
+        (function 渲染运营成本() {
+            const 金额 = n => {
+                const v = Math.round(n * 100) / 100;
+                return Number.isInteger(v) ? String(v) : v.toFixed(2);
+            };
+            const 域名月均 = 成本.域名年费 / 12;
+            const 合计 = 成本.AI消耗 + 域名月均;
+            const 填 = (选择器, 文本) => document.querySelectorAll(选择器).forEach(el => { el.textContent = 文本; });
+            填('.cost-domain-year', 金额(成本.域名年费));
+            填('.cost-domain-month', 金额(域名月均));
+            填('.cost-ai', 金额(成本.AI消耗));
+            填('.cost-period', 成本.统计月份);
+            填('.cost-total', 金额(合计));
+        })();
 
         // ========== 故障自曝 ==========
         // 页面出错时不要静默：把错误直接画在页面顶部，并提供一键自检，
