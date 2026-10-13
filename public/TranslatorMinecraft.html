@@ -1648,6 +1648,32 @@
             break-inside: avoid;
         }
 
+        .cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 0 12px;
+            font-size: 0.9rem;
+        }
+
+        .cost-table th,
+        .cost-table td {
+            border: 1px solid #e6ecf5;
+            padding: 6px 10px;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .cost-table th {
+            background: #eef2f7;
+            font-weight: 600;
+        }
+
+        .cost-table th:last-child,
+        .cost-table td:last-child {
+            text-align: right;
+            white-space: nowrap;
+        }
+
         .about-text {
             font-size: 0.95rem;
             line-height: 1.9;
@@ -2074,15 +2100,35 @@
 
                     <h3>运营成本</h3>
                     <p class="about-text">
-                        全靠自费，没有广告也没有收费项目。成本按这个公式折算：
+                        全靠自费，没有广告也没有收费项目。成本公式：
                         <strong>月成本 = 当月 AI 接口消耗 + 域名年费 ÷ 12</strong>。
                     </p>
-                    <ul class="about-list">
-                        <li>域名 <span class="cost-domain-year">39</span> 元/年，折合每月 <span class="cost-domain-month">3.25</span> 元。</li>
-                        <li>AI 接口按实际用量结算，<span class="cost-period">2026 年 9 月</span>消耗 <span class="cost-ai">15.88</span> 元。</li>
-                    </ul>
+                    <p class="about-text" style="margin-bottom: 4px;">
+                        <strong>AI 接口</strong>（按实际用量结算，逐期记录）：
+                    </p>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>统计区间</th>
+                                <th>AI 消耗</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2026 年 9 月</td>
+                                <td>15.88 元</td>
+                            </tr>
+                            <tr>
+                                <td>2026 年 10 月 1 日 00:00 ~ 10 月 13 日 13:00</td>
+                                <td>18.42 元</td>
+                            </tr>
+                        </tbody>
+                    </table>
                     <p class="about-text">
-                        该月合计 <span class="cost-ai">15.88</span> + <span class="cost-domain-month">3.25</span> = <strong class="cost-total">19.13</strong> 元/月。
+                        <strong>域名</strong>：39 元/年（年付），折合每月 3.25 元，不计入上表。
+                        所以月成本 = 上表当期 AI 消耗 + 3.25 元。
+                    </p>
+                    <p class="about-text">
                         就是个翻译网站，出错了这边看日志修。
                     </p>
                     <p style="text-align: right; font-size: 0.78rem; opacity: 0.5; margin-top: -6px;">
@@ -2166,7 +2212,7 @@
                 服务质量不因是否赞助而改变，也不会影响其他用户。<br>
                 本站与公益 API 依旧禁止商用与转发。
             </p>
-            <p class="modal-tip">赞助仅用于分摊 AI 接口与域名的开销（约 <span class="cost-total">19.13</span> 元/月）。</p>
+            <p class="modal-tip">赞助仅用于分摊 AI 接口与域名的开销（AI 按实际用量结算，域名 39 元/年；明细见「关于 → 运营成本」）。</p>
         </div>
     </div>
 
@@ -2367,30 +2413,6 @@
 
         const $ = id => document.getElementById(id);
         const st = s => STATUS[s] || [s, 'status-idle'];
-
-        // ========== 运营成本 ==========
-        // 公式：月成本 = 当月 AI 接口消耗 + 域名年费 ÷ 12
-        // 以后只要改下面这两个数，页面上所有金额（含赞助弹窗）会一起变。
-        const 成本 = {
-            域名年费: 39,            // 元/年
-            AI消耗: 15.88,           // 当月 AI 接口实际消耗（元）
-            统计月份: '2026 年 9 月'  // AI 消耗所属月份
-        };
-
-        (function 渲染运营成本() {
-            const 金额 = n => {
-                const v = Math.round(n * 100) / 100;
-                return Number.isInteger(v) ? String(v) : v.toFixed(2);
-            };
-            const 域名月均 = 成本.域名年费 / 12;
-            const 合计 = 成本.AI消耗 + 域名月均;
-            const 填 = (选择器, 文本) => document.querySelectorAll(选择器).forEach(el => { el.textContent = 文本; });
-            填('.cost-domain-year', 金额(成本.域名年费));
-            填('.cost-domain-month', 金额(域名月均));
-            填('.cost-ai', 金额(成本.AI消耗));
-            填('.cost-period', 成本.统计月份);
-            填('.cost-total', 金额(合计));
-        })();
 
         // ========== 故障自曝 ==========
         // 页面出错时不要静默：把错误直接画在页面顶部，并提供一键自检，
