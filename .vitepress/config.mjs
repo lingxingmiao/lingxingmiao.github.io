@@ -21,6 +21,11 @@ export default defineConfig({
       }
     ],
 
+    footer: {
+      message: '代码 AGPL-3.0 · 模型 CC BY-NC 4.0 · 帕鲁素材 © Pocketpair, Inc.',
+      copyright: '本页由 AI 编写'
+    },
+
     socialLinks: [
       { icon: 'github', link: 'https://github.com/lingxingmiao' }
     ]
