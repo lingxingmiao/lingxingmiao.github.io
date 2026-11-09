@@ -1840,7 +1840,8 @@
             <!-- 公告：只挂在主页面里，切到别的页面就不显示 -->
             <div class="status notice" id="maintenance-notice">
                 <p><strong>单个文件不能超过 95MB</strong>，更大的文件请发到 QQ 群 606269975。</p>
-                <p>当前翻译模型：Qwen3.8 Flash，翻译一个文件大约需要 8 秒 ~ 120 分钟，平均 60 秒以内。</p>
+                <p>由于 Qwen3.8 Flash 使用过多导致钱包蒸发，所以使用：Index-Translate-35B-A3B-Preview-APEX-I-Nano　平均速度：2条/秒</p>
+                <p>运行环境：P100 SXM2 ＋ 魔改 Strata　K 缓存：PolarQuant 4bit　V 缓存：LloydMax 2bit　3×16k Token 上下文窗口</p>
                 <p>有问题或建议：加 QQ 群 606269975（开发者 3254693390），或到 <a href="https://github.com/lingxingmiao/Translator-Minecraft/issues" target="_blank" rel="noopener">GitHub 提 Issue</a>，我很好说话的。</p>
             </div>
 <div class="tab-content active" style="border-radius: 4px;">
@@ -3856,20 +3857,31 @@ function warnTooBig(list) {
             return '提交失败 HTTP ' + xhr.status;
         }
 
+        // 状态轮询：只在有「排队/翻译中」的任务时转，任务一结束立刻停表
+        function stopPoll() {
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+            polling = {};   // 残留的“正在查询”标记一起清掉，免得下次误判
+        }
+
         function watch() {
             const need = tasks.some(t => t.taskId && (t.status === 'queued' || t.status === 'processing'));
             if (need && !pollTimer) {
                 pollTimer = setInterval(pollAll, 2000);
                 pollAll();
-            } else if (!need && pollTimer) {
-                clearInterval(pollTimer);
-                pollTimer = null;
+            } else if (!need) {
+                stopPoll();
             }
         }
 
         async function pollAll() {
             const c = cfg();
-            if (!c.url || !c.key) return;
+            if (!c.url || !c.key) {   // 没配置就别空转，等配置好再重新开表
+                stopPoll();
+                return;
+            }
             const list = tasks.filter(t => t.taskId && (t.status === 'queued' || t.status === 'processing') && !polling[t.taskId]);
             if (!list.length) {
                 watch();
@@ -3878,6 +3890,7 @@ function warnTooBig(list) {
             await Promise.all(list.map(t => poll(t, c)));
             saveTasks();
             watch();
+            if (!tasks.some(t => t.taskId && (t.status === 'queued' || t.status === 'processing'))) stopPoll();
         }
 
         async function poll(t, c) {
@@ -3885,14 +3898,21 @@ function warnTooBig(list) {
             polling[id] = true;
             const before = t.status;
             let finished = false;
+            let 查询失败 = false;
+            const 控制器 = typeof AbortController === 'function' ? new AbortController() : null;
+            const 超时表 = 控制器 ? setTimeout(() => 控制器.abort(), 20000) : null;
             try {
-                const res = await fetch(c.url + '/task/status/' + id, { headers: auth(c) });
+                const res = await fetch(c.url + '/task/status/' + id, {
+                    headers: auth(c),
+                    signal: 控制器 ? 控制器.signal : undefined
+                });
                 if (res.status === 404) {
                     t.status = 'expired';
                     t.msg = '服务器已清理该任务';
                     t.taskId = null;
                     finished = true;
                 } else if (!res.ok) {
+                    查询失败 = true;
                     const 详情 = await res.json().catch(() => null);
                     t.msg = (详情 && typeof 详情.detail === 'string' ? 详情.detail + ' ' : '') + '状态查询失败 HTTP ' + res.status;
                 } else {
@@ -3923,21 +3943,44 @@ function warnTooBig(list) {
                         t.progress = Number(data.progress) || 0;
                         t.status = t.progress > 0 ? 'processing' : 'queued';
                         t.msg = t.status === 'processing' ? '翻译中' : '排队中';
+                        t.查错 = 0;
                     }
                 }
             } catch (e) {
-                t.msg = '轮询出错: ' + e.message;
+                查询失败 = true;
+                t.msg = e && e.name === 'AbortError' ? '状态查询超时，稍后重试' : '轮询出错: ' + (e && e.message);
+            } finally {
+                if (超时表) clearTimeout(超时表);
             }
-            polling[id] = false;
+            if (查询失败) {   // 连续查不通就先停这只任务的轮询，别一直空转；点「恢复」可以继续
+                t.查错 = (t.查错 || 0) + 1;
+                if (t.查错 >= 3) {
+                    t.查错 = 0;
+                    t.status = 'detached';
+                    t.msg = '状态查询连续失败，已暂停轮询（点「恢复」可继续跟踪）';
+                    finished = true;
+                }
+            }
+            delete polling[id];
+            if (finished) {   // 任务结束：停掉详情页的日志自动刷新，并拉一次最终日志
+                if (t.id === current) {
+                    autoLog(false);
+                    loadLog(t, c);
+                }
+            }
             if (before !== t.status) render();
             else patchRow(t);
-            if (finished) schedule();
+            if (finished) {
+                schedule();
+                if (!tasks.some(x => x.taskId && (x.status === 'queued' || x.status === 'processing'))) stopPoll();
+            }
         }
 
         async function loadLog(t, c) {
             const box = $('log-container');
             if (!t || !t.taskId) {
                 box.textContent = '[INFO] 该任务暂无日志';
+                autoLog(false);
                 return;
             }
             c = c || cfg();
@@ -3951,6 +3994,8 @@ function warnTooBig(list) {
                     if (bottom) box.scrollTop = box.scrollHeight;
                 }
             } catch (e) {}
+            // 任务已经结束就别再每秒拉日志了（这里已经拉到最后一次）
+            if (ENDED.indexOf(t.status) >= 0) autoLog(false);
         }
 
         function autoLog(on) {
@@ -3959,7 +4004,9 @@ function warnTooBig(list) {
                 logTimer = null;
             }
             const btn = $('auto-refresh-toggle');
-            if (on && current) {
+            const t = current ? task(current) : null;
+            // 任务已结束、或者根本没选中任务，就不开自动刷新
+            if (on && t && t.taskId && ENDED.indexOf(t.status) < 0) {
                 logTimer = setInterval(() => loadLog(current ? task(current) : null), 1000);
                 btn.querySelector('i').className = 'fas fa-pause';
                 btn.querySelector('span').textContent = '暂停刷新';
