@@ -1648,32 +1648,6 @@
             break-inside: avoid;
         }
 
-        .cost-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 0 0 12px;
-            font-size: 0.9rem;
-        }
-
-        .cost-table th,
-        .cost-table td {
-            border: 1px solid #e6ecf5;
-            padding: 6px 10px;
-            text-align: left;
-            line-height: 1.6;
-        }
-
-        .cost-table th {
-            background: #eef2f7;
-            font-weight: 600;
-        }
-
-        .cost-table th:last-child,
-        .cost-table td:last-child {
-            text-align: right;
-            white-space: nowrap;
-        }
-
         .about-text {
             font-size: 0.95rem;
             line-height: 1.9;
@@ -1840,8 +1814,8 @@
             <!-- 公告：只挂在主页面里，切到别的页面就不显示 -->
             <div class="status notice" id="maintenance-notice">
                 <p><strong>单个文件不能超过 95MB</strong>，更大的文件请发到 QQ 群 606269975。</p>
-                <p>由于 Qwen3.8 Flash 使用过多导致钱包蒸发，所以使用：Index-Translate-35B-A3B-Preview-APEX-I-Nano　平均速度：2.2条/秒</p>
-                <p>运行环境：P100 SXM2 ＋ 魔改 Strata　K缓存：PolarQuant 4bit　V缓存：LloydMax 2bit　6×16kToken上下文窗口 MTP最大预测1Token</p>
+                <p>由于 Qwen3.8 Flash 使用过多导致钱包蒸发，所以使用：Index-Translate-35B-A3B-Preview-APEX-I-Nano　平均速度：2条/秒</p>
+                <p>运行环境：P100 SXM2 ＋ 魔改 Strata　K 缓存：PolarQuant 4bit　V 缓存：LloydMax 2bit　3×16k Token 上下文窗口</p>
                 <p>有问题或建议：加 QQ 群 606269975（开发者 3254693390），或到 <a href="https://github.com/lingxingmiao/Translator-Minecraft/issues" target="_blank" rel="noopener">GitHub 提 Issue</a>，我很好说话的。</p>
             </div>
 <div class="tab-content active" style="border-radius: 4px;">
@@ -2088,48 +2062,20 @@
 
                     <h3>API</h3>
                     <p class="about-text">
-                        公益 API：<code>https://api.tanslamc.top</code>，密钥 <code>sk-00ba6d14a5854e8799817e8b22a4393a274b80e8720747488f4243b6c313fcb3</code>，
+                        公益 API：<code>https://api.tanslamc.top</code>，密钥 <code>sk-123456</code>，
                         请求格式与端点见仓库里的 <code>TranslatorAPI.py</code>。该 API 可自定义输出语言。
                     </p>
                     <p class="about-text" style="font-size: 0.86rem;">
                         上传接口为 <code>POST /network/transl</code>：请求体是 multipart，字段
                         <code>File0</code>（zstd 压缩后的流）、<code>FileName0</code>（原始文件名）、
                         <code>Config</code>（JSON，可含 <code>LANGUAGE_INPUT</code> / <code>LANGUAGE_OUTPUT</code> /
-                        <code>LANGUAGE_MODEL</code>（发给模型的语言说明，比如「文言文」）/ <code>LANGUAGE_VARIANT</code> / <code>LANGUAGE</code>），可选 <code>File1</code> / <code>FileName1</code> 参考文件、
+                        <code>LANGUAGE_VARIANT</code> / <code>LANGUAGE</code>），可选 <code>File1</code> / <code>FileName1</code> 参考文件、
                         <code>AllMode</code> 与 <code>ExportInspection</code> 开关；本页在本地把文件封装成标准 zstd 帧后再上传。
                     </p>
 
                     <h3>运营成本</h3>
                     <p class="about-text">
-                        全靠自费，没有广告也没有收费项目。成本公式：
-                        <strong>月成本 = 当月 AI 接口消耗 + 域名年费 ÷ 12</strong>。
-                    </p>
-                    <p class="about-text" style="margin-bottom: 4px;">
-                        <strong>AI 接口</strong>（按实际用量结算，逐期记录）：
-                    </p>
-                    <table class="cost-table">
-                        <thead>
-                            <tr>
-                                <th>统计区间</th>
-                                <th>AI 消耗</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>2026 年 9 月</td>
-                                <td>15.88 元</td>
-                            </tr>
-                            <tr>
-                                <td>2026 年 10 月 1 日 00:00 ~ 10 月 13 日 13:00</td>
-                                <td>18.42 元</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p class="about-text">
-                        <strong>域名</strong>：39 元/年（年付），折合每月 3.25 元，不计入上表。
-                        所以月成本 = 上表当期 AI 消耗 + 3.25 元。
-                    </p>
-                    <p class="about-text">
+                        AI 接口 + 域名，合计约 <strong>25 元/月</strong>，自费，没有广告也没有收费项目。
                         就是个翻译网站，出错了这边看日志修。
                     </p>
                     <p style="text-align: right; font-size: 0.78rem; opacity: 0.5; margin-top: -6px;">
@@ -2139,7 +2085,7 @@
                     <h3>运行环境</h3>
                     <p class="about-text">
                         本地跑完整程序需要 64 位系统、支持 AVX2 的处理器、8GB 内存、支持 Vulkan 1.2（显存 ≥ 4GB）的显卡，约 4GB 硬盘空间；
-                        推荐 24GB 内存 + RTX 3060 12GB。
+                        推荐 24GB 内存 + RTX 3060 12GB。翻译模型可选 DeepSeek / Qwen / Xiaomi MiMo / Ornith / Qwopus 等系列，
                         嵌入模型 BGE-Base-EN-v1.5，向量搜索 NSGSQ8 + Refine，支持极限向量压缩。
                     </p>
 
@@ -2180,7 +2126,7 @@
             </div>
             <div class="form-group">
                 <label for="api-key"><i class="fas fa-key"></i> API 密钥（用户密钥）</label>
-                <input type="text" id="api-key" class="form-control 遮蔽输入" placeholder="例如: sk-xxxxxxxx" value="sk-00ba6d14a5854e8799817e8b22a4393a274b80e8720747488f4243b6c313fcb3" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" name="api-key-hidden">
+                <input type="text" id="api-key" class="form-control 遮蔽输入" placeholder="例如: sk-123456" value="sk-123456" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" name="api-key-hidden">
             </div>
             <div class="form-group">
                 <label for="api-admin-key"><i class="fas fa-user-gear"></i> 管理员密钥（可选）</label>
@@ -2213,7 +2159,7 @@
                 服务质量不因是否赞助而改变，也不会影响其他用户。<br>
                 本站与公益 API 依旧禁止商用与转发。
             </p>
-            <p class="modal-tip">赞助仅用于分摊 AI 接口与域名的开销（AI 按实际用量结算，域名 39 元/年；明细见「关于 → 运营成本」）。</p>
+            <p class="modal-tip">赞助仅用于分摊 AI 接口与域名的开销（约 25 元/月）。</p>
         </div>
     </div>
 
@@ -2588,9 +2534,10 @@
         }
 
         function progressText(t) {
-            const percent = t.status === 'completed' ? '100%' : (t.progress || 0) + '%';
+            const percent = t.status === 'completed' ? '100%' : (Math.round((t.progress || 0) * 10) / 10) + '%';
             if (t.status === 'uploading' && t.compressing) return percent + ' · 压缩中';
             if (t.status === 'uploading' && t.speed) return percent + ' · ' + humanSpeed(t.speed);
+            if (t.total) return percent + ' · ' + t.done + '/' + t.total;
             return percent;
         }
 
@@ -3343,6 +3290,8 @@ async function 删除单条(条目) {
                     size: t.size,
                     status: t.status,
                     progress: t.progress,
+                    done: t.done || 0,
+                    total: t.total || 0,
                     taskId: t.taskId,
                     filename: t.filename,
                     err: t.err,
@@ -3445,6 +3394,8 @@ async function 删除单条(条目) {
                 blob: null,
                 status: t.status || 'ready',
                 progress: t.progress || 0,
+                done: t.done || 0,
+                total: t.total || 0,
                 up: 0,
                 taskId: t.taskId || null,
                 filename: t.filename || '',
@@ -3548,6 +3499,12 @@ async function 删除单条(条目) {
         }
 
         function etaText(t) {
+            const 总 = t.total || 0, 完成 = t.done || 0, 起点 = t.开始 || t.at;
+            if (总 > 0 && 完成 > 0 && 完成 < 总 && 起点) {
+                const used = (Date.now() - 起点) / 1000;
+                const left = Math.round(used / 完成 * (总 - 完成));
+                if (isFinite(left) && left >= 0) return left < 60 ? left + '秒' : Math.floor(left / 60) + '分' + (left % 60) + '秒';
+            }
             if (!t.at || !t.progress || t.progress <= 0 || t.progress >= 100) return '-';
             const used = (Date.now() - t.at) / 1000;
             const left = Math.round(used / t.progress * (100 - t.progress));
@@ -3565,10 +3522,10 @@ async function 删除单条(条目) {
             const badge = $('status-badge');
             badge.className = 'status-badge ' + st(t.status)[1];
             badge.textContent = st(t.status)[0];
-            const percent = t.status === 'completed' ? 100 : (t.progress || 0);
+            const percent = t.status === 'completed' ? 100 : Math.min(100, Math.round((t.progress || 0) * 10) / 10);
             $('progress-bar').style.width = percent + '%';
             $('progress-bar').textContent = percent + '%';
-            $('progress-text').textContent = percent + '%';
+            $('progress-text').textContent = percent + '%' + (t.total ? '（' + (t.done || 0) + ' / ' + t.total + ' 条）' : '');
             $('eta-text').textContent = etaText(t);
             $('detail-msg').textContent = t.err ? '错误: ' + t.err : (t.msg || '');
             $('detail-msg').style.color = t.err ? '#dc3545' : 'var(--gray)';
@@ -3751,6 +3708,9 @@ function warnTooBig(list) {
             t.status = 'uploading';
             t.compressing = true;
             t.progress = 0;
+            t.done = 0;
+            t.total = 0;
+            t.开始 = 0;
             t.up = 0;
             t.err = '';
             t.msg = '压缩中';
@@ -3869,7 +3829,7 @@ function warnTooBig(list) {
         function watch() {
             const need = tasks.some(t => t.taskId && (t.status === 'queued' || t.status === 'processing'));
             if (need && !pollTimer) {
-                pollTimer = setInterval(pollAll, 2000);
+                pollTimer = setInterval(pollAll, 1000);
                 pollAll();
             } else if (!need) {
                 stopPoll();
@@ -3941,8 +3901,13 @@ function warnTooBig(list) {
                         finished = true;
                     } else {
                         t.progress = Number(data.progress) || 0;
-                        t.status = t.progress > 0 ? 'processing' : 'queued';
-                        t.msg = t.status === 'processing' ? '翻译中' : '排队中';
+                        t.done = Number(data.done) || 0;
+                        t.total = Number(data.total) || 0;
+                        t.phase = data.phase || '';
+                        t.status = (t.progress > 10 || t.done > 0) ? 'processing' : 'queued';
+                        t.msg = (t.phase || (t.status === 'processing' ? '翻译中' : '排队中'))
+                            + (t.total ? ' · ' + t.done + '/' + t.total + ' 条' : '');
+                        if (t.done > 0 && !t.开始) t.开始 = Date.now();
                         t.查错 = 0;
                     }
                 }
