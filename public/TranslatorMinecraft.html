@@ -3525,7 +3525,7 @@ async function 删除单条(条目) {
             const percent = t.status === 'completed' ? 100 : Math.min(100, Math.round((t.progress || 0) * 10) / 10);
             $('progress-bar').style.width = percent + '%';
             $('progress-bar').textContent = percent + '%';
-            $('progress-text').textContent = percent + '%' + (t.total ? '（' + (t.done || 0) + ' / ' + t.total + ' 条）' : '');
+            $('progress-text').textContent = percent + '%' + (t.total ? '（' + (t.done || 0) + ' / ' + t.total + '）' : '');
             $('eta-text').textContent = etaText(t);
             $('detail-msg').textContent = t.err ? '错误: ' + t.err : (t.msg || '');
             $('detail-msg').style.color = t.err ? '#dc3545' : 'var(--gray)';
@@ -3906,7 +3906,7 @@ function warnTooBig(list) {
                         t.phase = data.phase || '';
                         t.status = (t.progress > 10 || t.done > 0) ? 'processing' : 'queued';
                         t.msg = (t.phase || (t.status === 'processing' ? '翻译中' : '排队中'))
-                            + (t.total ? ' · ' + t.done + '/' + t.total + ' 条' : '');
+                            + (t.total ? ' · ' + t.done + '/' + t.total : '');
                         if (t.done > 0 && !t.开始) t.开始 = Date.now();
                         t.查错 = 0;
                     }
