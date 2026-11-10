@@ -1814,7 +1814,8 @@
             <!-- 公告：只挂在主页面里，切到别的页面就不显示 -->
             <div class="status notice" id="maintenance-notice">
                 <p><strong>单个文件不能超过 95MB</strong>，更大的文件请发到 QQ 群 606269975。</p>
-                <p>当前翻译模型：Qwen3.7 Flash，翻译一个文件大约需要 30 秒 ~ 4 分钟（看文件大小）。</p>
+                <p>由于 Qwen3.8 Flash 使用过多导致钱包蒸发，所以使用：Index-Translate-35B-A3B-Preview-APEX-I-Nano　平均速度：2条/秒</p>
+                <p>运行环境：P100 SXM2 ＋ 魔改 Strata　K 缓存：PolarQuant 4bit　V 缓存：LloydMax 2bit　3×16k Token 上下文窗口</p>
                 <p>有问题或建议：加 QQ 群 606269975（开发者 3254693390），或到 <a href="https://github.com/lingxingmiao/Translator-Minecraft/issues" target="_blank" rel="noopener">GitHub 提 Issue</a>，我很好说话的。</p>
             </div>
 <div class="tab-content active" style="border-radius: 4px;">
@@ -2061,14 +2062,14 @@
 
                     <h3>API</h3>
                     <p class="about-text">
-                        公益 API：<code>https://api.tanslamc.top</code>，密钥 <code>sk-00ba6d14a5854e8799817e8b22a4393a274b80e8720747488f4243b6c313fcb3</code>，
+                        公益 API：<code>https://api.tanslamc.top</code>，密钥 <code>sk-123456</code>，
                         请求格式与端点见仓库里的 <code>TranslatorAPI.py</code>。该 API 可自定义输出语言。
                     </p>
                     <p class="about-text" style="font-size: 0.86rem;">
                         上传接口为 <code>POST /network/transl</code>：请求体是 multipart，字段
                         <code>File0</code>（zstd 压缩后的流）、<code>FileName0</code>（原始文件名）、
                         <code>Config</code>（JSON，可含 <code>LANGUAGE_INPUT</code> / <code>LANGUAGE_OUTPUT</code> /
-                        <code>LANGUAGE_MODEL</code>（发给模型的语言说明，比如「文言文」）/ <code>LANGUAGE_VARIANT</code> / <code>LANGUAGE</code>），可选 <code>File1</code> / <code>FileName1</code> 参考文件、
+                        <code>LANGUAGE_VARIANT</code> / <code>LANGUAGE</code>），可选 <code>File1</code> / <code>FileName1</code> 参考文件、
                         <code>AllMode</code> 与 <code>ExportInspection</code> 开关；本页在本地把文件封装成标准 zstd 帧后再上传。
                     </p>
 
@@ -2125,7 +2126,7 @@
             </div>
             <div class="form-group">
                 <label for="api-key"><i class="fas fa-key"></i> API 密钥（用户密钥）</label>
-                <input type="text" id="api-key" class="form-control 遮蔽输入" placeholder="例如: sk-xxxxxxxx" value="sk-00ba6d14a5854e8799817e8b22a4393a274b80e8720747488f4243b6c313fcb3" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" name="api-key-hidden">
+                <input type="text" id="api-key" class="form-control 遮蔽输入" placeholder="例如: sk-123456" value="sk-123456" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" name="api-key-hidden">
             </div>
             <div class="form-group">
                 <label for="api-admin-key"><i class="fas fa-user-gear"></i> 管理员密钥（可选）</label>
@@ -2533,9 +2534,10 @@
         }
 
         function progressText(t) {
-            const percent = t.status === 'completed' ? '100%' : (t.progress || 0) + '%';
+            const percent = t.status === 'completed' ? '100%' : (Math.round((t.progress || 0) * 10) / 10) + '%';
             if (t.status === 'uploading' && t.compressing) return percent + ' · 压缩中';
             if (t.status === 'uploading' && t.speed) return percent + ' · ' + humanSpeed(t.speed);
+            if (t.total) return percent + ' · ' + t.done + '/' + t.total;
             return percent;
         }
 
@@ -3288,6 +3290,8 @@ async function 删除单条(条目) {
                     size: t.size,
                     status: t.status,
                     progress: t.progress,
+                    done: t.done || 0,
+                    total: t.total || 0,
                     taskId: t.taskId,
                     filename: t.filename,
                     err: t.err,
@@ -3390,6 +3394,8 @@ async function 删除单条(条目) {
                 blob: null,
                 status: t.status || 'ready',
                 progress: t.progress || 0,
+                done: t.done || 0,
+                total: t.total || 0,
                 up: 0,
                 taskId: t.taskId || null,
                 filename: t.filename || '',
@@ -3493,6 +3499,12 @@ async function 删除单条(条目) {
         }
 
         function etaText(t) {
+            const 总 = t.total || 0, 完成 = t.done || 0, 起点 = t.开始 || t.at;
+            if (总 > 0 && 完成 > 0 && 完成 < 总 && 起点) {
+                const used = (Date.now() - 起点) / 1000;
+                const left = Math.round(used / 完成 * (总 - 完成));
+                if (isFinite(left) && left >= 0) return left < 60 ? left + '秒' : Math.floor(left / 60) + '分' + (left % 60) + '秒';
+            }
             if (!t.at || !t.progress || t.progress <= 0 || t.progress >= 100) return '-';
             const used = (Date.now() - t.at) / 1000;
             const left = Math.round(used / t.progress * (100 - t.progress));
@@ -3510,10 +3522,10 @@ async function 删除单条(条目) {
             const badge = $('status-badge');
             badge.className = 'status-badge ' + st(t.status)[1];
             badge.textContent = st(t.status)[0];
-            const percent = t.status === 'completed' ? 100 : (t.progress || 0);
+            const percent = t.status === 'completed' ? 100 : Math.min(100, Math.round((t.progress || 0) * 10) / 10);
             $('progress-bar').style.width = percent + '%';
             $('progress-bar').textContent = percent + '%';
-            $('progress-text').textContent = percent + '%';
+            $('progress-text').textContent = percent + '%' + (t.total ? '（' + (t.done || 0) + ' / ' + t.total + ' 条）' : '');
             $('eta-text').textContent = etaText(t);
             $('detail-msg').textContent = t.err ? '错误: ' + t.err : (t.msg || '');
             $('detail-msg').style.color = t.err ? '#dc3545' : 'var(--gray)';
@@ -3696,6 +3708,9 @@ function warnTooBig(list) {
             t.status = 'uploading';
             t.compressing = true;
             t.progress = 0;
+            t.done = 0;
+            t.total = 0;
+            t.开始 = 0;
             t.up = 0;
             t.err = '';
             t.msg = '压缩中';
@@ -3802,20 +3817,31 @@ function warnTooBig(list) {
             return '提交失败 HTTP ' + xhr.status;
         }
 
+        // 状态轮询：只在有「排队/翻译中」的任务时转，任务一结束立刻停表
+        function stopPoll() {
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+            polling = {};   // 残留的“正在查询”标记一起清掉，免得下次误判
+        }
+
         function watch() {
             const need = tasks.some(t => t.taskId && (t.status === 'queued' || t.status === 'processing'));
             if (need && !pollTimer) {
-                pollTimer = setInterval(pollAll, 2000);
+                pollTimer = setInterval(pollAll, 1000);
                 pollAll();
-            } else if (!need && pollTimer) {
-                clearInterval(pollTimer);
-                pollTimer = null;
+            } else if (!need) {
+                stopPoll();
             }
         }
 
         async function pollAll() {
             const c = cfg();
-            if (!c.url || !c.key) return;
+            if (!c.url || !c.key) {   // 没配置就别空转，等配置好再重新开表
+                stopPoll();
+                return;
+            }
             const list = tasks.filter(t => t.taskId && (t.status === 'queued' || t.status === 'processing') && !polling[t.taskId]);
             if (!list.length) {
                 watch();
@@ -3824,6 +3850,7 @@ function warnTooBig(list) {
             await Promise.all(list.map(t => poll(t, c)));
             saveTasks();
             watch();
+            if (!tasks.some(t => t.taskId && (t.status === 'queued' || t.status === 'processing'))) stopPoll();
         }
 
         async function poll(t, c) {
@@ -3831,14 +3858,21 @@ function warnTooBig(list) {
             polling[id] = true;
             const before = t.status;
             let finished = false;
+            let 查询失败 = false;
+            const 控制器 = typeof AbortController === 'function' ? new AbortController() : null;
+            const 超时表 = 控制器 ? setTimeout(() => 控制器.abort(), 20000) : null;
             try {
-                const res = await fetch(c.url + '/task/status/' + id, { headers: auth(c) });
+                const res = await fetch(c.url + '/task/status/' + id, {
+                    headers: auth(c),
+                    signal: 控制器 ? 控制器.signal : undefined
+                });
                 if (res.status === 404) {
                     t.status = 'expired';
                     t.msg = '服务器已清理该任务';
                     t.taskId = null;
                     finished = true;
                 } else if (!res.ok) {
+                    查询失败 = true;
                     const 详情 = await res.json().catch(() => null);
                     t.msg = (详情 && typeof 详情.detail === 'string' ? 详情.detail + ' ' : '') + '状态查询失败 HTTP ' + res.status;
                 } else {
@@ -3867,23 +3901,51 @@ function warnTooBig(list) {
                         finished = true;
                     } else {
                         t.progress = Number(data.progress) || 0;
-                        t.status = t.progress > 0 ? 'processing' : 'queued';
-                        t.msg = t.status === 'processing' ? '翻译中' : '排队中';
+                        t.done = Number(data.done) || 0;
+                        t.total = Number(data.total) || 0;
+                        t.phase = data.phase || '';
+                        t.status = (t.progress > 10 || t.done > 0) ? 'processing' : 'queued';
+                        t.msg = (t.phase || (t.status === 'processing' ? '翻译中' : '排队中'))
+                            + (t.total ? ' · ' + t.done + '/' + t.total + ' 条' : '');
+                        if (t.done > 0 && !t.开始) t.开始 = Date.now();
+                        t.查错 = 0;
                     }
                 }
             } catch (e) {
-                t.msg = '轮询出错: ' + e.message;
+                查询失败 = true;
+                t.msg = e && e.name === 'AbortError' ? '状态查询超时，稍后重试' : '轮询出错: ' + (e && e.message);
+            } finally {
+                if (超时表) clearTimeout(超时表);
             }
-            polling[id] = false;
+            if (查询失败) {   // 连续查不通就先停这只任务的轮询，别一直空转；点「恢复」可以继续
+                t.查错 = (t.查错 || 0) + 1;
+                if (t.查错 >= 3) {
+                    t.查错 = 0;
+                    t.status = 'detached';
+                    t.msg = '状态查询连续失败，已暂停轮询（点「恢复」可继续跟踪）';
+                    finished = true;
+                }
+            }
+            delete polling[id];
+            if (finished) {   // 任务结束：停掉详情页的日志自动刷新，并拉一次最终日志
+                if (t.id === current) {
+                    autoLog(false);
+                    loadLog(t, c);
+                }
+            }
             if (before !== t.status) render();
             else patchRow(t);
-            if (finished) schedule();
+            if (finished) {
+                schedule();
+                if (!tasks.some(x => x.taskId && (x.status === 'queued' || x.status === 'processing'))) stopPoll();
+            }
         }
 
         async function loadLog(t, c) {
             const box = $('log-container');
             if (!t || !t.taskId) {
                 box.textContent = '[INFO] 该任务暂无日志';
+                autoLog(false);
                 return;
             }
             c = c || cfg();
@@ -3897,6 +3959,8 @@ function warnTooBig(list) {
                     if (bottom) box.scrollTop = box.scrollHeight;
                 }
             } catch (e) {}
+            // 任务已经结束就别再每秒拉日志了（这里已经拉到最后一次）
+            if (ENDED.indexOf(t.status) >= 0) autoLog(false);
         }
 
         function autoLog(on) {
@@ -3905,7 +3969,9 @@ function warnTooBig(list) {
                 logTimer = null;
             }
             const btn = $('auto-refresh-toggle');
-            if (on && current) {
+            const t = current ? task(current) : null;
+            // 任务已结束、或者根本没选中任务，就不开自动刷新
+            if (on && t && t.taskId && ENDED.indexOf(t.status) < 0) {
                 logTimer = setInterval(() => loadLog(current ? task(current) : null), 1000);
                 btn.querySelector('i').className = 'fas fa-pause';
                 btn.querySelector('span').textContent = '暂停刷新';
